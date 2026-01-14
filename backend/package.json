@@ -1,12 +1,13 @@
 {
-  "name": "daimyo-backend",
+  "name": "backend",
   "version": "1.0.0",
   "description": "Discord reputation bot for Dojo community",
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit -p tsconfig.build.json",
     "start": "node dist/index.js",
     "deploy-commands": "tsx src/deploy-commands.ts",
     "lint": "eslint .",
