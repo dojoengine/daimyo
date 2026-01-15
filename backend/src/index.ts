@@ -12,6 +12,7 @@ import { registerGuildMemberAddHandler } from './events/guildMemberAdd.js';
 import { registerMessageReactionAddHandler } from './events/messageReactionAdd.js';
 import { startDecayCheckJob } from './jobs/decayCheck.js';
 import { startOhayoJob } from './jobs/ohayo.js';
+import { startContentPipelineJob } from './jobs/contentPipeline.js';
 
 // Import all commands
 import * as statsCommand from './commands/stats.js';
@@ -91,6 +92,7 @@ async function main() {
     // Start cron jobs
     startDecayCheckJob(client);
     startOhayoJob(client);
+    startContentPipelineJob(client);
 
     // Login to Discord
     await client.login(config.discordBotToken);

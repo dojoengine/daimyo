@@ -2,6 +2,7 @@ import Database from 'better-sqlite3';
 import { config } from '../utils/config.js';
 import { Reaction, RoleHistory, Role } from '../types.js';
 import { randomUUID } from 'crypto';
+import { createContentPipelineTables } from './contentDatabase.js';
 
 let db: Database.Database;
 
@@ -62,6 +63,9 @@ function createTables(): void {
   `);
 
   console.log('Database tables created/verified');
+
+  // Create content pipeline tables
+  createContentPipelineTables();
 }
 
 /**

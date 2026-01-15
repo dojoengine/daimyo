@@ -11,6 +11,10 @@ Progression: Kōhai → Senpai → Sensei based on peer recognition.
 ### [Blockchain Roles](./spec/BLOCKCHAIN.md)
 Wallet-linked roles based on Starknet state (NFT ownership, token holdings, etc.).
 
+### [Content Pipeline](./spec/CONTENT.md)
+Automated Discord-to-Twitter content generation.
+Weekly scans identify developer stories and generate Twitter thread drafts with AI-generated images, sent to Typefully for review.
+
 ## Deployment
 
 The bot uses GitHub Actions for CI and Railway for deployment.
@@ -27,6 +31,7 @@ Pushes to `main` automatically deploy after CI passes.
    - In Railway, go to your service → Variables
    - Add the following (see `backend/.env.example` for reference):
      ```
+     # Core Discord config
      DISCORD_BOT_TOKEN=<your token>
      DISCORD_GUILD_ID=<your guild id>
      DISCORD_CLIENT_ID=<your client id>
@@ -34,12 +39,20 @@ Pushes to `main` automatically deploy after CI passes.
      KOHAI_ROLE_ID=<role id>
      SENPAI_ROLE_ID=<role id>
      SENSEI_ROLE_ID=<role id>
+     OHAYO_CHANNEL_ID=<channel id>
      DATABASE_PATH=/data/daimyo.db
+
+     # Reputation thresholds
      DECAY_WINDOW_DAYS=360
      SENPAI_REACTION_THRESHOLD=50
      SENPAI_UNIQUE_PERCENT=0.10
      SENSEI_REACTION_THRESHOLD=30
      SENSEI_UNIQUE_PERCENT=0.20
+
+     # Content Pipeline (optional)
+     CONTENT_CHANNEL_IDS=<comma-separated channel ids>
+     OPENAI_API_KEY=<your openai key>
+     TYPEFULLY_API_KEY=<your typefully key>
      ```
 
 3. **Create Volume for Database**

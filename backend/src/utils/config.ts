@@ -68,6 +68,27 @@ export function loadConfig(): Config {
     senpaiUniquePercent: getNumberEnv('SENPAI_UNIQUE_PERCENT', 0.1),
     senseiReactionThreshold: getNumberEnv('SENSEI_REACTION_THRESHOLD', 30),
     senseiUniquePercent: getNumberEnv('SENSEI_UNIQUE_PERCENT', 0.2),
+
+    // Content Pipeline
+    contentChannelIds: (getOptionalEnv('CONTENT_CHANNEL_IDS') || '')
+      .split(',')
+      .map((id) => id.trim())
+      .filter(Boolean),
+    contentPipelineDaysBack: getNumberEnv('CONTENT_PIPELINE_DAYS_BACK', 7),
+    contentPipelineMinStories: getNumberEnv('CONTENT_PIPELINE_MIN_STORIES', 3),
+    contentPipelineMaxStories: getNumberEnv('CONTENT_PIPELINE_MAX_STORIES', 10),
+    contentPipelineCron: process.env.CONTENT_PIPELINE_CRON || '0 9 * * 0',
+
+    // AI Providers
+    llmProvider: (getOptionalEnv('LLM_PROVIDER') as 'openai' | 'anthropic') || 'openai',
+    llmModel: process.env.LLM_MODEL || 'gpt-4o',
+    openaiApiKey: getOptionalEnv('OPENAI_API_KEY') || '',
+    anthropicApiKey: getOptionalEnv('ANTHROPIC_API_KEY') || '',
+    imageProvider: (getOptionalEnv('IMAGE_PROVIDER') as 'dalle' | 'replicate') || 'dalle',
+    replicateApiKey: getOptionalEnv('REPLICATE_API_KEY') || '',
+
+    // Typefully
+    typefullyApiKey: getOptionalEnv('TYPEFULLY_API_KEY') || '',
   };
 }
 
