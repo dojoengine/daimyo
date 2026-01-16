@@ -11,7 +11,7 @@ import {
   insertDraft,
   updateDraftStatus,
   storyExists,
-} from '../services/contentDatabase.js';
+} from '../services/database.js';
 import { ThreadDraft, GeneratedImage } from '../types.js';
 
 /**
@@ -48,7 +48,7 @@ async function runContentPipeline(client: Client): Promise<void> {
   }
 
   // Start tracking this run
-  const runId = startPipelineRun();
+  const runId = await startPipelineRun();
   let messagesScanned = 0;
   let storiesIdentified = 0;
   let draftsCreated = 0;
@@ -61,7 +61,7 @@ async function runContentPipeline(client: Client): Promise<void> {
 
     if (messages.length === 0) {
       console.log('No messages found to process');
-      completePipelineRun(runId, {
+      await completePipelineRun(runId, {
         messagesScanned,
         storiesIdentified,
         draftsCreated,
@@ -77,7 +77,7 @@ async function runContentPipeline(client: Client): Promise<void> {
 
     if (stories.length === 0) {
       console.log('No interesting stories identified');
-      completePipelineRun(runId, {
+      await completePipelineRun(runId, {
         messagesScanned,
         storiesIdentified,
         draftsCreated,
@@ -87,20 +87,21 @@ async function runContentPipeline(client: Client): Promise<void> {
     }
 
     // Filter to minimum confidence and check for duplicates
-    const filteredStories = stories.filter((story) => {
+    const filteredStories = [];
+    for (const story of stories) {
       if (story.confidence < 0.6) {
-        return false;
+        continue;
       }
 
       // Check for duplicate stories
       const messageIds = story.sourceMessages.map((m) => m.id);
-      if (storyExists(messageIds)) {
+      if (await storyExists(messageIds)) {
         console.log(`Skipping duplicate story: "${story.title}"`);
-        return false;
+        continue;
       }
 
-      return true;
-    });
+      filteredStories.push(story);
+    }
 
     // Limit to configured maximum
     const storiesToProcess = filteredStories.slice(0, config.contentPipelineMaxStories);
@@ -143,19 +144,19 @@ async function runContentPipeline(client: Client): Promise<void> {
         };
 
         // Save story and draft to database together (prevents orphans)
-        insertStory(story);
-        const draftId = insertDraft(story.id, draft, 'pending');
+        await insertStory(story);
+        const draftId = await insertDraft(story.id, draft, 'pending');
 
         // Submit to Typefully if configured
         if (isTypefullyConfigured()) {
           const result = await createDraft(draft);
 
           if (result.success) {
-            updateDraftStatus(draftId, 'submitted', result.draftId);
+            await updateDraftStatus(draftId, 'submitted', result.draftId);
             draftsCreated++;
             console.log(`✅ Draft submitted to Typefully: ${result.draftId}`);
           } else {
-            updateDraftStatus(draftId, 'failed');
+            await updateDraftStatus(draftId, 'failed');
             draftsFailed++;
             console.warn(`⚠️ Failed to submit draft: ${result.error}`);
           }
@@ -171,7 +172,7 @@ async function runContentPipeline(client: Client): Promise<void> {
     }
 
     // Complete the run
-    completePipelineRun(runId, {
+    await completePipelineRun(runId, {
       messagesScanned,
       storiesIdentified,
       draftsCreated,
@@ -188,7 +189,7 @@ async function runContentPipeline(client: Client): Promise<void> {
   } catch (error) {
     console.error('Error during content pipeline:', error);
 
-    completePipelineRun(runId, {
+    await completePipelineRun(runId, {
       messagesScanned,
       storiesIdentified,
       draftsCreated,

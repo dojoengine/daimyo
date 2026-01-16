@@ -18,7 +18,7 @@ export async function checkSenseiDecay(guild: Guild, userId: string): Promise<De
     }
 
     // Get Sensei reactions within the decay window
-    const recentReactions = getRecentSenseiReactions(userId, config.decayWindowDays);
+    const recentReactions = await getRecentSenseiReactions(userId, config.decayWindowDays);
     const recentCount = recentReactions.length;
 
     console.debug(
@@ -33,7 +33,7 @@ export async function checkSenseiDecay(guild: Guild, userId: string): Promise<De
 
       // Demote to Senpai
       await assignRole(guild, userId, Role.Senpai);
-      insertRoleHistory(userId, Role.Senpai, 'decay');
+      await insertRoleHistory(userId, Role.Senpai, 'decay');
 
       // Send DM notification
       const member = guild.members.cache.get(userId);
@@ -60,12 +60,12 @@ export async function checkSenseiDecay(guild: Guild, userId: string): Promise<De
 /**
  * Get time-windowed Sensei reaction count for display
  */
-export function getSenseiDecayStatus(userId: string): {
+export async function getSenseiDecayStatus(userId: string): Promise<{
   recentCount: number;
   threshold: number;
   windowDays: number;
-} {
-  const recentReactions = getRecentSenseiReactions(userId, config.decayWindowDays);
+}> {
+  const recentReactions = await getRecentSenseiReactions(userId, config.decayWindowDays);
 
   return {
     recentCount: recentReactions.length,

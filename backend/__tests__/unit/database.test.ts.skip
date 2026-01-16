@@ -1,0 +1,211 @@
+/**
+ * Unit tests for database service
+ */
+
+import { PGlite } from '@electric-sql/pglite';
+import { Role } from '../../src/types.js';
+import {
+  createTestDatabase,
+  insertTestReaction,
+  getTestReactionCount,
+  closeTestDatabase,
+} from '../mocks/database.js';
+
+describe('Database Service', () => {
+  let db: PGlite;
+
+  beforeEach(async () => {
+    db = await createTestDatabase();
+  });
+
+  afterEach(async () => {
+    if (db) {
+      await closeTestDatabase(db);
+    }
+  });
+
+  describe('Reaction Storage', () => {
+    test('should insert reaction successfully', async () => {
+      await insertTestReaction(db, 'msg-1', 'author-1', 'reactor-1', Role.Senpai);
+
+      const count = await getTestReactionCount(db, 'author-1', [Role.Senpai]);
+      expect(count).toBe(1);
+    });
+
+    test('should enforce UNIQUE constraint on (message_id, reactor_id)', async () => {
+      await insertTestReaction(db, 'msg-1', 'author-1', 'reactor-1', Role.Senpai);
+
+      // Attempting to insert duplicate should throw
+      await expect(
+        insertTestReaction(db, 'msg-1', 'author-1', 'reactor-1', Role.Senpai)
+      ).rejects.toThrow();
+    });
+
+    test('should allow same reactor on different messages', async () => {
+      await insertTestReaction(db, 'msg-1', 'author-1', 'reactor-1', Role.Senpai);
+      await insertTestReaction(db, 'msg-2', 'author-1', 'reactor-1', Role.Senpai);
+
+      const count = await getTestReactionCount(db, 'author-1', [Role.Senpai]);
+      expect(count).toBe(2);
+    });
+
+    test('should allow different reactors on same message', async () => {
+      await insertTestReaction(db, 'msg-1', 'author-1', 'reactor-1', Role.Senpai);
+      await insertTestReaction(db, 'msg-1', 'author-1', 'reactor-2', Role.Senpai);
+
+      const count = await getTestReactionCount(db, 'author-1', [Role.Senpai]);
+      expect(count).toBe(2);
+    });
+
+    test('should store reactor role snapshot', async () => {
+      await insertTestReaction(db, 'msg-1', 'author-1', 'reactor-1', Role.Sensei);
+
+      const result = await db.query<{ reactor_role_at_time: string }>(
+        'SELECT reactor_role_at_time FROM reactions WHERE reactor_id = $1',
+        ['reactor-1']
+      );
+
+      expect(result.rows[0].reactor_role_at_time).toBe(Role.Sensei);
+    });
+  });
+
+  describe('Reaction Queries', () => {
+    beforeEach(async () => {
+      // Set up test data
+      await insertTestReaction(db, 'msg-1', 'user-1', 'reactor-1', Role.Kohai);
+      await insertTestReaction(db, 'msg-2', 'user-1', 'reactor-2', Role.Senpai);
+      await insertTestReaction(db, 'msg-3', 'user-1', 'reactor-3', Role.Senpai);
+      await insertTestReaction(db, 'msg-4', 'user-1', 'reactor-4', Role.Sensei);
+      await insertTestReaction(db, 'msg-5', 'user-2', 'reactor-1', Role.Senpai);
+    });
+
+    test('should count reactions from Senpai only', async () => {
+      const count = await getTestReactionCount(db, 'user-1', [Role.Senpai]);
+      expect(count).toBe(2);
+    });
+
+    test('should count reactions from Senpai and Sensei', async () => {
+      const count = await getTestReactionCount(db, 'user-1', [Role.Senpai, Role.Sensei]);
+      expect(count).toBe(3);
+    });
+
+    test('should count reactions from all roles', async () => {
+      const count = await getTestReactionCount(db, 'user-1', [Role.Kohai, Role.Senpai, Role.Sensei]);
+      expect(count).toBe(4);
+    });
+
+    test('should return 0 for user with no reactions', async () => {
+      const count = await getTestReactionCount(db, 'user-999', [Role.Senpai]);
+      expect(count).toBe(0);
+    });
+
+    test('should get unique reactors correctly', async () => {
+      const result = await db.query<{ reactor_id: string }>(
+        `SELECT DISTINCT reactor_id
+         FROM reactions
+         WHERE message_author_id = $1
+         AND reactor_role_at_time = ANY($2)`,
+        ['user-1', ['Senpai', 'Sensei']]
+      );
+
+      expect(result.rows).toHaveLength(3);
+      expect(result.rows.map((r) => r.reactor_id)).toEqual(
+        expect.arrayContaining(['reactor-2', 'reactor-3', 'reactor-4'])
+      );
+    });
+  });
+
+  describe('Time-Windowed Queries', () => {
+    test('should filter reactions by timestamp', async () => {
+      const now = Date.now();
+      const thirtyDaysAgo = now - 30 * 24 * 60 * 60 * 1000;
+      const oneYearAgo = now - 365 * 24 * 60 * 60 * 1000;
+
+      // Insert reactions at different times
+      await insertTestReaction(db, 'msg-1', 'user-1', 'reactor-1', Role.Sensei, now);
+      await insertTestReaction(db, 'msg-2', 'user-1', 'reactor-2', Role.Sensei, thirtyDaysAgo);
+      await insertTestReaction(db, 'msg-3', 'user-1', 'reactor-3', Role.Sensei, oneYearAgo);
+
+      const cutoff = now - 360 * 24 * 60 * 60 * 1000;
+      const result = await db.query<{ count: string }>(
+        `SELECT COUNT(*) as count
+         FROM reactions
+         WHERE message_author_id = $1
+         AND reactor_role_at_time = 'Sensei'
+         AND timestamp >= $2`,
+        ['user-1', cutoff]
+      );
+
+      expect(parseInt(result.rows[0].count, 10)).toBe(2); // Only recent two reactions
+    });
+  });
+
+  describe('Role History', () => {
+    test('should record role changes', async () => {
+      await db.query(
+        `INSERT INTO role_history (id, user_id, role, reason, timestamp)
+         VALUES ($1, $2, $3, $4, $5)`,
+        ['hist-1', 'user-1', Role.Senpai, 'promotion', Date.now()]
+      );
+
+      const result = await db.query('SELECT * FROM role_history WHERE user_id = $1', ['user-1']);
+
+      expect(result.rows).toHaveLength(1);
+    });
+
+    test('should allow multiple history entries per user', async () => {
+      const now = Date.now();
+
+      await db.query(
+        `INSERT INTO role_history (id, user_id, role, reason, timestamp)
+         VALUES ($1, $2, $3, $4, $5)`,
+        ['hist-1', 'user-1', Role.Senpai, 'promotion', now]
+      );
+      await db.query(
+        `INSERT INTO role_history (id, user_id, role, reason, timestamp)
+         VALUES ($1, $2, $3, $4, $5)`,
+        ['hist-2', 'user-1', Role.Sensei, 'promotion', now + 1000]
+      );
+
+      const result = await db.query('SELECT * FROM role_history WHERE user_id = $1', ['user-1']);
+
+      expect(result.rows).toHaveLength(2);
+    });
+  });
+
+  describe('Leaderboard Queries', () => {
+    beforeEach(async () => {
+      // User 1: 5 reactions
+      for (let i = 0; i < 5; i++) {
+        await insertTestReaction(db, `msg-1-${i}`, 'user-1', `reactor-${i}`, Role.Senpai);
+      }
+
+      // User 2: 3 reactions
+      for (let i = 0; i < 3; i++) {
+        await insertTestReaction(db, `msg-2-${i}`, 'user-2', `reactor-${i}`, Role.Senpai);
+      }
+
+      // User 3: 7 reactions
+      for (let i = 0; i < 7; i++) {
+        await insertTestReaction(db, `msg-3-${i}`, 'user-3', `reactor-${i}`, Role.Senpai);
+      }
+    });
+
+    test('should return users sorted by reaction count', async () => {
+      const result = await db.query<{ user_id: string; reaction_count: string }>(
+        `SELECT message_author_id as user_id, COUNT(*) as reaction_count
+         FROM reactions
+         GROUP BY message_author_id
+         ORDER BY reaction_count DESC`
+      );
+
+      expect(result.rows).toHaveLength(3);
+      expect(result.rows[0].user_id).toBe('user-3');
+      expect(parseInt(result.rows[0].reaction_count, 10)).toBe(7);
+      expect(result.rows[1].user_id).toBe('user-1');
+      expect(parseInt(result.rows[1].reaction_count, 10)).toBe(5);
+      expect(result.rows[2].user_id).toBe('user-2');
+      expect(parseInt(result.rows[2].reaction_count, 10)).toBe(3);
+    });
+  });
+});

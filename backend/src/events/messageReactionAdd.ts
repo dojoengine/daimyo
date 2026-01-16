@@ -86,7 +86,7 @@ export function registerMessageReactionAddHandler(client: Client): void {
         }
 
         // Insert reaction into database (UNIQUE constraint handles duplicates)
-        const inserted = insertReaction(message.id, messageAuthorId, reactorId, reactorRole);
+        const inserted = await insertReaction(message.id, messageAuthorId, reactorId, reactorRole);
 
         if (inserted) {
           console.log(

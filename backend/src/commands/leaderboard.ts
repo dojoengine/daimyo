@@ -31,7 +31,7 @@ export async function execute(interaction: ChatInputCommandInteraction): Promise
     const roleFilter = interaction.options.getString('role') as Role | null;
 
     // Get leaderboard data (top 20)
-    const leaderboard = getLeaderboard(roleFilter || undefined, 20);
+    const leaderboard = await getLeaderboard(roleFilter || undefined, 20);
 
     if (leaderboard.length === 0) {
       await interaction.editReply('No reputation data available yet.');

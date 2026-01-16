@@ -56,7 +56,7 @@ export interface Config {
   ohayoChannelId: string;
 
   // Database
-  databasePath: string;
+  databaseUrl: string;
 
   // Thresholds
   decayWindowDays: number;
@@ -185,7 +185,7 @@ export interface GeneratedImage {
 export interface ThreadDraft {
   story: Story;
   content: ThreadContent;
-  image: GeneratedImage;
+  image?: GeneratedImage;
   createdAt: number;
 }
 

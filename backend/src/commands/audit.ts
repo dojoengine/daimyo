@@ -27,7 +27,7 @@ export async function execute(interaction: ChatInputCommandInteraction): Promise
     console.log(`Audit command executed by ${interaction.user.tag} for ${targetUser.tag}`);
 
     // Get user stats
-    const stats = getUserStats(guild, targetUser.id);
+    const stats = await getUserStats(guild, targetUser.id);
 
     // Build audit message
     let message = `🔍 **Audit Report for ${targetUser.tag}**\n\n`;
@@ -51,14 +51,14 @@ export async function execute(interaction: ChatInputCommandInteraction): Promise
       message += `  - Reactions: ${score.totalReactions}/${score.threshold} ${score.meetsThreshold ? '✅' : '❌'}\n`;
       message += `  - Unique: ${score.uniqueReactors}/${score.uniqueRequired} ${score.meetsUnique ? '✅' : '❌'}\n\n`;
     } else if (stats.currentRole === Role.Sensei) {
-      const decayStatus = getSenseiDecayStatus(targetUser.id);
+      const decayStatus = await getSenseiDecayStatus(targetUser.id);
       message += `**Decay Status:**\n`;
       message += `  - Recent Sensei reactions (${decayStatus.windowDays} days): ${decayStatus.recentCount}/${decayStatus.threshold}\n`;
       message += `  - Status: ${decayStatus.recentCount >= decayStatus.threshold ? '✅ Active' : '⚠️ At risk'}\n\n`;
     }
 
     // Role history
-    const roleHistory = getRoleHistory(targetUser.id);
+    const roleHistory = await getRoleHistory(targetUser.id);
     if (roleHistory.length > 0) {
       message += `**Role History (last 10):**\n`;
       const recentHistory = roleHistory.slice(0, 10);
@@ -73,7 +73,7 @@ export async function execute(interaction: ChatInputCommandInteraction): Promise
     }
 
     // Recent reactions received (last 10)
-    const reactions = getReactionsForUser(targetUser.id);
+    const reactions = await getReactionsForUser(targetUser.id);
     if (reactions.length > 0) {
       message += `**Recent Reactions (last 10):**\n`;
       const recentReactions = reactions.slice(0, 10);

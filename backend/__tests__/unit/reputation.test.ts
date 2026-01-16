@@ -51,7 +51,7 @@ describe('Reputation Service', () => {
   });
 
   describe('calculateSenpaiScore', () => {
-    test('should calculate score correctly with sufficient reactions and diversity', () => {
+    test('should calculate score correctly with sufficient reactions and diversity', async () => {
       const guild = createMockGuild();
 
       // Mock 100 total Senpai + Sensei
@@ -62,10 +62,10 @@ describe('Reputation Service', () => {
       });
 
       // User has 60 reactions from 15 unique users
-      mockGetReactionCount.mockReturnValue(60);
-      mockGetUniqueReactors.mockReturnValue(Array.from({ length: 15 }, (_, i) => `reactor-${i}`));
+      mockGetReactionCount.mockResolvedValue(60);
+      mockGetUniqueReactors.mockResolvedValue(Array.from({ length: 15 }, (_, i) => `reactor-${i}`));
 
-      const score = calculateSenpaiScore(guild as any, 'user-1');
+      const score = await calculateSenpaiScore(guild as any, 'user-1');
 
       expect(score.totalReactions).toBe(60);
       expect(score.uniqueReactors).toBe(15);
@@ -75,7 +75,7 @@ describe('Reputation Service', () => {
       expect(score.meetsUnique).toBe(true);
     });
 
-    test('should fail when reactions below threshold', () => {
+    test('should fail when reactions below threshold', async () => {
       const guild = createMockGuild();
 
       mockGetRoleCounts.mockReturnValue({
@@ -85,16 +85,16 @@ describe('Reputation Service', () => {
       });
 
       // Only 40 reactions (need 50)
-      mockGetReactionCount.mockReturnValue(40);
-      mockGetUniqueReactors.mockReturnValue(Array.from({ length: 15 }, (_, i) => `reactor-${i}`));
+      mockGetReactionCount.mockResolvedValue(40);
+      mockGetUniqueReactors.mockResolvedValue(Array.from({ length: 15 }, (_, i) => `reactor-${i}`));
 
-      const score = calculateSenpaiScore(guild as any, 'user-1');
+      const score = await calculateSenpaiScore(guild as any, 'user-1');
 
       expect(score.meetsThreshold).toBe(false);
       expect(score.meetsUnique).toBe(true);
     });
 
-    test('should fail when unique reactors below requirement', () => {
+    test('should fail when unique reactors below requirement', async () => {
       const guild = createMockGuild();
 
       mockGetRoleCounts.mockReturnValue({
@@ -104,16 +104,16 @@ describe('Reputation Service', () => {
       });
 
       // 60 reactions but only 5 unique (need 10)
-      mockGetReactionCount.mockReturnValue(60);
-      mockGetUniqueReactors.mockReturnValue(Array.from({ length: 5 }, (_, i) => `reactor-${i}`));
+      mockGetReactionCount.mockResolvedValue(60);
+      mockGetUniqueReactors.mockResolvedValue(Array.from({ length: 5 }, (_, i) => `reactor-${i}`));
 
-      const score = calculateSenpaiScore(guild as any, 'user-1');
+      const score = await calculateSenpaiScore(guild as any, 'user-1');
 
       expect(score.meetsThreshold).toBe(true);
       expect(score.meetsUnique).toBe(false);
     });
 
-    test('should handle CEIL correctly for diversity requirement', () => {
+    test('should handle CEIL correctly for diversity requirement', async () => {
       const guild = createMockGuild();
 
       // 15 Senpai + Sensei total
@@ -124,16 +124,16 @@ describe('Reputation Service', () => {
         sensei: 5,
       });
 
-      mockGetReactionCount.mockReturnValue(50);
-      mockGetUniqueReactors.mockReturnValue(['reactor-1']);
+      mockGetReactionCount.mockResolvedValue(50);
+      mockGetUniqueReactors.mockResolvedValue(['reactor-1']);
 
-      const score = calculateSenpaiScore(guild as any, 'user-1');
+      const score = await calculateSenpaiScore(guild as any, 'user-1');
 
       expect(score.uniqueRequired).toBe(2); // CEIL(15 * 0.10)
       expect(score.meetsUnique).toBe(false); // Only 1 unique, need 2
     });
 
-    test('should require at least 1 unique reactor', () => {
+    test('should require at least 1 unique reactor', async () => {
       const guild = createMockGuild();
 
       // Only 1 Senpai + Sensei total
@@ -145,10 +145,10 @@ describe('Reputation Service', () => {
         sensei: 0,
       });
 
-      mockGetReactionCount.mockReturnValue(50);
-      mockGetUniqueReactors.mockReturnValue(['reactor-1']);
+      mockGetReactionCount.mockResolvedValue(50);
+      mockGetUniqueReactors.mockResolvedValue(['reactor-1']);
 
-      const score = calculateSenpaiScore(guild as any, 'user-1');
+      const score = await calculateSenpaiScore(guild as any, 'user-1');
 
       expect(score.uniqueRequired).toBe(1);
       expect(score.meetsUnique).toBe(true);
@@ -156,7 +156,7 @@ describe('Reputation Service', () => {
   });
 
   describe('calculateSenseiScore', () => {
-    test('should calculate score correctly with sufficient Sensei reactions', () => {
+    test('should calculate score correctly with sufficient Sensei reactions', async () => {
       const guild = createMockGuild();
 
       // 50 total Sensei
@@ -167,10 +167,10 @@ describe('Reputation Service', () => {
       });
 
       // User has 35 Sensei reactions from 12 unique Sensei
-      mockGetReactionCount.mockReturnValue(35);
-      mockGetUniqueReactors.mockReturnValue(Array.from({ length: 12 }, (_, i) => `sensei-${i}`));
+      mockGetReactionCount.mockResolvedValue(35);
+      mockGetUniqueReactors.mockResolvedValue(Array.from({ length: 12 }, (_, i) => `sensei-${i}`));
 
-      const score = calculateSenseiScore(guild as any, 'user-1');
+      const score = await calculateSenseiScore(guild as any, 'user-1');
 
       expect(score.totalReactions).toBe(35);
       expect(score.uniqueReactors).toBe(12);
@@ -180,7 +180,7 @@ describe('Reputation Service', () => {
       expect(score.meetsUnique).toBe(true);
     });
 
-    test('should fail with insufficient unique Sensei', () => {
+    test('should fail with insufficient unique Sensei', async () => {
       const guild = createMockGuild();
 
       mockGetRoleCounts.mockReturnValue({
@@ -190,16 +190,16 @@ describe('Reputation Service', () => {
       });
 
       // 35 reactions but only 8 unique (need 10)
-      mockGetReactionCount.mockReturnValue(35);
-      mockGetUniqueReactors.mockReturnValue(Array.from({ length: 8 }, (_, i) => `sensei-${i}`));
+      mockGetReactionCount.mockResolvedValue(35);
+      mockGetUniqueReactors.mockResolvedValue(Array.from({ length: 8 }, (_, i) => `sensei-${i}`));
 
-      const score = calculateSenseiScore(guild as any, 'user-1');
+      const score = await calculateSenseiScore(guild as any, 'user-1');
 
       expect(score.meetsThreshold).toBe(true);
       expect(score.meetsUnique).toBe(false);
     });
 
-    test('should handle small Sensei count correctly', () => {
+    test('should handle small Sensei count correctly', async () => {
       const guild = createMockGuild();
 
       // Only 3 Sensei total
@@ -210,10 +210,10 @@ describe('Reputation Service', () => {
         sensei: 3,
       });
 
-      mockGetReactionCount.mockReturnValue(30);
-      mockGetUniqueReactors.mockReturnValue(['sensei-1']);
+      mockGetReactionCount.mockResolvedValue(30);
+      mockGetUniqueReactors.mockResolvedValue(['sensei-1']);
 
-      const score = calculateSenseiScore(guild as any, 'user-1');
+      const score = await calculateSenseiScore(guild as any, 'user-1');
 
       expect(score.uniqueRequired).toBe(1);
       expect(score.meetsUnique).toBe(true);
@@ -221,7 +221,7 @@ describe('Reputation Service', () => {
   });
 
   describe('Diversity Requirements Edge Cases', () => {
-    test('Senpai: 10% of 100 = 10 unique required', () => {
+    test('Senpai: 10% of 100 = 10 unique required', async () => {
       const guild = createMockGuild();
 
       mockGetRoleCounts.mockReturnValue({
@@ -230,15 +230,15 @@ describe('Reputation Service', () => {
         sensei: 30,
       });
 
-      mockGetReactionCount.mockReturnValue(50);
-      mockGetUniqueReactors.mockReturnValue([]);
+      mockGetReactionCount.mockResolvedValue(50);
+      mockGetUniqueReactors.mockResolvedValue([]);
 
-      const score = calculateSenpaiScore(guild as any, 'user-1');
+      const score = await calculateSenpaiScore(guild as any, 'user-1');
 
       expect(score.uniqueRequired).toBe(10); // CEIL(100 * 0.10) = 10
     });
 
-    test('Senpai: 10% of 35 = 4 unique required', () => {
+    test('Senpai: 10% of 35 = 4 unique required', async () => {
       const guild = createMockGuild();
 
       mockGetRoleCounts.mockReturnValue({
@@ -247,15 +247,15 @@ describe('Reputation Service', () => {
         sensei: 10,
       });
 
-      mockGetReactionCount.mockReturnValue(50);
-      mockGetUniqueReactors.mockReturnValue([]);
+      mockGetReactionCount.mockResolvedValue(50);
+      mockGetUniqueReactors.mockResolvedValue([]);
 
-      const score = calculateSenpaiScore(guild as any, 'user-1');
+      const score = await calculateSenpaiScore(guild as any, 'user-1');
 
       expect(score.uniqueRequired).toBe(4); // CEIL(35 * 0.10) = 4
     });
 
-    test('Sensei: 20% of 20 = 4 unique required', () => {
+    test('Sensei: 20% of 20 = 4 unique required', async () => {
       const guild = createMockGuild();
 
       mockGetRoleCounts.mockReturnValue({
@@ -264,15 +264,15 @@ describe('Reputation Service', () => {
         sensei: 20,
       });
 
-      mockGetReactionCount.mockReturnValue(30);
-      mockGetUniqueReactors.mockReturnValue([]);
+      mockGetReactionCount.mockResolvedValue(30);
+      mockGetUniqueReactors.mockResolvedValue([]);
 
-      const score = calculateSenseiScore(guild as any, 'user-1');
+      const score = await calculateSenseiScore(guild as any, 'user-1');
 
       expect(score.uniqueRequired).toBe(4); // CEIL(20 * 0.20) = 4
     });
 
-    test('Sensei: 20% of 6 = 2 unique required', () => {
+    test('Sensei: 20% of 6 = 2 unique required', async () => {
       const guild = createMockGuild();
 
       mockGetRoleCounts.mockReturnValue({
@@ -281,10 +281,10 @@ describe('Reputation Service', () => {
         sensei: 6,
       });
 
-      mockGetReactionCount.mockReturnValue(30);
-      mockGetUniqueReactors.mockReturnValue([]);
+      mockGetReactionCount.mockResolvedValue(30);
+      mockGetUniqueReactors.mockResolvedValue([]);
 
-      const score = calculateSenseiScore(guild as any, 'user-1');
+      const score = await calculateSenseiScore(guild as any, 'user-1');
 
       expect(score.uniqueRequired).toBe(2); // CEIL(6 * 0.20) = 2
     });

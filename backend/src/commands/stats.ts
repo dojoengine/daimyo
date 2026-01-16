@@ -24,7 +24,7 @@ export async function execute(interaction: ChatInputCommandInteraction): Promise
     }
 
     // Get user stats
-    const stats = getUserStats(guild, targetUser.id);
+    const stats = await getUserStats(guild, targetUser.id);
 
     if (!stats.currentRole) {
       await interaction.editReply(
@@ -65,7 +65,7 @@ export async function execute(interaction: ChatInputCommandInteraction): Promise
       message += `**Progress to Sensei:** ${reactionProgress} | ${uniqueProgress}\n`;
       message += `_(Requires ${score.threshold} reactions from ${score.uniqueRequired} unique Sensei)_`;
     } else if (stats.currentRole === Role.Sensei) {
-      const decayStatus = getSenseiDecayStatus(targetUser.id);
+      const decayStatus = await getSenseiDecayStatus(targetUser.id);
       const status =
         decayStatus.recentCount >= decayStatus.threshold
           ? `${decayStatus.recentCount}/${decayStatus.threshold} ✅`

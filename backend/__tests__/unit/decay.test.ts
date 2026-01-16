@@ -58,7 +58,7 @@ describe('Decay Service', () => {
         timestamp: Date.now() - i * 1000,
       }));
 
-      mockGetRecentSenseiReactions.mockReturnValue(recentReactions);
+      mockGetRecentSenseiReactions.mockResolvedValue(recentReactions);
 
       const result = await checkSenseiDecay(guild as any, 'user-1');
 
@@ -84,7 +84,7 @@ describe('Decay Service', () => {
         timestamp: Date.now() - i * 1000,
       }));
 
-      mockGetRecentSenseiReactions.mockReturnValue(recentReactions);
+      mockGetRecentSenseiReactions.mockResolvedValue(recentReactions);
 
       const result = await checkSenseiDecay(guild as any, 'user-1');
 
@@ -122,7 +122,7 @@ describe('Decay Service', () => {
         timestamp: Date.now() - i * 1000,
       }));
 
-      mockGetRecentSenseiReactions.mockReturnValue(recentReactions);
+      mockGetRecentSenseiReactions.mockResolvedValue(recentReactions);
 
       const result = await checkSenseiDecay(guild as any, 'user-1');
 
@@ -143,7 +143,7 @@ describe('Decay Service', () => {
         timestamp: Date.now() - i * 1000,
       }));
 
-      mockGetRecentSenseiReactions.mockReturnValue(recentReactions);
+      mockGetRecentSenseiReactions.mockResolvedValue(recentReactions);
 
       const result = await checkSenseiDecay(guild as any, 'user-1');
 
@@ -156,7 +156,7 @@ describe('Decay Service', () => {
       guild.members.cache.set('user-1', member);
 
       mockGetUserRole.mockReturnValue(Role.Sensei);
-      mockGetRecentSenseiReactions.mockReturnValue([]);
+      mockGetRecentSenseiReactions.mockResolvedValue([]);
 
       await checkSenseiDecay(guild, 'user-1');
 
@@ -165,7 +165,7 @@ describe('Decay Service', () => {
   });
 
   describe('getSenseiDecayStatus', () => {
-    test('should return decay status information', () => {
+    test('should return decay status information', async () => {
       const recentReactions = Array.from({ length: 35 }, (_, i) => ({
         id: `reaction-${i}`,
         message_id: `msg-${i}`,
@@ -175,19 +175,19 @@ describe('Decay Service', () => {
         timestamp: Date.now() - i * 1000,
       }));
 
-      mockGetRecentSenseiReactions.mockReturnValue(recentReactions);
+      mockGetRecentSenseiReactions.mockResolvedValue(recentReactions);
 
-      const status = getSenseiDecayStatus('user-1');
+      const status = await getSenseiDecayStatus('user-1');
 
       expect(status.recentCount).toBe(35);
       expect(status.threshold).toBe(30);
       expect(status.windowDays).toBe(360);
     });
 
-    test('should handle user with no recent reactions', () => {
-      mockGetRecentSenseiReactions.mockReturnValue([]);
+    test('should handle user with no recent reactions', async () => {
+      mockGetRecentSenseiReactions.mockResolvedValue([]);
 
-      const status = getSenseiDecayStatus('user-1');
+      const status = await getSenseiDecayStatus('user-1');
 
       expect(status.recentCount).toBe(0);
       expect(status.threshold).toBe(30);
@@ -195,7 +195,7 @@ describe('Decay Service', () => {
   });
 
   describe('Time Window Accuracy', () => {
-    test('should only count reactions within 360-day window', () => {
+    test('should only count reactions within 360-day window', async () => {
       mockGetUserRole.mockReturnValue(Role.Sensei);
 
       const now = Date.now();
@@ -221,9 +221,9 @@ describe('Decay Service', () => {
       ];
 
       // Only recent reactions returned by getRecentSenseiReactions
-      mockGetRecentSenseiReactions.mockReturnValue(reactions.slice(0, 25));
+      mockGetRecentSenseiReactions.mockResolvedValue(reactions.slice(0, 25));
 
-      const status = getSenseiDecayStatus('user-1');
+      const status = await getSenseiDecayStatus('user-1');
 
       expect(status.recentCount).toBe(25);
     });

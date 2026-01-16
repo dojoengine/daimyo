@@ -19,10 +19,10 @@ import {
  * Calculate Senpai promotion score for a user
  * Requirements: 50 reactions from 10% unique Senpai+Sensei
  */
-export function calculateSenpaiScore(guild: Guild, userId: string): ReputationScore {
+export async function calculateSenpaiScore(guild: Guild, userId: string): Promise<ReputationScore> {
   const validRoles = [Role.Senpai, Role.Sensei];
-  const reactionCount = getReactionCount(userId, validRoles);
-  const uniqueReactors = getUniqueReactors(userId, validRoles);
+  const reactionCount = await getReactionCount(userId, validRoles);
+  const uniqueReactors = await getUniqueReactors(userId, validRoles);
   const uniqueReactorCount = uniqueReactors.length;
 
   // Get total Senpai + Sensei count from guild
@@ -50,10 +50,10 @@ export function calculateSenpaiScore(guild: Guild, userId: string): ReputationSc
  * Calculate Sensei promotion score for a user
  * Requirements: 30 reactions from 20% unique Sensei
  */
-export function calculateSenseiScore(guild: Guild, userId: string): ReputationScore {
+export async function calculateSenseiScore(guild: Guild, userId: string): Promise<ReputationScore> {
   const validRoles = [Role.Sensei];
-  const reactionCount = getReactionCount(userId, validRoles);
-  const uniqueReactors = getUniqueReactors(userId, validRoles);
+  const reactionCount = await getReactionCount(userId, validRoles);
+  const uniqueReactors = await getUniqueReactors(userId, validRoles);
   const uniqueReactorCount = uniqueReactors.length;
 
   // Get total Sensei count from guild
@@ -91,7 +91,7 @@ export async function checkPromotion(guild: Guild, userId: string): Promise<Prom
 
     // Check for Kohai -> Senpai promotion
     if (currentRole === Role.Kohai) {
-      const score = calculateSenpaiScore(guild, userId);
+      const score = await calculateSenpaiScore(guild, userId);
 
       if (score.meetsThreshold && score.meetsUnique) {
         console.log(
@@ -99,7 +99,7 @@ export async function checkPromotion(guild: Guild, userId: string): Promise<Prom
         );
 
         await assignRole(guild, userId, Role.Senpai);
-        insertRoleHistory(userId, Role.Senpai, 'promotion');
+        await insertRoleHistory(userId, Role.Senpai, 'promotion');
 
         // Send DM notification
         const member = guild.members.cache.get(userId);
@@ -117,7 +117,7 @@ export async function checkPromotion(guild: Guild, userId: string): Promise<Prom
 
     // Check for Senpai -> Sensei promotion
     if (currentRole === Role.Senpai) {
-      const score = calculateSenseiScore(guild, userId);
+      const score = await calculateSenseiScore(guild, userId);
 
       if (score.meetsThreshold && score.meetsUnique) {
         console.log(
@@ -125,7 +125,7 @@ export async function checkPromotion(guild: Guild, userId: string): Promise<Prom
         );
 
         await assignRole(guild, userId, Role.Sensei);
-        insertRoleHistory(userId, Role.Sensei, 'promotion');
+        await insertRoleHistory(userId, Role.Sensei, 'promotion');
 
         // Send DM notification
         const member = guild.members.cache.get(userId);
@@ -165,9 +165,9 @@ export interface UserStats {
   senseiScore?: ReputationScore;
 }
 
-export function getUserStats(guild: Guild, userId: string): UserStats {
+export async function getUserStats(guild: Guild, userId: string): Promise<UserStats> {
   const currentRole = getUserRole(guild, userId);
-  const breakdown = getReactionBreakdown(userId);
+  const breakdown = await getReactionBreakdown(userId);
 
   const stats: UserStats = {
     userId,
@@ -177,9 +177,9 @@ export function getUserStats(guild: Guild, userId: string): UserStats {
 
   // Include relevant scores based on current role
   if (currentRole === Role.Kohai) {
-    stats.senpaiScore = calculateSenpaiScore(guild, userId);
+    stats.senpaiScore = await calculateSenpaiScore(guild, userId);
   } else if (currentRole === Role.Senpai) {
-    stats.senseiScore = calculateSenseiScore(guild, userId);
+    stats.senseiScore = await calculateSenseiScore(guild, userId);
   }
 
   return stats;

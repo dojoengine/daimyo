@@ -60,7 +60,7 @@ export function loadConfig(): Config {
     ohayoChannelId: getRequiredEnv('OHAYO_CHANNEL_ID'),
 
     // Database
-    databasePath: process.env.DATABASE_PATH || './daimyo.db',
+    databaseUrl: getRequiredEnv('DATABASE_URL'),
 
     // Thresholds
     decayWindowDays: getNumberEnv('DECAY_WINDOW_DAYS', 360),

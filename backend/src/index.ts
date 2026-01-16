@@ -36,7 +36,7 @@ async function main() {
 
   try {
     // Initialize database
-    initializeDatabase();
+    await initializeDatabase();
 
     // Create Discord client with required intents
     const client = new Client({
@@ -98,22 +98,22 @@ async function main() {
     await client.login(config.discordBotToken);
 
     // Handle graceful shutdown
-    process.on('SIGINT', () => {
+    process.on('SIGINT', async () => {
       console.log('Received SIGINT, shutting down gracefully...');
-      closeDatabase();
+      await closeDatabase();
       client.destroy();
       process.exit(0);
     });
 
-    process.on('SIGTERM', () => {
+    process.on('SIGTERM', async () => {
       console.log('Received SIGTERM, shutting down gracefully...');
-      closeDatabase();
+      await closeDatabase();
       client.destroy();
       process.exit(0);
     });
   } catch (error) {
     console.error('Fatal error during bot startup:', error);
-    closeDatabase();
+    await closeDatabase();
     process.exit(1);
   }
 }

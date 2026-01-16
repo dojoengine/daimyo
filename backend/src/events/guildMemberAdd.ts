@@ -14,7 +14,7 @@ export function registerGuildMemberAddHandler(client: Client): void {
 
       // Assign Kōhai role
       await assignRole(member.guild, member.id, Role.Kohai);
-      insertRoleHistory(member.id, Role.Kohai, 'manual');
+      await insertRoleHistory(member.id, Role.Kohai, 'manual');
 
       console.log(`Assigned Kōhai role to ${member.user.tag}`);
     } catch (error) {
