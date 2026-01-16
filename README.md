@@ -27,7 +27,11 @@ Pushes to `main` automatically deploy after CI passes.
    - Click "New Project" → "Deploy from GitHub repo"
    - Select the `daimyo` repository
 
-2. **Set Environment Variables**
+2. **Add PostgreSQL Database**
+   - In Railway, click "New" → "Database" → "Add PostgreSQL"
+   - Railway will automatically set `DATABASE_URL` for your service
+
+3. **Set Environment Variables**
    - In Railway, go to your service → Variables
    - Add the following (see `backend/.env.example` for reference):
      ```
@@ -40,7 +44,6 @@ Pushes to `main` automatically deploy after CI passes.
      SENPAI_ROLE_ID=<role id>
      SENSEI_ROLE_ID=<role id>
      OHAYO_CHANNEL_ID=<channel id>
-     DATABASE_PATH=/data/daimyo.db
 
      # Reputation thresholds
      DECAY_WINDOW_DAYS=360
@@ -54,11 +57,6 @@ Pushes to `main` automatically deploy after CI passes.
      OPENAI_API_KEY=<your openai key>
      TYPEFULLY_API_KEY=<your typefully key>
      ```
-
-3. **Create Volume for Database**
-   - In Railway, click your service → Settings → Volumes
-   - Add a volume with mount path `/data`
-   - This persists the SQLite database across deployments
 
 4. **(Optional) GitHub Branch Protection**
    - Go to GitHub repo → Settings → Branches
