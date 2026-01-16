@@ -17,7 +17,7 @@ Implements a reputation system where users earn roles (Kōhai → Senpai → Sen
 
 - **TypeScript** - Type-safe development
 - **Discord.js v14** - Discord bot framework
-- **SQLite (better-sqlite3)** - Local database with WAL mode
+- **PostgreSQL (postgres.js)** - Production database
 - **node-cron** - Scheduled decay checks
 
 ## Setup
@@ -84,8 +84,8 @@ KOHAI_ROLE_ID=your_kohai_role_id
 SENPAI_ROLE_ID=your_senpai_role_id
 SENSEI_ROLE_ID=your_sensei_role_id
 
-# Database
-DATABASE_PATH=./daimyo.db
+# Database (PostgreSQL connection URL)
+DATABASE_URL=postgresql://user:password@host:5432/daimyo
 
 # Reputation Thresholds (optional, defaults shown)
 DECAY_WINDOW_DAYS=360
@@ -122,7 +122,7 @@ pnpm start
 
 The bot will:
 
-- Initialize the SQLite database
+- Connect to PostgreSQL database
 - Connect to Discord
 - Fetch all guild members
 - Start listening for reactions
@@ -194,7 +194,7 @@ backend/
 │   │   ├── guildMemberAdd.ts
 │   │   └── messageReactionAdd.ts
 │   ├── services/          # Core business logic
-│   │   ├── database.ts    # SQLite queries
+│   │   ├── database.ts    # PostgreSQL queries
 │   │   ├── roleManager.ts # Discord role management
 │   │   ├── reputation.ts  # Promotion logic
 │   │   └── decay.ts       # Demotion logic
@@ -376,13 +376,13 @@ const reaction = createMockReaction('msg-1', 'author-1', 'dojo');
 
 #### Test Database
 
-Tests use in-memory SQLite databases for fast, isolated testing:
+Tests use PGlite (in-memory PostgreSQL) for fast, isolated testing:
 
 ```typescript
 import { createTestDatabase, insertTestReaction } from '__tests__/mocks/database';
 
-const db = createTestDatabase();
-insertTestReaction(db, 'msg-1', 'author-1', 'reactor-1', Role.Senpai);
+const db = await createTestDatabase();
+await insertTestReaction(db, 'msg-1', 'author-1', 'reactor-1', Role.Senpai);
 ```
 
 ### Manual Testing Checklist

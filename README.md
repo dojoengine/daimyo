@@ -27,41 +27,24 @@ Pushes to `main` automatically deploy after CI passes.
    - Click "New Project" → "Deploy from GitHub repo"
    - Select the `daimyo` repository
 
-2. **Set Environment Variables**
+2. **Add PostgreSQL Database**
+   - In Railway, click "New" → "Database" → "Add PostgreSQL"
+   - Railway will automatically set `DATABASE_URL` for your service
+
+3. **Set Environment Variables**
    - In Railway, go to your service → Variables
-   - Add the following (see `backend/.env.example` for reference):
-     ```
-     # Core Discord config
-     DISCORD_BOT_TOKEN=<your token>
-     DISCORD_GUILD_ID=<your guild id>
-     DISCORD_CLIENT_ID=<your client id>
-     DOJO_EMOJI_NAME=dojo
-     KOHAI_ROLE_ID=<role id>
-     SENPAI_ROLE_ID=<role id>
-     SENSEI_ROLE_ID=<role id>
-     OHAYO_CHANNEL_ID=<channel id>
-     DATABASE_PATH=/data/daimyo.db
+   - Add environment variables (see `backend/.env.example` for reference):
 
-     # Reputation thresholds
-     DECAY_WINDOW_DAYS=360
-     SENPAI_REACTION_THRESHOLD=50
-     SENPAI_UNIQUE_PERCENT=0.10
-     SENSEI_REACTION_THRESHOLD=30
-     SENSEI_UNIQUE_PERCENT=0.20
-
-     # Content Pipeline (optional)
-     CONTENT_CHANNEL_IDS=<comma-separated channel ids>
-     OPENAI_API_KEY=<your openai key>
-     TYPEFULLY_API_KEY=<your typefully key>
-     ```
-
-3. **Create Volume for Database**
-   - In Railway, click your service → Settings → Volumes
-   - Add a volume with mount path `/data`
-   - This persists the SQLite database across deployments
-
-4. **(Optional) GitHub Branch Protection**
+4. **GitHub Branch Protection**
    - Go to GitHub repo → Settings → Branches
    - Add rule for `main` branch
    - Enable "Require status checks to pass before merging"
    - Select the `ci` check
+
+To run commands in the Railway environment, use
+
+```
+railway run <command>
+```
+
+> [See here](https://docs.railway.com/guides/cli) for more information about installing the Railway shell locally.
