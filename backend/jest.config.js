@@ -24,5 +24,26 @@ export default {
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
+  coverageThreshold: {
+    // Business-critical logic must maintain high coverage
+    './src/services/reputation.ts': {
+      statements: 90,
+      branches: 80,
+      functions: 90,
+      lines: 90,
+    },
+    './src/services/roleManager.ts': {
+      statements: 90,
+      branches: 90,
+      functions: 90,
+      lines: 90,
+    },
+    './src/services/decay.ts': {
+      statements: 85,
+      branches: 80,
+      functions: 90,
+      lines: 85,
+    },
+  },
   setupFiles: ['<rootDir>/jest.setup.js'],
 };

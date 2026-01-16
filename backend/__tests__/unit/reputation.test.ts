@@ -40,8 +40,10 @@ jest.unstable_mockModule('../../src/utils/config.js', () => ({
   },
 }));
 
-const { calculateSenpaiScore, calculateSenseiScore } =
+const { calculateSenpaiScore, calculateSenseiScore, checkPromotion, getUserStats } =
   await import('../../src/services/reputation.js');
+
+import { Role } from '../../src/types.js';
 
 describe('Reputation Service', () => {
   beforeEach(() => {
@@ -287,6 +289,211 @@ describe('Reputation Service', () => {
       const score = await calculateSenseiScore(guild as any, 'user-1');
 
       expect(score.uniqueRequired).toBe(2); // CEIL(6 * 0.20) = 2
+    });
+  });
+
+  describe('checkPromotion', () => {
+    test('should promote Kohai to Senpai when thresholds met', async () => {
+      const guild = createMockGuild();
+      const mockMember = {
+        id: 'user-1',
+        user: { id: 'user-1', tag: 'User#0001' },
+      };
+      guild.members.cache.set('user-1', mockMember);
+
+      mockGetUserRole.mockReturnValue(Role.Kohai);
+      mockGetRoleCounts.mockReturnValue({ kohai: 50, senpai: 70, sensei: 30 });
+      mockGetReactionCount.mockResolvedValue(60);
+      mockGetUniqueReactors.mockResolvedValue(Array.from({ length: 15 }, (_, i) => `reactor-${i}`));
+      mockAssignRole.mockResolvedValue(undefined);
+      mockInsertRoleHistory.mockResolvedValue(undefined);
+      mockSendDM.mockResolvedValue(true);
+
+      const result = await checkPromotion(guild as any, 'user-1');
+
+      expect(result.promoted).toBe(true);
+      expect(result.oldRole).toBe(Role.Kohai);
+      expect(result.newRole).toBe(Role.Senpai);
+      expect(mockAssignRole).toHaveBeenCalledWith(guild, 'user-1', Role.Senpai);
+      expect(mockInsertRoleHistory).toHaveBeenCalledWith('user-1', Role.Senpai, 'promotion');
+      expect(mockSendDM).toHaveBeenCalled();
+    });
+
+    test('should promote Senpai to Sensei when thresholds met', async () => {
+      const guild = createMockGuild();
+      const mockMember = {
+        id: 'user-1',
+        user: { id: 'user-1', tag: 'User#0001' },
+      };
+      guild.members.cache.set('user-1', mockMember);
+
+      mockGetUserRole.mockReturnValue(Role.Senpai);
+      mockGetRoleCounts.mockReturnValue({ kohai: 50, senpai: 70, sensei: 50 });
+      mockGetReactionCount.mockResolvedValue(35);
+      mockGetUniqueReactors.mockResolvedValue(Array.from({ length: 12 }, (_, i) => `sensei-${i}`));
+      mockAssignRole.mockResolvedValue(undefined);
+      mockInsertRoleHistory.mockResolvedValue(undefined);
+      mockSendDM.mockResolvedValue(true);
+
+      const result = await checkPromotion(guild as any, 'user-1');
+
+      expect(result.promoted).toBe(true);
+      expect(result.oldRole).toBe(Role.Senpai);
+      expect(result.newRole).toBe(Role.Sensei);
+      expect(mockAssignRole).toHaveBeenCalledWith(guild, 'user-1', Role.Sensei);
+      expect(mockInsertRoleHistory).toHaveBeenCalledWith('user-1', Role.Sensei, 'promotion');
+    });
+
+    test('should not promote Kohai when threshold not met', async () => {
+      const guild = createMockGuild();
+
+      mockGetUserRole.mockReturnValue(Role.Kohai);
+      mockGetRoleCounts.mockReturnValue({ kohai: 50, senpai: 70, sensei: 30 });
+      mockGetReactionCount.mockResolvedValue(40); // Below 50 threshold
+      mockGetUniqueReactors.mockResolvedValue(Array.from({ length: 15 }, (_, i) => `reactor-${i}`));
+
+      const result = await checkPromotion(guild as any, 'user-1');
+
+      expect(result.promoted).toBe(false);
+      expect(mockAssignRole).not.toHaveBeenCalled();
+      expect(mockInsertRoleHistory).not.toHaveBeenCalled();
+    });
+
+    test('should not promote Kohai when unique requirement not met', async () => {
+      const guild = createMockGuild();
+
+      mockGetUserRole.mockReturnValue(Role.Kohai);
+      mockGetRoleCounts.mockReturnValue({ kohai: 50, senpai: 70, sensei: 30 });
+      mockGetReactionCount.mockResolvedValue(60);
+      mockGetUniqueReactors.mockResolvedValue(['reactor-1', 'reactor-2']); // Only 2, need 10
+
+      const result = await checkPromotion(guild as any, 'user-1');
+
+      expect(result.promoted).toBe(false);
+      expect(mockAssignRole).not.toHaveBeenCalled();
+    });
+
+    test('should not check promotion for user without role', async () => {
+      const guild = createMockGuild();
+
+      mockGetUserRole.mockReturnValue(null);
+
+      const result = await checkPromotion(guild as any, 'user-1');
+
+      expect(result.promoted).toBe(false);
+      expect(mockGetReactionCount).not.toHaveBeenCalled();
+    });
+
+    test('should not promote Sensei (already at max)', async () => {
+      const guild = createMockGuild();
+
+      mockGetUserRole.mockReturnValue(Role.Sensei);
+
+      const result = await checkPromotion(guild as any, 'user-1');
+
+      expect(result.promoted).toBe(false);
+      expect(mockGetReactionCount).not.toHaveBeenCalled();
+    });
+
+    test('should handle errors gracefully', async () => {
+      const guild = createMockGuild();
+
+      mockGetUserRole.mockReturnValue(Role.Kohai);
+      mockGetRoleCounts.mockReturnValue({ kohai: 50, senpai: 70, sensei: 30 });
+      mockGetReactionCount.mockRejectedValue(new Error('Database error'));
+
+      const result = await checkPromotion(guild as any, 'user-1');
+
+      expect(result.promoted).toBe(false);
+    });
+  });
+
+  describe('getUserStats', () => {
+    test('should return stats for Kohai with senpaiScore', async () => {
+      const guild = createMockGuild();
+
+      mockGetUserRole.mockReturnValue(Role.Kohai);
+      mockGetReactionBreakdown.mockResolvedValue({
+        total: 38,
+        fromKohai: 15,
+        fromSenpai: 18,
+        fromSensei: 5,
+      });
+      mockGetRoleCounts.mockReturnValue({ kohai: 50, senpai: 70, sensei: 30 });
+      mockGetReactionCount.mockResolvedValue(23);
+      mockGetUniqueReactors.mockResolvedValue(Array.from({ length: 8 }, (_, i) => `reactor-${i}`));
+
+      const stats = await getUserStats(guild as any, 'user-1');
+
+      expect(stats.userId).toBe('user-1');
+      expect(stats.currentRole).toBe(Role.Kohai);
+      expect(stats.breakdown.total).toBe(38);
+      expect(stats.breakdown.fromSenpai).toBe(18);
+      expect(stats.senpaiScore).toBeDefined();
+      expect(stats.senpaiScore?.totalReactions).toBe(23);
+      expect(stats.senseiScore).toBeUndefined();
+    });
+
+    test('should return stats for Senpai with senseiScore', async () => {
+      const guild = createMockGuild();
+
+      mockGetUserRole.mockReturnValue(Role.Senpai);
+      mockGetReactionBreakdown.mockResolvedValue({
+        total: 120,
+        fromKohai: 30,
+        fromSenpai: 50,
+        fromSensei: 40,
+      });
+      mockGetRoleCounts.mockReturnValue({ kohai: 50, senpai: 70, sensei: 30 });
+      mockGetReactionCount.mockResolvedValue(25);
+      mockGetUniqueReactors.mockResolvedValue(Array.from({ length: 5 }, (_, i) => `sensei-${i}`));
+
+      const stats = await getUserStats(guild as any, 'user-1');
+
+      expect(stats.userId).toBe('user-1');
+      expect(stats.currentRole).toBe(Role.Senpai);
+      expect(stats.senseiScore).toBeDefined();
+      expect(stats.senseiScore?.totalReactions).toBe(25);
+      expect(stats.senpaiScore).toBeUndefined();
+    });
+
+    test('should return stats for Sensei without progression scores', async () => {
+      const guild = createMockGuild();
+
+      mockGetUserRole.mockReturnValue(Role.Sensei);
+      mockGetReactionBreakdown.mockResolvedValue({
+        total: 250,
+        fromKohai: 80,
+        fromSenpai: 100,
+        fromSensei: 70,
+      });
+
+      const stats = await getUserStats(guild as any, 'user-1');
+
+      expect(stats.userId).toBe('user-1');
+      expect(stats.currentRole).toBe(Role.Sensei);
+      expect(stats.senpaiScore).toBeUndefined();
+      expect(stats.senseiScore).toBeUndefined();
+    });
+
+    test('should return stats for user without role', async () => {
+      const guild = createMockGuild();
+
+      mockGetUserRole.mockReturnValue(null);
+      mockGetReactionBreakdown.mockResolvedValue({
+        total: 0,
+        fromKohai: 0,
+        fromSenpai: 0,
+        fromSensei: 0,
+      });
+
+      const stats = await getUserStats(guild as any, 'user-1');
+
+      expect(stats.userId).toBe('user-1');
+      expect(stats.currentRole).toBeNull();
+      expect(stats.breakdown.total).toBe(0);
+      expect(stats.senpaiScore).toBeUndefined();
+      expect(stats.senseiScore).toBeUndefined();
     });
   });
 });
