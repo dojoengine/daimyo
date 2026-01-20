@@ -12,7 +12,7 @@ export const data = new SlashCommandBuilder()
 
 export async function execute(interaction: ChatInputCommandInteraction): Promise<void> {
   try {
-    await interaction.deferReply();
+    await interaction.deferReply({ ephemeral: true });
 
     // Get target user (default to command invoker)
     const targetUser = interaction.options.getUser('user') || interaction.user;
