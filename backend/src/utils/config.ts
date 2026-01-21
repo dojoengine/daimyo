@@ -80,16 +80,14 @@ export function loadConfig(): Config {
     contentPipelineMaxStories: getNumberEnv('CONTENT_PIPELINE_MAX_STORIES', 10),
     contentPipelineCron: process.env.CONTENT_PIPELINE_CRON || '0 9 * * 0',
 
-    // AI Providers
-    llmProvider: (getOptionalEnv('LLM_PROVIDER') as 'openai' | 'anthropic') || 'openai',
-    llmModel: process.env.LLM_MODEL || 'gpt-4o',
-    openaiApiKey: getOptionalEnv('OPENAI_API_KEY') || '',
+    // AI Configuration
+    llmModel: process.env.LLM_MODEL || 'claude-sonnet-4-20250514',
     anthropicApiKey: getOptionalEnv('ANTHROPIC_API_KEY') || '',
-    imageProvider: (getOptionalEnv('IMAGE_PROVIDER') as 'dalle' | 'replicate') || 'dalle',
-    replicateApiKey: getOptionalEnv('REPLICATE_API_KEY') || '',
+    openaiApiKey: getOptionalEnv('OPENAI_API_KEY') || '',
 
     // Typefully
     typefullyApiKey: getOptionalEnv('TYPEFULLY_API_KEY') || '',
+    typefullySocialSetId: getOptionalEnv('TYPEFULLY_SOCIAL_SET_ID') || '',
   };
 }
 

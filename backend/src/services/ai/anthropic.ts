@@ -1,18 +1,18 @@
-import OpenAI from 'openai';
+import Anthropic from '@anthropic-ai/sdk';
 import { randomUUID } from 'crypto';
 import { AIProvider } from './types.js';
 import { DiscordMessage, Story, ThreadContent, GeneratedImage } from '../../types.js';
 import { config } from '../../utils/config.js';
 
 /**
- * OpenAI implementation of the AI provider interface
+ * Anthropic implementation of the AI provider interface
  */
-export class OpenAIProvider implements AIProvider {
-  private client: OpenAI;
+export class AnthropicProvider implements AIProvider {
+  private client: Anthropic;
   private model: string;
 
-  constructor(apiKey: string = config.openaiApiKey, model: string = config.llmModel) {
-    this.client = new OpenAI({ apiKey });
+  constructor(apiKey: string = config.anthropicApiKey, model: string = config.llmModel) {
+    this.client = new Anthropic({ apiKey });
     this.model = model;
   }
 
@@ -68,27 +68,32 @@ Return a JSON array with this structure:
 Only include stories with confidence > 0.6. If no interesting stories are found, return an empty array.`;
 
     try {
-      const response = await this.client.chat.completions.create({
+      const response = await this.client.messages.create({
         model: this.model,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
-        response_format: { type: 'json_object' },
-        temperature: 0.7,
+        max_tokens: 4096,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }],
       });
 
-      const content = response.choices[0]?.message?.content;
+      const textBlock = response.content.find((block) => block.type === 'text');
+      const content = textBlock?.type === 'text' ? textBlock.text : '';
+
       if (!content) {
-        console.warn('Empty response from OpenAI');
+        console.warn('Empty response from Anthropic');
         return [];
       }
 
-      const parsed = JSON.parse(content);
-      const rawStories = Array.isArray(parsed) ? parsed : parsed.stories || [];
+      // Extract JSON from the response (may be wrapped in markdown code blocks)
+      const jsonMatch = content.match(/\[[\s\S]*\]/);
+      if (!jsonMatch) {
+        console.warn('No JSON array found in response');
+        return [];
+      }
+
+      const rawStories = JSON.parse(jsonMatch[0]);
 
       if (!Array.isArray(rawStories)) {
-        console.warn('Unexpected response format from OpenAI');
+        console.warn('Unexpected response format from Anthropic');
         return [];
       }
 
@@ -171,22 +176,27 @@ Return a JSON object with this structure:
 Make sure each tweet is under 280 characters. The last tweet should include the hashtags.`;
 
     try {
-      const response = await this.client.chat.completions.create({
+      const response = await this.client.messages.create({
         model: this.model,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
-        response_format: { type: 'json_object' },
-        temperature: 0.8,
+        max_tokens: 2048,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }],
       });
 
-      const content = response.choices[0]?.message?.content;
+      const textBlock = response.content.find((block) => block.type === 'text');
+      const content = textBlock?.type === 'text' ? textBlock.text : '';
+
       if (!content) {
-        throw new Error('Empty response from OpenAI');
+        throw new Error('Empty response from Anthropic');
       }
 
-      const parsed = JSON.parse(content);
+      // Extract JSON from the response (may be wrapped in markdown code blocks)
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error('No JSON object found in response');
+      }
+
+      const parsed = JSON.parse(jsonMatch[0]);
 
       // Validate tweet lengths
       const tweets = (parsed.tweets || []).map((tweet: string) => {
@@ -209,44 +219,22 @@ Make sure each tweet is under 280 characters. The last tweet should include the 
   }
 
   /**
-   * Generate an image using DALL-E
+   * Generate an image - Anthropic doesn't have image generation,
+   * so we fall back to OpenAI's DALL-E if available
    */
   async generateImage(prompt: string): Promise<GeneratedImage> {
-    console.log(`🎨 Generating image for prompt: "${prompt.substring(0, 50)}..."`);
-
-    // Enhance the prompt for better social media visuals
-    const enhancedPrompt = `Create a visually striking, modern illustration for social media. Style: clean, vibrant, professional. Theme: ${prompt}. No text in the image. Suitable for a tech/gaming audience.`;
-
-    try {
-      const response = await this.client.images.generate({
-        model: 'dall-e-3',
-        prompt: enhancedPrompt,
-        n: 1,
-        size: '1024x1024',
-        quality: 'standard',
-      });
-
-      const imageUrl = response.data?.[0]?.url;
-      if (!imageUrl) {
-        throw new Error('No image URL in response');
-      }
-
-      console.log('✅ Image generated successfully');
-      return {
-        url: imageUrl,
-        prompt: enhancedPrompt,
-      };
-    } catch (error) {
-      console.error('Error generating image:', error);
-      throw error;
+    // Anthropic doesn't offer image generation - use OpenAI DALL-E if configured
+    if (config.openaiApiKey && config.openaiApiKey !== 'sk-your-openai-key') {
+      const { OpenAIProvider } = await import('./openai.js');
+      const openaiProvider = new OpenAIProvider();
+      return openaiProvider.generateImage(prompt);
     }
-  }
-}
 
-/**
- * Create the AI provider (uses Anthropic)
- */
-export async function createAIProvider(): Promise<AIProvider> {
-  const { AnthropicProvider } = await import('./anthropic.js');
-  return new AnthropicProvider();
+    // No image generation available - return empty
+    console.warn('⚠️ No image generation available (OpenAI API key not configured)');
+    return {
+      url: '',
+      prompt,
+    };
+  }
 }

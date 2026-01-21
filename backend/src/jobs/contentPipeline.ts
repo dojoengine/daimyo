@@ -1,17 +1,9 @@
 import cron from 'node-cron';
 import { Client } from 'discord.js';
 import { config } from '../utils/config.js';
-import { scanChannelsForMessages } from '../services/discordScanner.js';
+import { scanChannelsForMessages, scanAllChannels } from '../services/discordScanner.js';
 import { createAIProvider } from '../services/ai/openai.js';
 import { createDraft, isTypefullyConfigured } from '../services/typefully.js';
-import {
-  startPipelineRun,
-  completePipelineRun,
-  insertStory,
-  insertDraft,
-  updateDraftStatus,
-  storyExists,
-} from '../services/database.js';
 import { ThreadDraft, GeneratedImage } from '../types.js';
 
 /**
@@ -21,34 +13,26 @@ import { ThreadDraft, GeneratedImage } from '../types.js';
  * 2. Use AI to identify interesting stories
  * 3. Generate Twitter threads for each story
  * 4. Generate images for visual hooks
- * 5. Submit drafts to Typefully for review
+ * 5. Submit drafts to Typefully for review (unless dryRun=true)
  */
-async function runContentPipeline(client: Client): Promise<void> {
+async function runContentPipeline(client: Client, dryRun = false): Promise<void> {
   console.log('📝 Starting content pipeline...');
 
   // Validate configuration
-  if (config.contentChannelIds.length === 0) {
+  if (!config.anthropicApiKey) {
     console.warn(
-      '⚠️ No content channels configured. Set CONTENT_CHANNEL_IDS to enable content pipeline.'
+      '⚠️ Anthropic API key not configured. Set ANTHROPIC_API_KEY to enable content pipeline.'
     );
     return;
   }
 
-  if (!config.openaiApiKey && config.llmProvider === 'openai') {
-    console.warn(
-      '⚠️ OpenAI API key not configured. Set OPENAI_API_KEY to enable content pipeline.'
-    );
-    return;
-  }
-
-  if (!isTypefullyConfigured()) {
+  if (!dryRun && !isTypefullyConfigured()) {
     console.warn(
       '⚠️ Typefully API key not configured. Set TYPEFULLY_API_KEY to enable draft publishing.'
     );
+    return;
   }
 
-  // Start tracking this run
-  const runId = await startPipelineRun();
   let messagesScanned = 0;
   let storiesIdentified = 0;
   let draftsCreated = 0;
@@ -56,52 +40,30 @@ async function runContentPipeline(client: Client): Promise<void> {
 
   try {
     // Step 1: Scan Discord messages
-    const messages = await scanChannelsForMessages(client, config.contentPipelineDaysBack);
+    // If no specific channels configured, scan all text channels
+    const messages =
+      config.contentChannelIds.length === 0
+        ? await scanAllChannels(client, config.contentPipelineDaysBack)
+        : await scanChannelsForMessages(client, config.contentPipelineDaysBack);
     messagesScanned = messages.length;
 
     if (messages.length === 0) {
       console.log('No messages found to process');
-      await completePipelineRun(runId, {
-        messagesScanned,
-        storiesIdentified,
-        draftsCreated,
-        draftsFailed,
-      });
       return;
     }
 
     // Step 2: Identify stories using AI
-    const aiProvider = createAIProvider();
+    const aiProvider = await createAIProvider();
     const stories = await aiProvider.identifyStories(messages, config.contentPipelineMaxStories);
     storiesIdentified = stories.length;
 
     if (stories.length === 0) {
       console.log('No interesting stories identified');
-      await completePipelineRun(runId, {
-        messagesScanned,
-        storiesIdentified,
-        draftsCreated,
-        draftsFailed,
-      });
       return;
     }
 
-    // Filter to minimum confidence and check for duplicates
-    const filteredStories = [];
-    for (const story of stories) {
-      if (story.confidence < 0.6) {
-        continue;
-      }
-
-      // Check for duplicate stories
-      const messageIds = story.sourceMessages.map((m) => m.id);
-      if (await storyExists(messageIds)) {
-        console.log(`Skipping duplicate story: "${story.title}"`);
-        continue;
-      }
-
-      filteredStories.push(story);
-    }
+    // Filter to minimum confidence
+    const filteredStories = stories.filter((story) => story.confidence >= 0.6);
 
     // Limit to configured maximum
     const storiesToProcess = filteredStories.slice(0, config.contentPipelineMaxStories);
@@ -143,41 +105,40 @@ async function runContentPipeline(client: Client): Promise<void> {
           createdAt: Date.now(),
         };
 
-        // Save story and draft to database together (prevents orphans)
-        await insertStory(story);
-        const draftId = await insertDraft(story.id, draft, 'pending');
-
-        // Submit to Typefully if configured
-        if (isTypefullyConfigured()) {
+        // In dry run mode, output to console instead of uploading
+        if (dryRun) {
+          console.log('\n' + '='.repeat(60));
+          console.log(`📝 DRAFT: ${story.title}`);
+          console.log('='.repeat(60));
+          draft.content.tweets.forEach((tweet, i) => {
+            console.log(`\n[Tweet ${i + 1}]`);
+            console.log(tweet);
+          });
+          if (draft.content.hashtags.length > 0) {
+            console.log(`\nHashtags: ${draft.content.hashtags.join(' ')}`);
+          }
+          if (draft.image?.url) {
+            console.log(`\nImage URL: ${draft.image.url}`);
+          }
+          console.log('\n' + '='.repeat(60) + '\n');
+          draftsCreated++;
+        } else {
+          // Submit to Typefully
           const result = await createDraft(draft);
 
           if (result.success) {
-            await updateDraftStatus(draftId, 'submitted', result.draftId);
             draftsCreated++;
             console.log(`✅ Draft submitted to Typefully: ${result.draftId}`);
           } else {
-            await updateDraftStatus(draftId, 'failed');
             draftsFailed++;
             console.warn(`⚠️ Failed to submit draft: ${result.error}`);
           }
-        } else {
-          // No Typefully, just mark as pending
-          draftsCreated++;
-          console.log('✅ Draft saved (Typefully not configured)');
         }
       } catch (error) {
         draftsFailed++;
         console.error(`❌ Error processing story "${story.title}":`, error);
       }
     }
-
-    // Complete the run
-    await completePipelineRun(runId, {
-      messagesScanned,
-      storiesIdentified,
-      draftsCreated,
-      draftsFailed,
-    });
 
     console.log(`
 ✅ Content pipeline complete!
@@ -188,14 +149,6 @@ async function runContentPipeline(client: Client): Promise<void> {
 `);
   } catch (error) {
     console.error('Error during content pipeline:', error);
-
-    await completePipelineRun(runId, {
-      messagesScanned,
-      storiesIdentified,
-      draftsCreated,
-      draftsFailed,
-      error: error instanceof Error ? error.message : String(error),
-    });
   }
 }
 
@@ -216,8 +169,9 @@ export function startContentPipelineJob(client: Client): void {
 
 /**
  * Run content pipeline immediately (for testing)
+ * @param dryRun If true, outputs drafts to console instead of uploading to Typefully
  */
-export async function runContentPipelineNow(client: Client): Promise<void> {
-  console.log('Running content pipeline immediately (manual trigger)...');
-  await runContentPipeline(client);
+export async function runContentPipelineNow(client: Client, dryRun = false): Promise<void> {
+  console.log(`Running content pipeline immediately (manual trigger, dryRun=${dryRun})...`);
+  await runContentPipeline(client, dryRun);
 }

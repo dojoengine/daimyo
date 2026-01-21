@@ -173,18 +173,19 @@ describe('RoleManager Service', () => {
       expect(member.roles.add).toHaveBeenCalledWith('kohai-role-id');
     });
 
-    test('should remove old roles when assigning new role', async () => {
+    test('should not remove Kohai when assigning new role (Kohai gates channel access)', async () => {
       const guild = createTestGuild();
       const member = createTestMember('user-1', 'User#0001');
       guild._addMember(member, Role.Kohai);
 
       await assignRole(guild as any, 'user-1', Role.Senpai);
 
-      expect(member.roles.remove).toHaveBeenCalledWith(['kohai-role-id']);
+      // Kohai should NOT be removed (it gates channel access)
+      expect(member.roles.remove).not.toHaveBeenCalled();
       expect(member.roles.add).toHaveBeenCalledWith('senpai-role-id');
     });
 
-    test('should remove multiple old roles when present', async () => {
+    test('should only remove Senpai/Sensei roles, never Kohai', async () => {
       const guild = createTestGuild();
       const member = createTestMember('user-1', 'User#0001');
       guild._addMember(member);
@@ -194,9 +195,8 @@ describe('RoleManager Service', () => {
 
       await assignRole(guild as any, 'user-1', Role.Sensei);
 
-      expect(member.roles.remove).toHaveBeenCalledWith(
-        expect.arrayContaining(['kohai-role-id', 'senpai-role-id'])
-      );
+      // Only Senpai should be removed, not Kohai (Kohai gates channel access)
+      expect(member.roles.remove).toHaveBeenCalledWith(['senpai-role-id']);
       expect(member.roles.add).toHaveBeenCalledWith('sensei-role-id');
     });
 

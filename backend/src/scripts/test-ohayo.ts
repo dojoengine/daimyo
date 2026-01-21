@@ -1,6 +1,6 @@
 import { Client, GatewayIntentBits } from 'discord.js';
-import { config } from './utils/config.js';
-import { runOhayoNow } from './jobs/ohayo.js';
+import { config } from '../utils/config.js';
+import { runOhayoNow } from '../jobs/ohayo.js';
 
 async function main() {
   const client = new Client({

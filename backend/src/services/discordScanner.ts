@@ -38,7 +38,12 @@ export async function scanChannelsForMessages(
       const channelMessages = await scanChannel(client, channelId, cutoffTime);
       allMessages.push(...channelMessages);
     } catch (error) {
-      console.error(`Error scanning channel ${channelId}:`, error);
+      // Quietly skip channels we don't have access to
+      if (error instanceof Error && 'code' in error && (error as { code: number }).code === 50001) {
+        console.debug(`Skipping channel ${channelId}: no access`);
+      } else {
+        console.error(`Error scanning channel ${channelId}:`, error);
+      }
     }
   }
 
@@ -160,6 +165,8 @@ export async function scanAllChannels(
   daysBack: number = config.contentPipelineDaysBack
 ): Promise<DiscordMessage[]> {
   const guild = await client.guilds.fetch(config.discordGuildId);
+  // Fetch all channels from the guild (cache may be empty on startup)
+  await guild.channels.fetch();
   const channels = guild.channels.cache.filter((ch) => ch.type === ChannelType.GuildText);
 
   console.log(`📨 Scanning all ${channels.size} text channels...`);
@@ -167,12 +174,19 @@ export async function scanAllChannels(
   const cutoffTime = Date.now() - daysBack * 24 * 60 * 60 * 1000;
   const allMessages: DiscordMessage[] = [];
 
-  for (const [channelId] of channels) {
+  for (const [channelId, channel] of channels) {
+    const channelName = channel.name;
     try {
       const channelMessages = await scanChannel(client, channelId, cutoffTime);
+      console.log(`  📖 #${channelName}: ${channelMessages.length} messages`);
       allMessages.push(...channelMessages);
     } catch (error) {
-      console.error(`Error scanning channel ${channelId}:`, error);
+      // Quietly skip channels we don't have access to
+      if (error instanceof Error && 'code' in error && (error as { code: number }).code === 50001) {
+        console.debug(`  ⏭️  #${channelName}: no access`);
+      } else {
+        console.error(`Error scanning channel #${channelName}:`, error);
+      }
     }
   }
 

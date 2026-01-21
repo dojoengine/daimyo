@@ -1,11 +1,11 @@
 import { REST, Routes } from 'discord.js';
-import { config } from './utils/config.js';
+import { config } from '../utils/config.js';
 
 // Import all command data
-import * as statsCommand from './commands/stats.js';
-import * as leaderboardCommand from './commands/leaderboard.js';
-import * as syncCommand from './commands/sync.js';
-import * as auditCommand from './commands/audit.js';
+import * as statsCommand from '../commands/stats.js';
+import * as leaderboardCommand from '../commands/leaderboard.js';
+import * as syncCommand from '../commands/sync.js';
+import * as auditCommand from '../commands/audit.js';
 
 /**
  * Deploy slash commands to Discord

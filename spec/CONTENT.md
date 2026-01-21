@@ -4,8 +4,10 @@ Automated Discord-to-Twitter content generation for Dojo community stories.
 
 ## Overview
 
-The Content Pipeline is a weekly job that scans Discord messages, identifies interesting stories about developers building with Dojo, and generates Twitter thread drafts with AI-generated images.
+The Content Pipeline is a weekly job that scans Discord messages, identifies interesting stories about developers building with Dojo, and generates Twitter thread drafts.
 Drafts are sent to Typefully for human review before publishing.
+
+The pipeline is stateless - Typefully is the source of truth for all drafts.
 
 ## How It Works
 
@@ -16,14 +18,12 @@ AI Story Identification (3-10 stories)
     ↓
 AI Thread Generation (per story)
     ↓
-AI Image Generation (visual hooks)
-    ↓
 Typefully Drafts (for review)
 ```
 
 ### 1. Discord Scanning
 
-The pipeline scans configured Discord channels for messages from the past week.
+The pipeline scans all text channels in the guild for messages from the past week.
 Messages are filtered to include only substantive content (>50 characters, non-bot authors).
 
 ### 2. Story Identification
@@ -37,7 +37,7 @@ A "story" is defined as:
 Each story includes:
 - Title and summary
 - Source messages (with URLs for attribution)
-- Relevance/confidence score
+- Relevance/confidence score (must be ≥0.6 to proceed)
 
 ### 3. Thread Generation
 
@@ -48,10 +48,10 @@ Threads are crafted to:
 - Include relevant hashtags
 - Credit the original Discord author
 
-### 4. Image Generation
+### 4. Image Generation (Optional)
 
-Each thread gets an AI-generated image as a visual hook.
-Images are stylized representations designed to catch attention on social media feeds.
+If an OpenAI API key is configured, each thread gets a DALL-E generated image as a visual hook.
+If not configured, threads proceed without images.
 
 ### 5. Typefully Integration
 
@@ -63,9 +63,6 @@ Drafts appear in the Typefully dashboard for human review before publishing.
 ### Environment Variables
 
 ```bash
-# Discord channels to scan (comma-separated IDs)
-CONTENT_CHANNEL_IDS=123456789,987654321
-
 # How many days back to scan
 CONTENT_PIPELINE_DAYS_BACK=7
 
@@ -76,109 +73,53 @@ CONTENT_PIPELINE_MAX_STORIES=10
 # Cron schedule (default: Sunday 9am UTC)
 CONTENT_PIPELINE_CRON=0 9 * * 0
 
-# AI Provider selection
-LLM_PROVIDER=openai          # openai | anthropic
-LLM_MODEL=gpt-4o             # model name
-IMAGE_PROVIDER=dalle         # dalle | replicate
-
-# API Keys
-OPENAI_API_KEY=sk-...
-ANTHROPIC_API_KEY=sk-ant-... # if using anthropic
-REPLICATE_API_KEY=r8_...     # if using replicate
+# AI (uses Claude Sonnet 4 via Anthropic)
+LLM_MODEL=claude-sonnet-4-20250514
+ANTHROPIC_API_KEY=sk-ant-...
 
 # Typefully
 TYPEFULLY_API_KEY=...
 ```
 
-### Finding Channel IDs
+## Manual Execution
 
-1. Enable Developer Mode in Discord (Settings → App Settings → Advanced → Developer Mode)
-2. Right-click on any channel → Copy Channel ID
+The pipeline can be run manually via npm scripts:
 
-## AI Providers
+```bash
+# Dry run - outputs drafts to terminal, no side effects
+pnpm test-content-pipeline
 
-The pipeline uses swappable AI providers for flexibility.
+# Actually upload to Typefully
+pnpm test-content-pipeline --upload
+```
 
-### LLM Providers
+Or via Railway:
 
-**OpenAI** (default):
-- Used for story identification and thread generation
-- Recommended model: `gpt-4o` for best quality
-- Set `LLM_PROVIDER=openai`
+```bash
+railway run pnpm --filter backend test-content-pipeline
+railway run pnpm --filter backend test-content-pipeline --upload
+```
 
-**Anthropic** (alternative):
-- Set `LLM_PROVIDER=anthropic`
-- Requires `ANTHROPIC_API_KEY`
+### Dry Run Output
 
-### Image Providers
+In dry run mode, drafts are printed to the terminal:
 
-**DALL-E** (default):
-- OpenAI's image generation
-- Set `IMAGE_PROVIDER=dalle`
-- Uses same `OPENAI_API_KEY`
+```
+============================================================
+📝 DRAFT: Building a Chess Engine with Dojo
+============================================================
 
-**Replicate** (alternative):
-- Access to various models (Stable Diffusion, Flux, etc.)
-- Set `IMAGE_PROVIDER=replicate`
-- Requires `REPLICATE_API_KEY`
+[Tweet 1]
+🎮 A developer just built a fully on-chain chess engine using @dojoengine
 
-## Database Schema
+Here's how they solved the challenge of gas-efficient move validation 🧵
 
-The pipeline stores data in the existing SQLite database.
+[Tweet 2]
+The key insight: instead of validating every possible move on-chain...
 
-### content_stories
+Hashtags: #Dojo #Blockchain #GameDev
 
-Tracks identified stories for audit and deduplication.
-
-| Column | Type | Description |
-|--------|------|-------------|
-| id | TEXT | UUID primary key |
-| title | TEXT | Story title |
-| summary | TEXT | Brief summary |
-| source_message_ids | TEXT | JSON array of Discord message IDs |
-| source_channel_id | TEXT | Primary channel ID |
-| confidence | REAL | AI confidence score (0-1) |
-| created_at | INTEGER | Unix timestamp |
-
-### content_drafts
-
-Tracks generated drafts and their status.
-
-| Column | Type | Description |
-|--------|------|-------------|
-| id | TEXT | UUID primary key |
-| story_id | TEXT | Foreign key to content_stories |
-| tweets | TEXT | JSON array of tweet strings |
-| image_prompt | TEXT | Prompt used for image generation |
-| image_url | TEXT | Generated image URL |
-| typefully_draft_id | TEXT | Typefully draft ID (after submission) |
-| status | TEXT | pending, submitted, failed |
-| created_at | INTEGER | Unix timestamp |
-
-### content_pipeline_runs
-
-Tracks pipeline execution history.
-
-| Column | Type | Description |
-|--------|------|-------------|
-| id | TEXT | UUID primary key |
-| started_at | INTEGER | Unix timestamp |
-| completed_at | INTEGER | Unix timestamp |
-| messages_scanned | INTEGER | Total messages processed |
-| stories_identified | INTEGER | Stories found |
-| drafts_created | INTEGER | Successful drafts |
-| drafts_failed | INTEGER | Failed drafts |
-| error | TEXT | Error message if failed |
-
-## Manual Trigger
-
-The pipeline can be triggered manually for testing:
-
-```typescript
-import { runContentPipelineNow } from './jobs/contentPipeline.js';
-
-// In your test or REPL
-await runContentPipelineNow(client);
+============================================================
 ```
 
 ## Typical Output
@@ -186,40 +127,24 @@ await runContentPipelineNow(client);
 ### Example Story Identification
 
 ```
-📝 Starting weekly content pipeline...
+📝 Starting content pipeline...
 📨 Scanning 5 channels for messages...
 ✅ Found 1,247 messages from the past 7 days
 🔍 Analyzing messages for interesting stories...
 ✅ Identified 6 story candidates
 
-Stories:
-1. "Building a Chess Engine with Dojo" (confidence: 0.92)
-2. "Real-time Multiplayer with Torii" (confidence: 0.88)
-3. "NFT Crafting System Architecture" (confidence: 0.85)
+📚 Processing 6 stories:
+
+  1. "Building a Chess Engine with Dojo" (confidence: 0.92)
+  2. "Real-time Multiplayer with Torii" (confidence: 0.88)
+  3. "NFT Crafting System Architecture" (confidence: 0.85)
 ...
-```
 
-### Example Thread Output
-
-```
-Thread 1/6: "Building a Chess Engine with Dojo"
-
-Tweet 1:
-🎮 A developer just built a fully on-chain chess engine using @doaboradojo
-
-Here's how they solved the challenge of gas-efficient move validation 🧵
-
-Tweet 2:
-The key insight: instead of validating every possible move on-chain, they pre-compute legal moves off-chain and use Merkle proofs for verification.
-
-Tweet 3:
-This reduced gas costs by 90% while maintaining trustless gameplay.
-
-Source: discord.com/channels/...
-
-#Dojo #Blockchain #GameDev
-
-[Image: AI-generated chess-themed illustration]
+✅ Content pipeline complete!
+   Messages scanned: 1247
+   Stories identified: 6
+   Drafts created: 6
+   Drafts failed: 0
 ```
 
 ## Error Handling
@@ -227,9 +152,8 @@ Source: discord.com/channels/...
 The pipeline is designed to be resilient:
 
 - **Per-story isolation**: If one story fails to generate, others continue
-- **Database logging**: All runs are logged for debugging
-- **Status tracking**: Each draft tracks its submission status
-- **Manual retry**: Failed drafts can be retried by updating status to 'pending'
+- **Image fallback**: If image generation is not configured or fails, threads proceed without images
+- **Console logging**: All progress and errors are logged to stdout
 
 ## Future Enhancements
 
@@ -237,7 +161,6 @@ Potential improvements for future iterations:
 
 - **Feedback loop**: Learn from which drafts get published vs edited
 - **Topic filtering**: Focus on specific channels or topics
-- **Deduplication**: Avoid similar stories across weeks
 - **Preview channel**: Post drafts to a Discord channel before Typefully
 - **Analytics**: Track engagement of published threads
 - **Multi-account**: Support multiple Twitter accounts via Typefully social sets

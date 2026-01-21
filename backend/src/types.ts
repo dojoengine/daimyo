@@ -73,16 +73,14 @@ export interface Config {
   contentPipelineMaxStories: number;
   contentPipelineCron: string;
 
-  // AI Providers
-  llmProvider: 'openai' | 'anthropic';
+  // AI Configuration
   llmModel: string;
-  openaiApiKey: string;
   anthropicApiKey: string;
-  imageProvider: 'dalle' | 'replicate';
-  replicateApiKey: string;
+  openaiApiKey: string;
 
   // Typefully
   typefullyApiKey: string;
+  typefullySocialSetId: string;
 }
 
 /**
@@ -197,45 +195,4 @@ export interface PublishResult {
   success: boolean;
   draftId?: string;
   error?: string;
-}
-
-/**
- * Content pipeline run record
- */
-export interface PipelineRun {
-  id: string;
-  startedAt: number;
-  completedAt?: number;
-  messagesScanned: number;
-  storiesIdentified: number;
-  draftsCreated: number;
-  draftsFailed: number;
-  error?: string;
-}
-
-/**
- * Stored story record from database
- */
-export interface StoredStory {
-  id: string;
-  title: string;
-  summary: string;
-  source_message_ids: string;
-  source_channel_id: string;
-  confidence: number;
-  created_at: number;
-}
-
-/**
- * Stored draft record from database
- */
-export interface StoredDraft {
-  id: string;
-  story_id: string;
-  tweets: string;
-  image_prompt: string;
-  image_url: string;
-  typefully_draft_id?: string;
-  status: 'pending' | 'submitted' | 'failed';
-  created_at: number;
 }
