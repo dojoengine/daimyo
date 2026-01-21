@@ -47,7 +47,7 @@ export function getUserRole(guild: Guild, userId: string): Role | null {
 
 /**
  * Assign a role to a user
- * Removes previous reputation roles to maintain hierarchy
+ * Removes Senpai/Sensei as needed but never removes Kohai (gates channel access)
  */
 export async function assignRole(guild: Guild, userId: string, newRole: Role): Promise<void> {
   try {
@@ -58,8 +58,8 @@ export async function assignRole(guild: Guild, userId: string, newRole: Role): P
 
     const newRoleId = getRoleId(newRole);
 
-    // Remove all reputation roles first
-    const rolesToRemove = [config.kohaiRoleId, config.senpaiRoleId, config.senseiRoleId].filter(
+    // Only remove Senpai/Sensei roles, never Kohai (it gates channel access)
+    const rolesToRemove = [config.senpaiRoleId, config.senseiRoleId].filter(
       (roleId) => roleId !== newRoleId && member.roles.cache.has(roleId)
     );
 

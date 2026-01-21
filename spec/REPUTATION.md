@@ -23,6 +23,7 @@ The Daimyō bot manages three Discord roles that form a progression path:
 - **Default role**: All Discord members receive this upon joining
 - **Requirements**: None (automatic)
 - **Privileges**: Base member status
+- **Permanent**: This role is never removed once assigned (gates channel access)
 
 #### 2. **Senpai** (先輩 - Senior)
 - **Requirements**: Accumulate **50 :dojo: reactions** from at least **CEIL(10% of total Senpai+Sensei count)** unique users with Senpai or Sensei roles
@@ -32,6 +33,7 @@ The Daimyō bot manages three Discord roles that form a progression path:
 - **Requirements**: Accumulate **30 :dojo: reactions** from at least **CEIL(20% of total Sensei count)** unique Sensei
 - **Privileges**: Can help promote others to Sensei, highest community status
 - **Decay Rule**: Must maintain 30+ Sensei reactions within the last 360 days or be demoted to Senpai (no diversity requirement for decay)
+- **Felt Role**: Members with the Felt role are automatically granted Sensei and are exempt from decay (core team)
 
 ### Role Permissions Matrix
 
