@@ -59,8 +59,16 @@ async function runDecayCheck(client: Client): Promise<void> {
 /**
  * Schedule and start the decay check cron job
  * Runs monthly at 12:00 UTC on the 1st (0 12 1 * *)
+ * Set DECAY_CHECK_ENABLED=true to enable
  */
 export function startDecayCheckJob(client: Client): void {
+  const enabled = process.env.DECAY_CHECK_ENABLED === 'true';
+
+  if (!enabled) {
+    console.log('⏰ Decay check job disabled (set DECAY_CHECK_ENABLED=true to enable)');
+    return;
+  }
+
   console.log('⏰ Scheduling monthly decay check for 12:00 UTC on the 1st (0 12 1 * *)');
 
   // Schedule: minute hour day month dayOfWeek
