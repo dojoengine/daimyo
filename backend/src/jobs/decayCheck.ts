@@ -7,7 +7,7 @@ import { checkPromotion } from '../services/reputation.js';
 import { Role } from '../types.js';
 
 /**
- * Run daily decay check for all Sensei
+ * Run monthly decay check for all Sensei
  * Also checks for any pending promotions
  */
 async function runDecayCheck(client: Client): Promise<void> {
@@ -58,14 +58,14 @@ async function runDecayCheck(client: Client): Promise<void> {
 
 /**
  * Schedule and start the decay check cron job
- * Runs daily at midnight UTC (0 0 * * *)
+ * Runs monthly at 12:00 UTC on the 1st (0 12 1 * *)
  */
 export function startDecayCheckJob(client: Client): void {
-  console.log('⏰ Scheduling daily decay check for midnight UTC (0 0 * * *)');
+  console.log('⏰ Scheduling monthly decay check for 12:00 UTC on the 1st (0 12 1 * *)');
 
   // Schedule: minute hour day month dayOfWeek
-  // 0 0 * * * = Every day at midnight UTC
-  cron.schedule('0 0 * * *', () => {
+  // 0 12 1 * * = 12:00 UTC on the 1st of every month
+  cron.schedule('0 12 1 * *', () => {
     runDecayCheck(client);
   });
 

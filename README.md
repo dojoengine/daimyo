@@ -44,7 +44,7 @@ Pushes to `main` automatically deploy after CI passes.
 To run commands in the Railway environment, use
 
 ```
-railway run <command>
+railway run --filter backend <command>
 ```
 
 > [See here](https://docs.railway.com/guides/cli) for more information about installing the Railway shell locally.
