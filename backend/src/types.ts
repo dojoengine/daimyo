@@ -59,7 +59,8 @@ export interface Config {
   // Database
   databaseUrl: string;
 
-  // Thresholds
+  // Decay
+  decayCheckCron: string;
   decayWindowDays: number;
   senpaiReactionThreshold: number;
   senpaiUniquePercent: number;

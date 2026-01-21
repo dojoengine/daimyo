@@ -154,10 +154,15 @@ async function runContentPipeline(client: Client, dryRun = false): Promise<void>
 
 /**
  * Schedule and start the content pipeline cron job
- * Default: Runs weekly on Sunday at 09:00 UTC
  */
 export function startContentPipelineJob(client: Client): void {
   const cronSchedule = config.contentPipelineCron;
+
+  if (!cronSchedule) {
+    console.log('⏰ Content pipeline not scheduled (CONTENT_PIPELINE_CRON not set)');
+    return;
+  }
+
   console.log(`⏰ Scheduling content pipeline: ${cronSchedule}`);
 
   cron.schedule(cronSchedule, () => {

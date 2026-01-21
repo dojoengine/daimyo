@@ -70,8 +70,8 @@ CONTENT_PIPELINE_DAYS_BACK=7
 CONTENT_PIPELINE_MIN_STORIES=3
 CONTENT_PIPELINE_MAX_STORIES=10
 
-# Cron schedule (default: Sunday 9am UTC)
-CONTENT_PIPELINE_CRON=0 9 * * 0
+# Cron schedule (optional - if not set, job won't run automatically)
+CONTENT_PIPELINE_CRON=0 0 * * 0
 
 # AI (uses Claude Sonnet 4 via Anthropic)
 LLM_MODEL=claude-sonnet-4-20250514
