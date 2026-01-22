@@ -52,6 +52,7 @@ export interface Config {
   senpaiRoleId: string;
   senseiRoleId: string;
   feltRoleId: string;
+  teamRoleId: string;
 
   // Channel IDs
   ohayoChannelId: string;

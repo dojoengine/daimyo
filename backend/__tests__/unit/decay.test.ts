@@ -31,6 +31,7 @@ jest.unstable_mockModule('../../src/utils/config.js', () => ({
     decayWindowDays: 360,
     senseiReactionThreshold: 30,
     feltRoleId: 'felt-role-id',
+    teamRoleId: 'team-role-id',
   },
 }));
 
@@ -169,6 +170,26 @@ describe('Decay Service', () => {
       const member = createMockMember('user-1', 'TestUser#0001', [
         'sensei-role-id',
         'felt-role-id',
+      ]);
+      guild.members.cache.set('user-1', member);
+
+      mockGetUserRole.mockReturnValue(Role.Sensei);
+      // No reactions at all - would normally trigger demotion
+      mockGetRecentSenseiReactions.mockResolvedValue([]);
+
+      const result = await checkSenseiDecay(guild as any, 'user-1');
+
+      expect(result.demoted).toBe(false);
+      expect(mockAssignRole).not.toHaveBeenCalled();
+      expect(mockInsertRoleHistory).not.toHaveBeenCalled();
+      expect(mockGetRecentSenseiReactions).not.toHaveBeenCalled();
+    });
+
+    test('should not demote Sensei with Team role (core team exempt)', async () => {
+      const guild = createMockGuild();
+      const member = createMockMember('user-1', 'TestUser#0001', [
+        'sensei-role-id',
+        'team-role-id',
       ]);
       guild.members.cache.set('user-1', member);
 
