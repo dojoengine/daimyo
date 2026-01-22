@@ -56,6 +56,7 @@ export function loadConfig(): Config {
     senpaiRoleId: getRequiredEnv('SENPAI_ROLE_ID'),
     senseiRoleId: getRequiredEnv('SENSEI_ROLE_ID'),
     feltRoleId: getRequiredEnv('FELT_ROLE_ID'),
+    teamRoleId: getRequiredEnv('TEAM_ROLE_ID'),
 
     // Channel IDs
     ohayoChannelId: getRequiredEnv('OHAYO_CHANNEL_ID'),
