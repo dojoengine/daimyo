@@ -12,6 +12,7 @@
     "deploy-commands": "tsx src/scripts/deploy-commands.ts",
     "test-ohayo": "tsx src/scripts/test-ohayo.ts",
     "test-content-pipeline": "tsx src/scripts/test-content-pipeline.ts",
+    "count-reactions": "tsx src/scripts/count-reactions.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"**/*.{ts,js,json,md}\"",
