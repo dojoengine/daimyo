@@ -41,10 +41,10 @@ Pushes to `main` automatically deploy after CI passes.
    - Enable "Require status checks to pass before merging"
    - Select the `ci` check
 
-To run commands in the Railway environment, use
+To run commands in the Railway environment, use the following syntax:
 
 ```
-railway run --filter backend <command>
+railway run pnpm run --filter backend test-content-pipeline
 ```
 
 > [See here](https://docs.railway.com/guides/cli) for more information about installing the Railway shell locally.
