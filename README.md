@@ -41,6 +41,8 @@ Pushes to `main` automatically deploy after CI passes.
    - Enable "Require status checks to pass before merging"
    - Select the `ci` check
 
+## Ops
+
 To run commands in the Railway environment, use the following syntax:
 
 ```
@@ -48,3 +50,11 @@ railway run pnpm run --filter backend test-content-pipeline
 ```
 
 > [See here](https://docs.railway.com/guides/cli) for more information about installing the Railway shell locally.
+
+To connect to the Railway database, run the following command:
+
+```
+railway connect postgres
+```
+
+This will open up a local psql instance.
