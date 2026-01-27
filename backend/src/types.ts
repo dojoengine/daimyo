@@ -15,22 +15,11 @@ export enum Role {
  * Reaction record stored in database
  */
 export interface Reaction {
-  id: string;
+  id: number;
   message_id: string;
-  message_author_id: string;
+  author_id: string;
   reactor_id: string;
-  reactor_role_at_time: Role;
-  timestamp: number;
-}
-
-/**
- * Role history record for audit trail
- */
-export interface RoleHistory {
-  id: string;
-  user_id: string;
-  role: Role;
-  reason: 'promotion' | 'demotion' | 'decay' | 'manual';
+  reactor_role: Role;
   timestamp: number;
 }
 

@@ -13,14 +13,14 @@ exports.up = (pgm) => {
 
   // Reactions table
   pgm.createTable('reactions', {
-    id: { type: 'text', primaryKey: true },
+    id: { type: 'serial', primaryKey: true },
     message_id: { type: 'text', notNull: true },
-    message_author_id: { type: 'text', notNull: true },
+    author_id: { type: 'text', notNull: true },
     reactor_id: { type: 'text', notNull: true },
-    reactor_role_at_time: {
+    reactor_role: {
       type: 'text',
       notNull: true,
-      check: "reactor_role_at_time IN ('Kohai', 'Senpai', 'Sensei')",
+      check: "reactor_role IN ('Kohai', 'Senpai', 'Sensei')",
     },
     timestamp: { type: 'bigint', notNull: true },
   });
@@ -29,28 +29,9 @@ exports.up = (pgm) => {
     unique: ['message_id', 'reactor_id'],
   });
 
-  pgm.createIndex('reactions', 'message_author_id', { name: 'idx_reactions_author' });
+  pgm.createIndex('reactions', 'author_id', { name: 'idx_reactions_author' });
   pgm.createIndex('reactions', 'reactor_id', { name: 'idx_reactions_reactor' });
   pgm.createIndex('reactions', 'timestamp', { name: 'idx_reactions_timestamp' });
-
-  // Role history table
-  pgm.createTable('role_history', {
-    id: { type: 'text', primaryKey: true },
-    user_id: { type: 'text', notNull: true },
-    role: {
-      type: 'text',
-      notNull: true,
-      check: "role IN ('Kohai', 'Senpai', 'Sensei')",
-    },
-    reason: {
-      type: 'text',
-      notNull: true,
-      check: "reason IN ('promotion', 'demotion', 'decay', 'manual')",
-    },
-    timestamp: { type: 'bigint', notNull: true },
-  });
-
-  pgm.createIndex('role_history', 'user_id', { name: 'idx_role_history_user' });
 
   // ============================================
   // Content Pipeline Tables
@@ -58,7 +39,7 @@ exports.up = (pgm) => {
 
   // Stories table
   pgm.createTable('content_stories', {
-    id: { type: 'text', primaryKey: true },
+    id: { type: 'serial', primaryKey: true },
     title: { type: 'text', notNull: true },
     summary: { type: 'text', notNull: true },
     source_message_ids: { type: 'text', notNull: true },
@@ -71,9 +52,9 @@ exports.up = (pgm) => {
 
   // Drafts table
   pgm.createTable('content_drafts', {
-    id: { type: 'text', primaryKey: true },
+    id: { type: 'serial', primaryKey: true },
     story_id: {
-      type: 'text',
+      type: 'integer',
       notNull: true,
       references: 'content_stories',
       onDelete: 'CASCADE',
@@ -95,7 +76,7 @@ exports.up = (pgm) => {
 
   // Pipeline runs table
   pgm.createTable('content_pipeline_runs', {
-    id: { type: 'text', primaryKey: true },
+    id: { type: 'serial', primaryKey: true },
     started_at: { type: 'bigint', notNull: true },
     completed_at: { type: 'bigint' },
     messages_scanned: { type: 'integer', notNull: true, default: 0 },
@@ -113,6 +94,5 @@ exports.down = (pgm) => {
   pgm.dropTable('content_pipeline_runs');
   pgm.dropTable('content_drafts');
   pgm.dropTable('content_stories');
-  pgm.dropTable('role_history');
   pgm.dropTable('reactions');
 };

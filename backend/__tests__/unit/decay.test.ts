@@ -8,7 +8,6 @@ import { createMockGuild, createMockMember } from '../mocks/discord.js';
 
 // Mock modules BEFORE importing them
 const mockGetRecentSenseiReactions = jest.fn();
-const mockInsertRoleHistory = jest.fn();
 const mockGetUserRole = jest.fn();
 const mockAssignRole = jest.fn();
 const mockSendDM = jest.fn();
@@ -16,7 +15,6 @@ const mockFormatDemotionMessage = jest.fn();
 
 jest.unstable_mockModule('../../src/services/database.js', () => ({
   getRecentSenseiReactions: mockGetRecentSenseiReactions,
-  insertRoleHistory: mockInsertRoleHistory,
 }));
 
 jest.unstable_mockModule('../../src/services/roleManager.js', () => ({
@@ -54,9 +52,9 @@ describe('Decay Service', () => {
       const recentReactions = Array.from({ length: 35 }, (_, i) => ({
         id: `reaction-${i}`,
         message_id: `msg-${i}`,
-        message_author_id: 'user-1',
+        author_id: 'user-1',
         reactor_id: `reactor-${i}`,
-        reactor_role_at_time: Role.Sensei,
+        reactor_role: Role.Sensei,
         timestamp: Date.now() - i * 1000,
       }));
 
@@ -66,7 +64,6 @@ describe('Decay Service', () => {
 
       expect(result.demoted).toBe(false);
       expect(mockAssignRole).not.toHaveBeenCalled();
-      expect(mockInsertRoleHistory).not.toHaveBeenCalled();
     });
 
     test('should demote Sensei with insufficient recent reactions', async () => {
@@ -80,9 +77,9 @@ describe('Decay Service', () => {
       const recentReactions = Array.from({ length: 25 }, (_, i) => ({
         id: `reaction-${i}`,
         message_id: `msg-${i}`,
-        message_author_id: 'user-1',
+        author_id: 'user-1',
         reactor_id: `reactor-${i}`,
-        reactor_role_at_time: Role.Sensei,
+        reactor_role: Role.Sensei,
         timestamp: Date.now() - i * 1000,
       }));
 
@@ -94,7 +91,6 @@ describe('Decay Service', () => {
       expect(result.oldRole).toBe(Role.Sensei);
       expect(result.newRole).toBe(Role.Senpai);
       expect(mockAssignRole).toHaveBeenCalledWith(guild, 'user-1', Role.Senpai);
-      expect(mockInsertRoleHistory).toHaveBeenCalledWith('user-1', Role.Senpai, 'decay');
     });
 
     test('should not check decay for non-Sensei users', async () => {
@@ -118,9 +114,9 @@ describe('Decay Service', () => {
       const recentReactions = Array.from({ length: 29 }, (_, i) => ({
         id: `reaction-${i}`,
         message_id: `msg-${i}`,
-        message_author_id: 'user-1',
+        author_id: 'user-1',
         reactor_id: `reactor-${i}`,
-        reactor_role_at_time: Role.Sensei,
+        reactor_role: Role.Sensei,
         timestamp: Date.now() - i * 1000,
       }));
 
@@ -139,9 +135,9 @@ describe('Decay Service', () => {
       const recentReactions = Array.from({ length: 30 }, (_, i) => ({
         id: `reaction-${i}`,
         message_id: `msg-${i}`,
-        message_author_id: 'user-1',
+        author_id: 'user-1',
         reactor_id: `reactor-${i}`,
-        reactor_role_at_time: Role.Sensei,
+        reactor_role: Role.Sensei,
         timestamp: Date.now() - i * 1000,
       }));
 
@@ -181,7 +177,6 @@ describe('Decay Service', () => {
 
       expect(result.demoted).toBe(false);
       expect(mockAssignRole).not.toHaveBeenCalled();
-      expect(mockInsertRoleHistory).not.toHaveBeenCalled();
       expect(mockGetRecentSenseiReactions).not.toHaveBeenCalled();
     });
 
@@ -201,7 +196,6 @@ describe('Decay Service', () => {
 
       expect(result.demoted).toBe(false);
       expect(mockAssignRole).not.toHaveBeenCalled();
-      expect(mockInsertRoleHistory).not.toHaveBeenCalled();
       expect(mockGetRecentSenseiReactions).not.toHaveBeenCalled();
     });
   });
@@ -211,9 +205,9 @@ describe('Decay Service', () => {
       const recentReactions = Array.from({ length: 35 }, (_, i) => ({
         id: `reaction-${i}`,
         message_id: `msg-${i}`,
-        message_author_id: 'user-1',
+        author_id: 'user-1',
         reactor_id: `reactor-${i}`,
-        reactor_role_at_time: Role.Sensei,
+        reactor_role: Role.Sensei,
         timestamp: Date.now() - i * 1000,
       }));
 
@@ -246,18 +240,18 @@ describe('Decay Service', () => {
         ...Array.from({ length: 25 }, (_, i) => ({
           id: `recent-${i}`,
           message_id: `msg-${i}`,
-          message_author_id: 'user-1',
+          author_id: 'user-1',
           reactor_id: `reactor-${i}`,
-          reactor_role_at_time: Role.Sensei,
+          reactor_role: Role.Sensei,
           timestamp: now - 300 * 24 * 60 * 60 * 1000, // 300 days ago
         })),
         // Outside window (should not be counted)
         ...Array.from({ length: 20 }, (_, i) => ({
           id: `old-${i}`,
           message_id: `msg-old-${i}`,
-          message_author_id: 'user-1',
+          author_id: 'user-1',
           reactor_id: `reactor-old-${i}`,
-          reactor_role_at_time: Role.Sensei,
+          reactor_role: Role.Sensei,
           timestamp: now - 400 * 24 * 60 * 60 * 1000, // 400 days ago
         })),
       ];

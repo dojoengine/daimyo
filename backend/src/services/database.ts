@@ -1,7 +1,6 @@
 import postgres, { Sql } from 'postgres';
 import { config } from '../utils/config.js';
-import { Reaction, RoleHistory, Role } from '../types.js';
-import { randomUUID } from 'crypto';
+import { Reaction, Role } from '../types.js';
 
 let sql: Sql;
 
@@ -58,12 +57,11 @@ export async function insertReaction(
   reactorRole: Role
 ): Promise<boolean> {
   try {
-    const id = randomUUID();
     const timestamp = Date.now();
 
     await sql`
-      INSERT INTO reactions (id, message_id, message_author_id, reactor_id, reactor_role_at_time, timestamp)
-      VALUES (${id}, ${messageId}, ${messageAuthorId}, ${reactorId}, ${reactorRole}, ${timestamp})
+      INSERT INTO reactions (message_id, author_id, reactor_id, reactor_role, timestamp)
+      VALUES (${messageId}, ${messageAuthorId}, ${reactorId}, ${reactorRole}, ${timestamp})
     `;
 
     console.debug(
@@ -85,9 +83,9 @@ export async function insertReaction(
  */
 export async function getReactionsForUser(userId: string): Promise<Reaction[]> {
   const results = await sql<Reaction[]>`
-    SELECT id, message_id, message_author_id, reactor_id, reactor_role_at_time, timestamp
+    SELECT id, message_id, author_id, reactor_id, reactor_role, timestamp
     FROM reactions
-    WHERE message_author_id = ${userId}
+    WHERE author_id = ${userId}
     ORDER BY timestamp DESC
   `;
 
@@ -99,10 +97,10 @@ export async function getReactionsForUser(userId: string): Promise<Reaction[]> {
  */
 export async function getReactionsByRole(userId: string, roles: Role[]): Promise<Reaction[]> {
   const results = await sql<Reaction[]>`
-    SELECT id, message_id, message_author_id, reactor_id, reactor_role_at_time, timestamp
+    SELECT id, message_id, author_id, reactor_id, reactor_role, timestamp
     FROM reactions
-    WHERE message_author_id = ${userId}
-    AND reactor_role_at_time = ANY(${roles})
+    WHERE author_id = ${userId}
+    AND reactor_role = ANY(${roles})
     ORDER BY timestamp DESC
   `;
 
@@ -116,10 +114,10 @@ export async function getRecentSenseiReactions(userId: string, days: number): Pr
   const cutoffTimestamp = Date.now() - days * 24 * 60 * 60 * 1000;
 
   const results = await sql<Reaction[]>`
-    SELECT id, message_id, message_author_id, reactor_id, reactor_role_at_time, timestamp
+    SELECT id, message_id, author_id, reactor_id, reactor_role, timestamp
     FROM reactions
-    WHERE message_author_id = ${userId}
-    AND reactor_role_at_time = 'Sensei'
+    WHERE author_id = ${userId}
+    AND reactor_role = 'Sensei'
     AND timestamp >= ${cutoffTimestamp}
     ORDER BY timestamp DESC
   `;
@@ -134,8 +132,8 @@ export async function getUniqueReactors(userId: string, roles: Role[]): Promise<
   const results = await sql<{ reactor_id: string }[]>`
     SELECT DISTINCT reactor_id
     FROM reactions
-    WHERE message_author_id = ${userId}
-    AND reactor_role_at_time = ANY(${roles})
+    WHERE author_id = ${userId}
+    AND reactor_role = ANY(${roles})
   `;
 
   return results.map((r) => r.reactor_id);
@@ -148,8 +146,8 @@ export async function getReactionCount(userId: string, roles: Role[]): Promise<n
   const results = await sql<{ count: string }[]>`
     SELECT COUNT(*) as count
     FROM reactions
-    WHERE message_author_id = ${userId}
-    AND reactor_role_at_time = ANY(${roles})
+    WHERE author_id = ${userId}
+    AND reactor_role = ANY(${roles})
   `;
 
   return parseInt(results[0]?.count || '0', 10);
@@ -171,11 +169,11 @@ export async function getReactionBreakdown(userId: string): Promise<ReactionCoun
   >`
     SELECT
       COUNT(*) as total,
-      SUM(CASE WHEN reactor_role_at_time = 'Kohai' THEN 1 ELSE 0 END) as fromKohai,
-      SUM(CASE WHEN reactor_role_at_time = 'Senpai' THEN 1 ELSE 0 END) as fromSenpai,
-      SUM(CASE WHEN reactor_role_at_time = 'Sensei' THEN 1 ELSE 0 END) as fromSensei
+      SUM(CASE WHEN reactor_role = 'Kohai' THEN 1 ELSE 0 END) as fromKohai,
+      SUM(CASE WHEN reactor_role = 'Senpai' THEN 1 ELSE 0 END) as fromSenpai,
+      SUM(CASE WHEN reactor_role = 'Sensei' THEN 1 ELSE 0 END) as fromSensei
     FROM reactions
-    WHERE message_author_id = ${userId}
+    WHERE author_id = ${userId}
   `;
 
   const row = results[0];
@@ -188,39 +186,6 @@ export async function getReactionBreakdown(userId: string): Promise<ReactionCoun
 }
 
 /**
- * Insert a role change into history
- */
-export async function insertRoleHistory(
-  userId: string,
-  role: Role,
-  reason: 'promotion' | 'demotion' | 'decay' | 'manual'
-): Promise<void> {
-  const id = randomUUID();
-  const timestamp = Date.now();
-
-  await sql`
-    INSERT INTO role_history (id, user_id, role, reason, timestamp)
-    VALUES (${id}, ${userId}, ${role}, ${reason}, ${timestamp})
-  `;
-
-  console.debug(`Role history recorded: ${userId} -> ${role} (${reason})`);
-}
-
-/**
- * Get role history for a user
- */
-export async function getRoleHistory(userId: string): Promise<RoleHistory[]> {
-  const results = await sql<RoleHistory[]>`
-    SELECT id, user_id, role, reason, timestamp
-    FROM role_history
-    WHERE user_id = ${userId}
-    ORDER BY timestamp DESC
-  `;
-
-  return results;
-}
-
-/**
  * Get all users with reactions (for leaderboard)
  */
 export interface LeaderboardEntry {
@@ -230,10 +195,10 @@ export interface LeaderboardEntry {
 
 export async function getLeaderboard(role?: Role, limit: number = 20): Promise<LeaderboardEntry[]> {
   const results = await sql<{ user_id: string; reaction_count: string }[]>`
-    SELECT message_author_id as user_id, COUNT(*) as reaction_count
+    SELECT author_id as user_id, COUNT(*) as reaction_count
     FROM reactions
-    ${role ? sql`WHERE reactor_role_at_time = ${role}` : sql``}
-    GROUP BY message_author_id
+    ${role ? sql`WHERE reactor_role = ${role}` : sql``}
+    GROUP BY author_id
     ORDER BY reaction_count DESC
     LIMIT ${limit}
   `;
