@@ -1,12 +1,7 @@
 import { Guild } from 'discord.js';
 import { config } from '../utils/config.js';
 import { Role, ReputationScore, PromotionResult } from '../types.js';
-import {
-  getReactionCount,
-  getUniqueReactors,
-  insertRoleHistory,
-  getReactionBreakdown,
-} from './database.js';
+import { getReactionCount, getUniqueReactors, getReactionBreakdown } from './database.js';
 import {
   getUserRole,
   assignRole,
@@ -99,7 +94,6 @@ export async function checkPromotion(guild: Guild, userId: string): Promise<Prom
         );
 
         await assignRole(guild, userId, Role.Senpai);
-        await insertRoleHistory(userId, Role.Senpai, 'promotion');
 
         // Send DM notification
         const member = guild.members.cache.get(userId);
@@ -125,7 +119,6 @@ export async function checkPromotion(guild: Guild, userId: string): Promise<Prom
         );
 
         await assignRole(guild, userId, Role.Sensei);
-        await insertRoleHistory(userId, Role.Sensei, 'promotion');
 
         // Send DM notification
         const member = guild.members.cache.get(userId);

@@ -18,9 +18,9 @@ async function main() {
     >`
       SELECT
         COUNT(*) as total,
-        SUM(CASE WHEN reactor_role_at_time = 'Kohai' THEN 1 ELSE 0 END) as fromKohai,
-        SUM(CASE WHEN reactor_role_at_time = 'Senpai' THEN 1 ELSE 0 END) as fromSenpai,
-        SUM(CASE WHEN reactor_role_at_time = 'Sensei' THEN 1 ELSE 0 END) as fromSensei
+        SUM(CASE WHEN reactor_role = 'Kohai' THEN 1 ELSE 0 END) as fromKohai,
+        SUM(CASE WHEN reactor_role = 'Senpai' THEN 1 ELSE 0 END) as fromSenpai,
+        SUM(CASE WHEN reactor_role = 'Sensei' THEN 1 ELSE 0 END) as fromSensei
       FROM reactions
     `;
 

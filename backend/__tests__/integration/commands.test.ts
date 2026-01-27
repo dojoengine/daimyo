@@ -9,7 +9,6 @@ import { createMockInteraction, createMockUser } from '../mocks/discord.js';
 // Mock modules BEFORE importing them
 const mockGetReactionBreakdown = jest.fn();
 const mockGetLeaderboard = jest.fn();
-const mockGetRoleHistory = jest.fn();
 const mockGetReactionsForUser = jest.fn();
 const mockGetUserStats = jest.fn();
 const mockCalculateSenpaiScore = jest.fn();
@@ -21,7 +20,6 @@ const mockCheckSenseiDecay = jest.fn();
 jest.unstable_mockModule('../../src/services/database.js', () => ({
   getReactionBreakdown: mockGetReactionBreakdown,
   getLeaderboard: mockGetLeaderboard,
-  getRoleHistory: mockGetRoleHistory,
   getReactionsForUser: mockGetReactionsForUser,
 }));
 

@@ -9,7 +9,6 @@ import { createMockGuild } from '../mocks/discord.js';
 const mockGetReactionCount = jest.fn();
 const mockGetUniqueReactors = jest.fn();
 const mockGetReactionBreakdown = jest.fn();
-const mockInsertRoleHistory = jest.fn();
 const mockGetUserRole = jest.fn();
 const mockAssignRole = jest.fn();
 const mockGetRoleCounts = jest.fn();
@@ -20,7 +19,6 @@ jest.unstable_mockModule('../../src/services/database.js', () => ({
   getReactionCount: mockGetReactionCount,
   getUniqueReactors: mockGetUniqueReactors,
   getReactionBreakdown: mockGetReactionBreakdown,
-  insertRoleHistory: mockInsertRoleHistory,
 }));
 
 jest.unstable_mockModule('../../src/services/roleManager.js', () => ({
@@ -306,7 +304,6 @@ describe('Reputation Service', () => {
       mockGetReactionCount.mockResolvedValue(60);
       mockGetUniqueReactors.mockResolvedValue(Array.from({ length: 15 }, (_, i) => `reactor-${i}`));
       mockAssignRole.mockResolvedValue(undefined);
-      mockInsertRoleHistory.mockResolvedValue(undefined);
       mockSendDM.mockResolvedValue(true);
 
       const result = await checkPromotion(guild as any, 'user-1');
@@ -315,7 +312,6 @@ describe('Reputation Service', () => {
       expect(result.oldRole).toBe(Role.Kohai);
       expect(result.newRole).toBe(Role.Senpai);
       expect(mockAssignRole).toHaveBeenCalledWith(guild, 'user-1', Role.Senpai);
-      expect(mockInsertRoleHistory).toHaveBeenCalledWith('user-1', Role.Senpai, 'promotion');
       expect(mockSendDM).toHaveBeenCalled();
     });
 
@@ -332,7 +328,6 @@ describe('Reputation Service', () => {
       mockGetReactionCount.mockResolvedValue(35);
       mockGetUniqueReactors.mockResolvedValue(Array.from({ length: 12 }, (_, i) => `sensei-${i}`));
       mockAssignRole.mockResolvedValue(undefined);
-      mockInsertRoleHistory.mockResolvedValue(undefined);
       mockSendDM.mockResolvedValue(true);
 
       const result = await checkPromotion(guild as any, 'user-1');
@@ -341,7 +336,6 @@ describe('Reputation Service', () => {
       expect(result.oldRole).toBe(Role.Senpai);
       expect(result.newRole).toBe(Role.Sensei);
       expect(mockAssignRole).toHaveBeenCalledWith(guild, 'user-1', Role.Sensei);
-      expect(mockInsertRoleHistory).toHaveBeenCalledWith('user-1', Role.Sensei, 'promotion');
     });
 
     test('should not promote Kohai when threshold not met', async () => {
@@ -356,7 +350,6 @@ describe('Reputation Service', () => {
 
       expect(result.promoted).toBe(false);
       expect(mockAssignRole).not.toHaveBeenCalled();
-      expect(mockInsertRoleHistory).not.toHaveBeenCalled();
     });
 
     test('should not promote Kohai when unique requirement not met', async () => {

@@ -1,7 +1,7 @@
 import { Guild } from 'discord.js';
 import { config } from '../utils/config.js';
 import { Role, DemotionResult } from '../types.js';
-import { getRecentSenseiReactions, insertRoleHistory } from './database.js';
+import { getRecentSenseiReactions } from './database.js';
 import { getUserRole, assignRole, sendDM, formatDemotionMessage } from './roleManager.js';
 
 /**
@@ -45,7 +45,6 @@ export async function checkSenseiDecay(guild: Guild, userId: string): Promise<De
 
       // Demote to Senpai
       await assignRole(guild, userId, Role.Senpai);
-      await insertRoleHistory(userId, Role.Senpai, 'decay');
 
       // Send DM notification
       const member = guild.members.cache.get(userId);

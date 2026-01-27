@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
-import { getReactionsForUser, getRoleHistory } from '../services/database.js';
+import { getReactionsForUser } from '../services/database.js';
 import { getUserStats } from '../services/reputation.js';
 import { getSenseiDecayStatus } from '../services/decay.js';
 import { Role } from '../types.js';
@@ -57,21 +57,6 @@ export async function execute(interaction: ChatInputCommandInteraction): Promise
       message += `  - Status: ${decayStatus.recentCount >= decayStatus.threshold ? '✅ Active' : '⚠️ At risk'}\n\n`;
     }
 
-    // Role history
-    const roleHistory = await getRoleHistory(targetUser.id);
-    if (roleHistory.length > 0) {
-      message += `**Role History (last 10):**\n`;
-      const recentHistory = roleHistory.slice(0, 10);
-      for (const entry of recentHistory) {
-        const date = new Date(entry.timestamp).toLocaleDateString();
-        message += `  - ${date}: ${entry.role} (${entry.reason})\n`;
-      }
-      if (roleHistory.length > 10) {
-        message += `  _...and ${roleHistory.length - 10} more entries_\n`;
-      }
-      message += '\n';
-    }
-
     // Recent reactions received (last 10)
     const reactions = await getReactionsForUser(targetUser.id);
     if (reactions.length > 0) {
@@ -79,7 +64,7 @@ export async function execute(interaction: ChatInputCommandInteraction): Promise
       const recentReactions = reactions.slice(0, 10);
       for (const reaction of recentReactions) {
         const date = new Date(reaction.timestamp).toLocaleDateString();
-        message += `  - ${date}: from user ${reaction.reactor_id} (${reaction.reactor_role_at_time})\n`;
+        message += `  - ${date}: from user ${reaction.reactor_id} (${reaction.reactor_role})\n`;
       }
       if (reactions.length > 10) {
         message += `  _...and ${reactions.length - 10} more reactions_\n`;
