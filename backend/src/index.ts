@@ -4,6 +4,7 @@ import {
   GatewayIntentBits,
   Events,
   ChatInputCommandInteraction,
+  Partials,
 } from 'discord.js';
 import { config } from './utils/config.js';
 import { initializeDatabase, closeDatabase } from './services/database.js';
@@ -46,7 +47,7 @@ async function main() {
         GatewayIntentBits.GuildMessageReactions,
       ],
       // Enable partial structures for reactions on uncached messages
-      partials: [],
+      partials: [Partials.Message, Partials.Channel, Partials.Reaction],
     }) as BotClient;
 
     // Initialize commands collection

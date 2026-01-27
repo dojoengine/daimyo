@@ -41,6 +41,9 @@ export function registerMessageReactionAddHandler(client: Client): void {
         if (reaction.partial) {
           await reaction.fetch();
         }
+        if (reaction.message.partial) {
+          await reaction.message.fetch();
+        }
         if (user.partial) {
           await user.fetch();
         }
