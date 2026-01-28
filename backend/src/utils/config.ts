@@ -55,6 +55,7 @@ export function loadConfig(): Config {
     kohaiRoleId: getRequiredEnv('KOHAI_ROLE_ID'),
     senpaiRoleId: getRequiredEnv('SENPAI_ROLE_ID'),
     senseiRoleId: getRequiredEnv('SENSEI_ROLE_ID'),
+    meijinRoleId: getRequiredEnv('MEIJIN_ROLE_ID'),
     feltRoleId: getRequiredEnv('FELT_ROLE_ID'),
     teamRoleId: getRequiredEnv('TEAM_ROLE_ID'),
 
@@ -71,6 +72,9 @@ export function loadConfig(): Config {
     senpaiUniquePercent: getNumberEnv('SENPAI_UNIQUE_PERCENT', 0.1),
     senseiReactionThreshold: getNumberEnv('SENSEI_REACTION_THRESHOLD', 30),
     senseiUniquePercent: getNumberEnv('SENSEI_UNIQUE_PERCENT', 0.2),
+
+    // Meijin
+    meijinWindowDays: getNumberEnv('MEIJIN_WINDOW_DAYS', 30),
 
     // Content Pipeline
     contentChannelIds: (getOptionalEnv('CONTENT_CHANNEL_IDS') || '')

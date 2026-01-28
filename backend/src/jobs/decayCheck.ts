@@ -4,6 +4,7 @@ import { config } from '../utils/config.js';
 import { getUsersWithRole } from '../services/roleManager.js';
 import { checkSenseiDecay } from '../services/decay.js';
 import { checkPromotion } from '../services/reputation.js';
+import { checkAndUpdateMeijin } from '../services/meijin.js';
 import { Role } from '../types.js';
 
 /**
@@ -48,8 +49,12 @@ async function runDecayCheck(client: Client): Promise<void> {
       }
     }
 
+    // Check and update Meijin title
+    console.log('Checking Meijin title...');
+    const meijinResult = await checkAndUpdateMeijin(guild);
+
     console.log(
-      `✅ Decay check complete: ${demotionCount} demotions, ${promotionCount} promotions`
+      `✅ Decay check complete: ${demotionCount} demotions, ${promotionCount} promotions, ${meijinResult.newMeijin.length} new Meijin, ${meijinResult.removedMeijin.length} removed Meijin`
     );
   } catch (error) {
     console.error('Error during decay check:', error);

@@ -13,6 +13,8 @@ function getRoleId(role: Role): string {
       return config.senpaiRoleId;
     case Role.Sensei:
       return config.senseiRoleId;
+    case Role.Meijin:
+      return config.meijinRoleId;
   }
 }
 
@@ -105,11 +107,13 @@ export function getRoleCounts(guild: Guild): RoleCounts {
   const kohaiRole = guild.roles.cache.get(config.kohaiRoleId);
   const senpaiRole = guild.roles.cache.get(config.senpaiRoleId);
   const senseiRole = guild.roles.cache.get(config.senseiRoleId);
+  const meijinRole = guild.roles.cache.get(config.meijinRoleId);
 
   return {
     kohai: kohaiRole?.members.size || 0,
     senpai: senpaiRole?.members.size || 0,
     sensei: senseiRole?.members.size || 0,
+    meijin: meijinRole?.members.size || 0,
   };
 }
 
