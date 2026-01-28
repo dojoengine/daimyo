@@ -97,7 +97,13 @@ export function registerMessageReactionAddHandler(client: Client): void {
           );
 
           // Check if this reaction triggers a promotion
-          await checkPromotion(guild, messageAuthorId);
+          const promotionResult = await checkPromotion(guild, messageAuthorId);
+
+          if (promotionResult.promoted) {
+            console.log(
+              `🎉 Promotion triggered: ${messageAuthorId} ${promotionResult.oldRole} -> ${promotionResult.newRole}`
+            );
+          }
         }
       } catch (error) {
         console.error('Error handling reaction add:', error);
