@@ -9,6 +9,7 @@ export enum Role {
   Kohai = 'Kohai',
   Senpai = 'Senpai',
   Sensei = 'Sensei',
+  Meijin = 'Meijin',
 }
 
 /**
@@ -40,6 +41,7 @@ export interface Config {
   kohaiRoleId: string;
   senpaiRoleId: string;
   senseiRoleId: string;
+  meijinRoleId: string;
   feltRoleId: string;
   teamRoleId: string;
 
@@ -56,6 +58,9 @@ export interface Config {
   senpaiUniquePercent: number;
   senseiReactionThreshold: number;
   senseiUniquePercent: number;
+
+  // Meijin
+  meijinWindowDays: number;
 
   // Content Pipeline
   contentChannelIds: string[];
@@ -121,6 +126,7 @@ export interface RoleCounts {
   kohai: number;
   senpai: number;
   sensei: number;
+  meijin: number;
 }
 
 // ============================================

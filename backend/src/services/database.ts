@@ -48,7 +48,7 @@ export function setSql(newSql: Sql): void {
 
 /**
  * Insert a new reaction into the database
- * Returns true if inserted, false if duplicate
+ * Returns true if inserted, false if duplicate or self-reaction
  */
 export async function insertReaction(
   messageId: string,
@@ -56,6 +56,12 @@ export async function insertReaction(
   reactorId: string,
   reactorRole: Role
 ): Promise<boolean> {
+  // Reject self-reactions - users cannot endorse their own messages
+  if (messageAuthorId === reactorId) {
+    console.debug(`Self-reaction ignored: ${reactorId} -> ${messageId}`);
+    return false;
+  }
+
   try {
     const timestamp = Date.now();
 
@@ -76,13 +82,14 @@ export async function insertReaction(
 }
 
 /**
- * Get all reactions received by a user
+ * Get all reactions received by a user (excludes self-reactions)
  */
 export async function getReactionsForUser(userId: string): Promise<Reaction[]> {
   const results = await sql<Reaction[]>`
     SELECT id, message_id, author_id, reactor_id, reactor_role, timestamp
     FROM reactions
     WHERE author_id = ${userId}
+    AND author_id != reactor_id
     ORDER BY timestamp DESC
   `;
 
@@ -90,13 +97,14 @@ export async function getReactionsForUser(userId: string): Promise<Reaction[]> {
 }
 
 /**
- * Get reactions for a user filtered by reactor role(s)
+ * Get reactions for a user filtered by reactor role(s) (excludes self-reactions)
  */
 export async function getReactionsByRole(userId: string, roles: Role[]): Promise<Reaction[]> {
   const results = await sql<Reaction[]>`
     SELECT id, message_id, author_id, reactor_id, reactor_role, timestamp
     FROM reactions
     WHERE author_id = ${userId}
+    AND author_id != reactor_id
     AND reactor_role = ANY(${roles})
     ORDER BY timestamp DESC
   `;
@@ -105,7 +113,7 @@ export async function getReactionsByRole(userId: string, roles: Role[]): Promise
 }
 
 /**
- * Get recent Sensei reactions for a user (within time window)
+ * Get recent Sensei reactions for a user (within time window, excludes self-reactions)
  */
 export async function getRecentSenseiReactions(userId: string, days: number): Promise<Reaction[]> {
   const cutoffTimestamp = Date.now() - days * 24 * 60 * 60 * 1000;
@@ -114,6 +122,7 @@ export async function getRecentSenseiReactions(userId: string, days: number): Pr
     SELECT id, message_id, author_id, reactor_id, reactor_role, timestamp
     FROM reactions
     WHERE author_id = ${userId}
+    AND author_id != reactor_id
     AND reactor_role = 'Sensei'
     AND timestamp >= ${cutoffTimestamp}
     ORDER BY timestamp DESC
@@ -123,13 +132,14 @@ export async function getRecentSenseiReactions(userId: string, days: number): Pr
 }
 
 /**
- * Get unique reactors for a user from specific roles
+ * Get unique reactors for a user from specific roles (excludes self-reactions)
  */
 export async function getUniqueReactors(userId: string, roles: Role[]): Promise<string[]> {
   const results = await sql<{ reactor_id: string }[]>`
     SELECT DISTINCT reactor_id
     FROM reactions
     WHERE author_id = ${userId}
+    AND author_id != reactor_id
     AND reactor_role = ANY(${roles})
   `;
 
@@ -137,13 +147,14 @@ export async function getUniqueReactors(userId: string, roles: Role[]): Promise<
 }
 
 /**
- * Get count of reactions for a user from specific roles
+ * Get count of reactions for a user from specific roles (excludes self-reactions)
  */
 export async function getReactionCount(userId: string, roles: Role[]): Promise<number> {
   const results = await sql<{ count: string }[]>`
     SELECT COUNT(*) as count
     FROM reactions
     WHERE author_id = ${userId}
+    AND author_id != reactor_id
     AND reactor_role = ANY(${roles})
   `;
 
@@ -171,6 +182,7 @@ export async function getReactionBreakdown(userId: string): Promise<ReactionCoun
       SUM(CASE WHEN reactor_role = 'Sensei' THEN 1 ELSE 0 END) as fromSensei
     FROM reactions
     WHERE author_id = ${userId}
+    AND author_id != reactor_id
   `;
 
   const row = results[0];
@@ -194,10 +206,54 @@ export async function getLeaderboard(role?: Role, limit: number = 20): Promise<L
   const results = await sql<{ user_id: string; reaction_count: string }[]>`
     SELECT author_id as user_id, COUNT(*) as reaction_count
     FROM reactions
-    ${role ? sql`WHERE reactor_role = ${role}` : sql``}
+    WHERE author_id != reactor_id
+    ${role ? sql`AND reactor_role = ${role}` : sql``}
     GROUP BY author_id
     ORDER BY reaction_count DESC
     LIMIT ${limit}
+  `;
+
+  return results.map((r) => ({
+    user_id: r.user_id,
+    reaction_count: parseInt(r.reaction_count, 10),
+  }));
+}
+
+/**
+ * Get top recipients of Sensei reactions within a time window (excludes self-reactions)
+ * Returns all users tied for the highest count
+ */
+export async function getTopSenseiReactionRecipients(days: number): Promise<LeaderboardEntry[]> {
+  const cutoffTimestamp = Date.now() - days * 24 * 60 * 60 * 1000;
+
+  // First, get the max count
+  const maxResult = await sql<{ max_count: string }[]>`
+    SELECT COALESCE(MAX(cnt), 0) as max_count
+    FROM (
+      SELECT COUNT(*) as cnt
+      FROM reactions
+      WHERE reactor_role = 'Sensei'
+      AND author_id != reactor_id
+      AND timestamp >= ${cutoffTimestamp}
+      GROUP BY author_id
+    ) counts
+  `;
+
+  const maxCount = parseInt(maxResult[0]?.max_count || '0', 10);
+
+  if (maxCount === 0) {
+    return [];
+  }
+
+  // Then get all users with that max count
+  const results = await sql<{ user_id: string; reaction_count: string }[]>`
+    SELECT author_id as user_id, COUNT(*) as reaction_count
+    FROM reactions
+    WHERE reactor_role = 'Sensei'
+    AND author_id != reactor_id
+    AND timestamp >= ${cutoffTimestamp}
+    GROUP BY author_id
+    HAVING COUNT(*) = ${maxCount}
   `;
 
   return results.map((r) => ({
