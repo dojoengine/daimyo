@@ -62,10 +62,16 @@ export async function execute(interaction: ChatInputCommandInteraction): Promise
 
   // Post the recognition message
   const emoji = getDojoEmoji();
-  const message = await interaction.reply({
+  const response = await interaction.reply({
     content: `**${reactor}** ${emoji}'d **${targetUser}**: ${reason}`,
-    fetchReply: true,
+    withResponse: true,
   });
+  const message = response.resource?.message;
+
+  if (!message) {
+    console.error('Failed to get message from interaction response');
+    return;
+  }
 
   // Insert reaction into database
   const inserted = await insertReaction(message.id, targetUser.id, reactor.id, reactorRole);
