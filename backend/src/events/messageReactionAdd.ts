@@ -58,10 +58,6 @@ export function registerMessageReactionAddHandler(client: Client): void {
           return;
         }
 
-        console.log(
-          `🔍 Detected :dojo: reaction from ${user.tag} (${user.id}) on message ${reaction.message.id}`
-        );
-
         // Get the message and author
         const message = reaction.message;
         const messageAuthorId = message.author?.id;
