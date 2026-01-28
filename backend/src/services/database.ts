@@ -64,9 +64,6 @@ export async function insertReaction(
       VALUES (${messageId}, ${messageAuthorId}, ${reactorId}, ${reactorRole}, ${timestamp})
     `;
 
-    console.debug(
-      `Inserted reaction: ${reactorId} (${reactorRole}) -> ${messageAuthorId} on message ${messageId}`
-    );
     return true;
   } catch (error: unknown) {
     // PostgreSQL unique violation error code
