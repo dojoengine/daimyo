@@ -6,6 +6,7 @@ import * as statsCommand from '../commands/stats.js';
 import * as leaderboardCommand from '../commands/leaderboard.js';
 import * as syncCommand from '../commands/sync.js';
 import * as auditCommand from '../commands/audit.js';
+import * as bowCommand from '../commands/bow.js';
 
 /**
  * Deploy slash commands to Discord
@@ -20,6 +21,7 @@ async function deployCommands() {
     leaderboardCommand.data.toJSON(),
     syncCommand.data.toJSON(),
     auditCommand.data.toJSON(),
+    bowCommand.data.toJSON(),
   ];
 
   console.log(`Deploying ${commands.length} commands...`);

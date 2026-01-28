@@ -20,6 +20,7 @@ import * as statsCommand from './commands/stats.js';
 import * as leaderboardCommand from './commands/leaderboard.js';
 import * as syncCommand from './commands/sync.js';
 import * as auditCommand from './commands/audit.js';
+import * as bowCommand from './commands/bow.js';
 
 // Extend Client type to include commands collection
 interface BotClient extends Client {
@@ -56,6 +57,7 @@ async function main() {
     client.commands.set(leaderboardCommand.data.name, leaderboardCommand);
     client.commands.set(syncCommand.data.name, syncCommand);
     client.commands.set(auditCommand.data.name, auditCommand);
+    client.commands.set(bowCommand.data.name, bowCommand);
 
     console.log(`Registered ${client.commands.size} commands`);
 
