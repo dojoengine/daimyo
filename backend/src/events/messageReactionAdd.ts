@@ -58,10 +58,6 @@ export function registerMessageReactionAddHandler(client: Client): void {
           return;
         }
 
-        console.log(
-          `🔍 Detected :dojo: reaction from ${user.tag} (${user.id}) on message ${reaction.message.id}`
-        );
-
         // Get the message and author
         const message = reaction.message;
         const messageAuthorId = message.author?.id;
@@ -101,13 +97,7 @@ export function registerMessageReactionAddHandler(client: Client): void {
           );
 
           // Check if this reaction triggers a promotion
-          const promotionResult = await checkPromotion(guild, messageAuthorId);
-
-          if (promotionResult.promoted) {
-            console.log(
-              `🎉 Promotion triggered: ${messageAuthorId} ${promotionResult.oldRole} -> ${promotionResult.newRole}`
-            );
-          }
+          await checkPromotion(guild, messageAuthorId);
         }
       } catch (error) {
         console.error('Error handling reaction add:', error);
