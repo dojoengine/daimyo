@@ -6,7 +6,7 @@ import { config } from '../utils/config.js';
  * Send "Ohayo!" message to the configured channel
  */
 async function runOhayo(client: Client): Promise<void> {
-  console.log('🌅 Running daily ohayo greeting...');
+  console.log('🌅 Running weekly ohayo greeting...');
 
   try {
     const channel = await client.channels.fetch(config.ohayoChannelId);
@@ -30,14 +30,14 @@ async function runOhayo(client: Client): Promise<void> {
 
 /**
  * Schedule and start the ohayo cron job
- * Runs every day at 12:00 UTC (0 12 * * *)
+ * Runs every Monday at 12:00 UTC (0 12 * * 1)
  */
 export function startOhayoJob(client: Client): void {
-  console.log('⏰ Scheduling daily ohayo greeting for 12:00 UTC (0 12 * * *)');
+  console.log('⏰ Scheduling weekly ohayo greeting for Mondays at 12:00 UTC (0 12 * * 1)');
 
   // Schedule: minute hour day month dayOfWeek
-  // 0 12 * * * = Every day at 12:00 UTC
-  cron.schedule('0 12 * * *', () => {
+  // 0 12 * * 1 = Every Monday at 12:00 UTC
+  cron.schedule('0 12 * * 1', () => {
     runOhayo(client);
   });
 
