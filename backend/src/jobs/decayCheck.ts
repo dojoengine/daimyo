@@ -12,7 +12,7 @@ import { Role } from '../types.js';
  * Also checks for any pending promotions
  */
 async function runDecayCheck(client: Client): Promise<void> {
-  console.log('🕐 Starting daily decay check...');
+  console.log('🕐 Starting decay check...');
 
   try {
     const guild = await client.guilds.fetch(config.discordGuildId);

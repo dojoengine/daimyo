@@ -48,6 +48,9 @@ export interface Config {
   // Channel IDs
   ohayoChannelId: string;
 
+  // Ohayo
+  ohayoCron: string;
+
   // Database
   databaseUrl: string;
 

@@ -30,14 +30,13 @@ async function runOhayo(client: Client): Promise<void> {
 
 /**
  * Schedule and start the ohayo cron job
- * Runs every Monday at 12:00 UTC (0 12 * * 1)
  */
 export function startOhayoJob(client: Client): void {
-  console.log('⏰ Scheduling weekly ohayo greeting for Mondays at 12:00 UTC (0 12 * * 1)');
+  const cronSchedule = config.ohayoCron;
 
-  // Schedule: minute hour day month dayOfWeek
-  // 0 12 * * 1 = Every Monday at 12:00 UTC
-  cron.schedule('0 12 * * 1', () => {
+  console.log(`⏰ Scheduling ohayo greeting: ${cronSchedule}`);
+
+  cron.schedule(cronSchedule, () => {
     runOhayo(client);
   });
 
