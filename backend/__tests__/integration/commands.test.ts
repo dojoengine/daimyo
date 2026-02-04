@@ -10,17 +10,20 @@ import { createMockInteraction, createMockUser } from '../mocks/discord.js';
 const mockGetReactionBreakdown = jest.fn();
 const mockGetLeaderboard = jest.fn();
 const mockGetReactionsForUser = jest.fn();
+const mockGetDetailedSenseiBreakdown = jest.fn();
 const mockGetUserStats = jest.fn();
 const mockCalculateSenpaiScore = jest.fn();
 const mockCalculateSenseiScore = jest.fn();
 const mockCheckPromotion = jest.fn();
 const mockGetSenseiDecayStatus = jest.fn();
 const mockCheckSenseiDecay = jest.fn();
+const mockGetRoleCounts = jest.fn();
 
 jest.unstable_mockModule('../../src/services/database.js', () => ({
   getReactionBreakdown: mockGetReactionBreakdown,
   getLeaderboard: mockGetLeaderboard,
   getReactionsForUser: mockGetReactionsForUser,
+  getDetailedSenseiBreakdown: mockGetDetailedSenseiBreakdown,
 }));
 
 jest.unstable_mockModule('../../src/services/reputation.js', () => ({
@@ -35,6 +38,16 @@ jest.unstable_mockModule('../../src/services/decay.js', () => ({
   checkSenseiDecay: mockCheckSenseiDecay,
 }));
 
+jest.unstable_mockModule('../../src/services/roleManager.js', () => ({
+  getRoleCounts: mockGetRoleCounts,
+}));
+
+jest.unstable_mockModule('../../src/utils/config.js', () => ({
+  config: {
+    decayWindowDays: 360,
+  },
+}));
+
 const { execute: executeStats } = await import('../../src/commands/stats.js');
 const { execute: executeLeaderboard } = await import('../../src/commands/leaderboard.js');
 
@@ -44,6 +57,10 @@ describe('Slash Commands Integration Tests', () => {
   });
 
   describe('/stats command', () => {
+    beforeEach(() => {
+      mockGetRoleCounts.mockReturnValue({ kohai: 100, senpai: 50, sensei: 20, meijin: 2 });
+    });
+
     test('should display stats for Kohai user', async () => {
       const interaction = createMockInteraction('user-1', 'stats');
 
@@ -72,10 +89,8 @@ describe('Slash Commands Integration Tests', () => {
 
       expect(interaction.deferReply).toHaveBeenCalled();
       expect(interaction.editReply).toHaveBeenCalledWith(expect.stringContaining('Kohai'));
-      expect(interaction.editReply).toHaveBeenCalledWith(expect.stringContaining('38'));
-      expect(interaction.editReply).toHaveBeenCalledWith(
-        expect.stringContaining('Progress to Senpai')
-      );
+      expect(interaction.editReply).toHaveBeenCalledWith(expect.stringContaining('reactions from'));
+      expect(interaction.editReply).toHaveBeenCalledWith(expect.stringContaining('To Advance'));
     });
 
     test('should display stats for Sensei user with decay info', async () => {
@@ -100,11 +115,13 @@ describe('Slash Commands Integration Tests', () => {
 
       mockGetUserStats.mockReturnValue(mockStats);
       mockGetSenseiDecayStatus.mockReturnValue(mockDecayStatus);
+      mockGetDetailedSenseiBreakdown.mockReturnValue({ reactions: 42, uniqueReactors: 12 });
 
       await executeStats(interaction as any);
 
       expect(interaction.editReply).toHaveBeenCalledWith(expect.stringContaining('Sensei'));
-      expect(interaction.editReply).toHaveBeenCalledWith(expect.stringContaining('42/30'));
+      expect(interaction.editReply).toHaveBeenCalledWith(expect.stringContaining('last 360 days'));
+      expect(interaction.editReply).toHaveBeenCalledWith(expect.stringContaining('maintained'));
     });
 
     test('should display stats for specified user', async () => {
@@ -132,6 +149,7 @@ describe('Slash Commands Integration Tests', () => {
       };
 
       mockGetUserStats.mockReturnValue(mockStats);
+      mockGetDetailedSenseiBreakdown.mockReturnValue({ reactions: 70, uniqueReactors: 5 });
 
       await executeStats(interaction as any);
 
