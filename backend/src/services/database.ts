@@ -195,6 +195,37 @@ export async function getReactionBreakdown(userId: string): Promise<ReactionCoun
 }
 
 /**
+ * Get detailed Sensei reaction breakdown within a time window
+ */
+export interface DetailedRoleBreakdown {
+  reactions: number;
+  uniqueReactors: number;
+}
+export async function getDetailedSenseiBreakdown(
+  userId: string,
+  days: number
+): Promise<DetailedRoleBreakdown> {
+  const cutoffTimestamp = Date.now() - days * 24 * 60 * 60 * 1000;
+
+  const results = await sql<{ reactions: string; unique_reactors: string }[]>`
+    SELECT
+      COUNT(*) as reactions,
+      COUNT(DISTINCT reactor_id) as unique_reactors
+    FROM reactions
+    WHERE author_id = ${userId}
+    AND author_id != reactor_id
+    AND reactor_role = 'Sensei'
+    AND timestamp >= ${cutoffTimestamp}
+  `;
+
+  const row = results[0];
+  return {
+    reactions: parseInt(row?.reactions || '0', 10),
+    uniqueReactors: parseInt(row?.unique_reactors || '0', 10),
+  };
+}
+
+/**
  * Get all users with reactions (for leaderboard)
  */
 export interface LeaderboardEntry {
