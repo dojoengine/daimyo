@@ -11,6 +11,7 @@ Progression: Kōhai → Senpai → Sensei based on peer recognition.
 **Advancement thresholds:**
 - **Kohai → Senpai**: 50 reactions from ≥10% unique Senpai/Sensei
 - **Senpai → Sensei**: 30 reactions from ≥20% unique Sensei, in the last 360 days
+- **Meijin**: Rotating title for whoever has the most Sensei reactions in the last 30 days
 
 ### [Blockchain Roles](./spec/BLOCKCHAIN.md)
 Wallet-linked roles based on Starknet state (NFT ownership, token holdings, etc.).
