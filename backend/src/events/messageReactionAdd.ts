@@ -96,6 +96,9 @@ export function registerMessageReactionAddHandler(client: Client): void {
             `📊 New :dojo: reaction: ${user.tag} (${reactorRole}) -> message by ${message.author?.tag} (${messageAuthorId})`
           );
 
+          // React with sparkles to confirm the reaction was recorded
+          await message.react('✨');
+
           // Check if this reaction triggers a promotion
           const promotionResult = await checkPromotion(guild, messageAuthorId);
 
