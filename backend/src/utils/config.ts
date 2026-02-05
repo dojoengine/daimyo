@@ -62,11 +62,14 @@ export function loadConfig(): Config {
     // Channel IDs
     ohayoChannelId: getRequiredEnv('OHAYO_CHANNEL_ID'),
 
+    // Ohayo
+    ohayoCron: process.env.OHAYO_CRON || '0 12 * * 1', // Mondays at noon UTC
+
     // Database
     databaseUrl: getRequiredEnv('DATABASE_URL'),
 
     // Decay
-    decayCheckCron: process.env.DECAY_CHECK_CRON || '',
+    decayCheckCron: process.env.DECAY_CHECK_CRON || '0 0 1 * *', // 1st of each month at midnight UTC
     decayWindowDays: getNumberEnv('DECAY_WINDOW_DAYS', 360),
     senpaiReactionThreshold: getNumberEnv('SENPAI_REACTION_THRESHOLD', 50),
     senpaiUniquePercent: getNumberEnv('SENPAI_UNIQUE_PERCENT', 0.1),
@@ -84,7 +87,7 @@ export function loadConfig(): Config {
     contentPipelineDaysBack: getNumberEnv('CONTENT_PIPELINE_DAYS_BACK', 7),
     contentPipelineMinStories: getNumberEnv('CONTENT_PIPELINE_MIN_STORIES', 3),
     contentPipelineMaxStories: getNumberEnv('CONTENT_PIPELINE_MAX_STORIES', 10),
-    contentPipelineCron: process.env.CONTENT_PIPELINE_CRON || '',
+    contentPipelineCron: process.env.CONTENT_PIPELINE_CRON || '0 12 * * 1', // Mondays at noon UTC
 
     // AI Configuration
     llmModel: process.env.LLM_MODEL || 'claude-sonnet-4-20250514',
