@@ -37,93 +37,89 @@ interface BotClient extends Client {
 async function main() {
   console.log('🚀 Starting Daimyō bot...');
 
-  try {
-    // Initialize database
-    await initializeDatabase();
+  // Start HTTP API server immediately so the platform health check passes.
+  // This must happen before database/Discord init so the process stays alive
+  // even if those fail.
+  startApiServer();
 
-    // Create Discord client with required intents
-    const client = new Client({
-      intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMembers,
-        GatewayIntentBits.GuildMessageReactions,
-      ],
-      // Enable partial structures for reactions on uncached messages
-      partials: [Partials.Message, Partials.Channel, Partials.Reaction],
-    }) as BotClient;
+  // Initialize database
+  await initializeDatabase();
 
-    // Initialize commands collection
-    client.commands = new Collection();
-    client.commands.set(statsCommand.data.name, statsCommand);
-    client.commands.set(leaderboardCommand.data.name, leaderboardCommand);
-    client.commands.set(syncCommand.data.name, syncCommand);
-    client.commands.set(auditCommand.data.name, auditCommand);
-    client.commands.set(bowCommand.data.name, bowCommand);
+  // Create Discord client with required intents
+  const client = new Client({
+    intents: [
+      GatewayIntentBits.Guilds,
+      GatewayIntentBits.GuildMembers,
+      GatewayIntentBits.GuildMessageReactions,
+    ],
+    // Enable partial structures for reactions on uncached messages
+    partials: [Partials.Message, Partials.Channel, Partials.Reaction],
+  }) as BotClient;
 
-    console.log(`Registered ${client.commands.size} commands`);
+  // Initialize commands collection
+  client.commands = new Collection();
+  client.commands.set(statsCommand.data.name, statsCommand);
+  client.commands.set(leaderboardCommand.data.name, leaderboardCommand);
+  client.commands.set(syncCommand.data.name, syncCommand);
+  client.commands.set(auditCommand.data.name, auditCommand);
+  client.commands.set(bowCommand.data.name, bowCommand);
 
-    // Register event handlers
-    registerReadyHandler(client);
-    registerGuildMemberAddHandler(client);
-    registerMessageReactionAddHandler(client);
+  console.log(`Registered ${client.commands.size} commands`);
 
-    // Register interaction handler for slash commands
-    client.on(Events.InteractionCreate, async (interaction) => {
-      if (!interaction.isChatInputCommand()) return;
+  // Register event handlers
+  registerReadyHandler(client);
+  registerGuildMemberAddHandler(client);
+  registerMessageReactionAddHandler(client);
 
-      const command = client.commands.get(interaction.commandName);
+  // Register interaction handler for slash commands
+  client.on(Events.InteractionCreate, async (interaction) => {
+    if (!interaction.isChatInputCommand()) return;
 
-      if (!command) {
-        console.warn(`Unknown command: ${interaction.commandName}`);
-        return;
+    const command = client.commands.get(interaction.commandName);
+
+    if (!command) {
+      console.warn(`Unknown command: ${interaction.commandName}`);
+      return;
+    }
+
+    try {
+      await command.execute(interaction);
+    } catch (error) {
+      console.error(`Error executing command ${interaction.commandName}:`, error);
+
+      const errorMessage = 'There was an error executing this command!';
+
+      if (interaction.replied || interaction.deferred) {
+        await interaction.followUp({ content: errorMessage, ephemeral: true });
+      } else {
+        await interaction.reply({ content: errorMessage, ephemeral: true });
       }
+    }
+  });
 
-      try {
-        await command.execute(interaction);
-      } catch (error) {
-        console.error(`Error executing command ${interaction.commandName}:`, error);
+  // Start cron jobs
+  startDecayCheckJob(client);
+  startOhayoJob(client);
+  startContentPipelineJob(client);
 
-        const errorMessage = 'There was an error executing this command!';
+  // Login to Discord
+  await client.login(config.discordBotToken);
 
-        if (interaction.replied || interaction.deferred) {
-          await interaction.followUp({ content: errorMessage, ephemeral: true });
-        } else {
-          await interaction.reply({ content: errorMessage, ephemeral: true });
-        }
-      }
-    });
-
-    // Start cron jobs
-    startDecayCheckJob(client);
-    startOhayoJob(client);
-    startContentPipelineJob(client);
-
-    // Start HTTP API server
-    startApiServer();
-
-    // Login to Discord
-    await client.login(config.discordBotToken);
-
-    // Handle graceful shutdown
-    process.on('SIGINT', async () => {
-      console.log('Received SIGINT, shutting down gracefully...');
-      await closeDatabase();
-      client.destroy();
-      process.exit(0);
-    });
-
-    process.on('SIGTERM', async () => {
-      console.log('Received SIGTERM, shutting down gracefully...');
-      await closeDatabase();
-      client.destroy();
-      process.exit(0);
-    });
-  } catch (error) {
-    console.error('Fatal error during bot startup:', error);
+  // Handle graceful shutdown
+  const shutdown = async () => {
+    console.log('Shutting down gracefully...');
     await closeDatabase();
-    process.exit(1);
-  }
+    client.destroy();
+    process.exit(0);
+  };
+
+  process.on('SIGINT', shutdown);
+  process.on('SIGTERM', shutdown);
 }
 
-// Start the bot
-main();
+// Start the bot. If the Discord bot or database fails, keep the HTTP server
+// running so the web UI stays available and Railway health checks pass.
+main().catch((error) => {
+  console.error('Fatal error during bot startup:', error);
+  console.error('HTTP server is still running. Bot features are unavailable.');
+});
