@@ -50,6 +50,49 @@ export default function Home() {
           ))}
         </div>
 
+        {/* Game Jam */}
+        <div style={styles.jam}>
+          <h2 style={styles.jamTitle}>Game Jam VIII</h2>
+          <p style={styles.jamDates}>Feb 27 – Mar 2, 2026 · 72 hours · Online</p>
+          <p style={styles.jamDescription}>
+            Build a fully onchain game with Dojo and Cartridge in 72 hours.
+            $10,000 in prizes. Up to 5 per team.
+          </p>
+          <div style={styles.jamDetails}>
+            <div style={styles.jamDetail}>
+              <h3 style={styles.jamDetailTitle}>Requirements</h3>
+              <ul style={styles.jamList}>
+                <li>Built with Dojo Engine (Cairo contracts)</li>
+                <li>Deployed to Slot or Sepolia testnet</li>
+                <li>Cartridge Controller integration</li>
+                <li>Functional frontend using Dojo SDK</li>
+              </ul>
+            </div>
+            <div style={styles.jamDetail}>
+              <h3 style={styles.jamDetailTitle}>Judging</h3>
+              <ul style={styles.jamList}>
+                <li>Novel use of Dojo's unique features</li>
+                <li>Concept and mechanic originality</li>
+                <li>Visual and game design quality</li>
+                <li>Entertainment value</li>
+              </ul>
+            </div>
+          </div>
+          <div style={styles.jamActions}>
+            <a
+              href="https://luma.com/w1wxpfv3"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={styles.jamCta}
+            >
+              Register on Luma →
+            </a>
+            <a href="/judge/gj8" style={styles.jamCtaSecondary}>
+              Judge Entries →
+            </a>
+          </div>
+        </div>
+
         {/* Links */}
         <div style={styles.links}>
           {links.map((l) => (
@@ -128,6 +171,85 @@ const styles: Record<string, React.CSSProperties> = {
     lineHeight: 1.5,
     color: '#8899aa',
     margin: 0,
+  },
+  jam: {
+    background: '#0f1d32',
+    border: '1px solid #1a2a44',
+    borderRadius: 12,
+    padding: '36px 32px',
+    marginBottom: 64,
+    textAlign: 'center' as const,
+  },
+  jamTitle: {
+    fontSize: 28,
+    fontWeight: 700,
+    margin: 0,
+    color: '#e0e0e0',
+  },
+  jamDates: {
+    fontSize: 16,
+    color: '#8899aa',
+    marginTop: 8,
+    marginBottom: 16,
+  },
+  jamDescription: {
+    fontSize: 16,
+    lineHeight: 1.6,
+    color: '#b0bec5',
+    margin: '0 auto 24px',
+    maxWidth: 560,
+  },
+  jamDetails: {
+    display: 'flex',
+    gap: 32,
+    justifyContent: 'center',
+    flexWrap: 'wrap' as const,
+    textAlign: 'left' as const,
+    marginBottom: 28,
+  },
+  jamDetail: {
+    flex: '1 1 240px',
+    maxWidth: 340,
+  },
+  jamDetailTitle: {
+    fontSize: 15,
+    fontWeight: 600,
+    color: '#e0e0e0',
+    marginBottom: 8,
+  },
+  jamList: {
+    margin: 0,
+    paddingLeft: 20,
+    fontSize: 14,
+    lineHeight: 1.8,
+    color: '#8899aa',
+  },
+  jamActions: {
+    display: 'flex',
+    gap: 16,
+    justifyContent: 'center',
+    flexWrap: 'wrap' as const,
+  },
+  jamCta: {
+    display: 'inline-block',
+    background: '#ff1a3d',
+    color: '#ffffff',
+    textDecoration: 'none',
+    padding: '12px 32px',
+    borderRadius: 8,
+    fontSize: 16,
+    fontWeight: 600,
+  },
+  jamCtaSecondary: {
+    display: 'inline-block',
+    background: 'transparent',
+    color: '#ff1a3d',
+    border: '1px solid #ff1a3d',
+    textDecoration: 'none',
+    padding: '12px 32px',
+    borderRadius: 8,
+    fontSize: 16,
+    fontWeight: 600,
   },
   links: {
     display: 'flex',
