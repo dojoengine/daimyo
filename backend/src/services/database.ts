@@ -1,5 +1,4 @@
 import postgres, { Sql } from 'postgres';
-import { config } from '../utils/config.js';
 import { Reaction, Role } from '../types.js';
 import { randomUUID } from 'crypto';
 
