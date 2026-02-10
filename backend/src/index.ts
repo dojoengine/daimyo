@@ -14,6 +14,7 @@ import { registerMessageReactionAddHandler } from './events/messageReactionAdd.j
 import { startDecayCheckJob } from './jobs/decayCheck.js';
 import { startOhayoJob } from './jobs/ohayo.js';
 import { startContentPipelineJob } from './jobs/contentPipeline.js';
+import { startApiServer } from './api/index.js';
 
 // Import all commands
 import * as statsCommand from './commands/stats.js';
@@ -96,6 +97,9 @@ async function main() {
     startDecayCheckJob(client);
     startOhayoJob(client);
     startContentPipelineJob(client);
+
+    // Start HTTP API server
+    startApiServer();
 
     // Login to Discord
     await client.login(config.discordBotToken);

@@ -356,10 +356,11 @@ CORS_ORIGIN=https://judge.daimyo.gg
 
 # Discord OAuth
 DISCORD_CLIENT_SECRET=...
-DISCORD_OAUTH_REDIRECT_URI=https://daimyo.cartridge.gg/api/auth/discord/callback
+# OAuth redirect URI is derived automatically from the request Host header.
+# Register https://<your-domain>/api/auth/callback in Discord Developer Portal.
 
 # Session
-SESSION_SECRET=...  # 32+ character random string
+DISCORD_SESSION_SECRET=...  # 32+ character random string
 
 # GitHub
 GITHUB_TOKEN=ghp_...
