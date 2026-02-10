@@ -1,5 +1,5 @@
 [build]
-buildCommand = "pnpm install --frozen-lockfile && pnpm --filter backend build"
+buildCommand = "pnpm install --frozen-lockfile && pnpm --filter daimyo-client build && pnpm --filter backend build"
 
 [deploy]
 preDeployCommand = "pnpm --filter backend run migrate && pnpm --filter backend deploy-commands"
