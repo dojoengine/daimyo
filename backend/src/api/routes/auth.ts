@@ -73,7 +73,7 @@ router.get('/discord', (req: Request, res: Response): void => {
   });
 
   const url = `https://discord.com/api/oauth2/authorize?${params}`;
-  res.json({ url });
+  res.redirect(url);
 });
 
 // GET /api/auth/callback - Handle Discord OAuth callback
