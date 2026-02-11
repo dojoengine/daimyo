@@ -1,0 +1,50 @@
+/* ─── Error Page ─── */
+
+.error-page {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.error-content {
+  text-align: center;
+}
+
+.error-title {
+  font-family: 'Noto Serif', 'Noto Serif JP', serif;
+  font-size: 32px;
+  font-weight: 900;
+  margin-bottom: 20px;
+  color: var(--neon-red);
+}
+
+.error-message {
+  font-size: 18px;
+  color: var(--stone);
+  margin-bottom: 32px;
+}
+
+.error-home-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  padding: 12px 24px;
+  border: 1px solid var(--neon-red);
+  border-radius: 4px;
+  transition: all 0.25s ease;
+}
+
+.error-home-link:hover {
+  color: #fff;
+  background: var(--neon-red);
+  box-shadow: 0 0 20px var(--neon-glow);
+}

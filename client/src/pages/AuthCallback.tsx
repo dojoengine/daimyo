@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import './AuthCallback.css';
 
 export default function AuthCallback() {
   const [searchParams] = useSearchParams();
@@ -34,8 +35,8 @@ export default function AuthCallback() {
 
   if (error) {
     return (
-      <div style={styles.container}>
-        <div style={styles.error}>
+      <div className="auth-page">
+        <div className="auth-error">
           <h1>Authentication Error</h1>
           <p>{error}</p>
         </div>
@@ -44,8 +45,8 @@ export default function AuthCallback() {
   }
 
   return (
-    <div style={styles.container}>
-      <div style={styles.loading}>Completing authentication...</div>
+    <div className="auth-page">
+      <div className="auth-loading">Completing authentication...</div>
     </div>
   );
 }
@@ -58,23 +59,3 @@ function extractJamSlug(state: string): string | null {
   }
   return null;
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    maxWidth: '600px',
-    margin: '0 auto',
-    padding: '20px',
-    minHeight: '100vh',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loading: {
-    fontSize: '18px',
-    color: '#888',
-  },
-  error: {
-    textAlign: 'center',
-    color: '#ff6b6b',
-  },
-};

@@ -1,0 +1,59 @@
+/* ─── Comparison View ─── */
+
+.comparison-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.comparison-cards {
+  display: flex;
+  gap: 20px;
+  align-items: stretch;
+}
+
+.comparison-vs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Noto Serif', 'Noto Serif JP', serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--stone);
+  min-width: 60px;
+}
+
+.comparison-skip-wrap {
+  display: flex;
+  justify-content: center;
+}
+
+.comparison-skip {
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  background: transparent;
+  color: var(--stone);
+  border: 1px solid var(--ash);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  letter-spacing: 0.02em;
+}
+
+.comparison-skip:hover {
+  border-color: var(--stone);
+  background: var(--scroll);
+  color: var(--parchment);
+}
+
+@media (max-width: 768px) {
+  .comparison-cards {
+    flex-direction: column;
+  }
+
+  .comparison-vs {
+    min-width: auto;
+    padding: 8px 0;
+  }
+}
