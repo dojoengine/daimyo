@@ -1,0 +1,29 @@
+/* ─── Metric Chip ─── */
+
+.metric-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 10px;
+  background: var(--scroll);
+  border: 1px solid var(--ash);
+  border-radius: 6px;
+  min-width: 0;
+}
+
+.metric-chip-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--stone);
+}
+
+.metric-chip-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--parchment);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

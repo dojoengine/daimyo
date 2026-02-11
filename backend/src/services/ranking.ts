@@ -41,23 +41,19 @@ export function calculateRankings(entries: Entry[], comparisons: Comparison[]): 
     .fill(null)
     .map(() => Array(n).fill(0));
 
-  // Count wins from comparisons
+  // Accumulate score-weighted preferences from comparisons
+  // Score 1.0 (Strong A) adds full weight to A; 0.0 (Strong B) adds full weight to B
+  // Score 0.5 (Indifferent) splits equally between both sides
   for (const comp of comparisons) {
-    if (comp.score === null) continue; // Skip skipped comparisons
+    if (comp.score === null) continue; // Skip invalid pairs
 
     const iA = idToIndex.get(comp.entry_a_id);
     const iB = idToIndex.get(comp.entry_b_id);
 
     if (iA === undefined || iB === undefined) continue;
 
-    if (comp.score > 0.5) {
-      // A wins
-      matrix[iA][iB]++;
-    } else if (comp.score < 0.5) {
-      // B wins
-      matrix[iB][iA]++;
-    }
-    // score === 0.5 would be a tie, don't count
+    matrix[iA][iB] += comp.score;
+    matrix[iB][iA] += 1.0 - comp.score;
   }
 
   // Check if we have any comparisons

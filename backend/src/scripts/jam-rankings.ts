@@ -95,8 +95,8 @@ async function main() {
     console.log('');
 
     // Print rankings table
-    console.log(' Rank  Score  PR#   Title                          Author');
-    console.log(' ----  -----  ---   -----                          ------');
+    console.log(' Rank  Score  PR#   Title                          Team');
+    console.log(' ----  -----  ---   -----                          ----');
 
     for (const { entry, score, rank } of rankings) {
       const rankStr = rank.toString().padStart(4);
@@ -104,9 +104,9 @@ async function main() {
       const prStr = entry.id.padStart(3);
       const title =
         entry.title.length > 30 ? entry.title.slice(0, 27) + '...' : entry.title.padEnd(30);
-      const author = `@${entry.author_github}`;
+      const team = entry.team.join(', ');
 
-      console.log(`${rankStr}  ${scoreStr}  ${prStr}   ${title} ${author}`);
+      console.log(`${rankStr}  ${scoreStr}  ${prStr}   ${title} ${team}`);
     }
 
     // Print statistics

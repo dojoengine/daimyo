@@ -1,12 +1,24 @@
 import { useState, useEffect, useCallback } from 'react';
 
+export interface EntryMetrics {
+  classification: 'Whole Game' | 'Feature';
+  team_size: number;
+  dojo_contracts: string;
+  frontend_sdk: boolean;
+  jam_commits_pct: number;
+  playability: 'Live' | 'Video' | 'Local';
+}
+
 export interface Entry {
   id: string;
   title: string;
-  description?: string;
-  author_github: string;
+  summary_short: string;
+  summary_long: string;
+  repo_url: string;
   demo_url?: string;
   video_url?: string;
+  team: string[];
+  metrics: EntryMetrics;
 }
 
 interface User {
@@ -27,6 +39,11 @@ interface Progress {
   allPairsExhausted: boolean;
 }
 
+interface HistoryItem {
+  pair: Pair;
+  progress: Progress;
+}
+
 export function useJudging(jamSlug: string) {
   const [user, setUser] = useState<User | null>(null);
   const [pair, setPair] = useState<Pair | null>(null);
@@ -36,6 +53,7 @@ export function useJudging(jamSlug: string) {
     sessionComplete: false,
     allPairsExhausted: false,
   });
+  const [history, setHistory] = useState<HistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -94,8 +112,12 @@ export function useJudging(jamSlug: string) {
     }
   }, [user, fetchPair]);
 
-  const selectWinner = async (winnerId: string) => {
+  // Submit a Likert score (0.0 - 1.0)
+  const submitScore = async (score: number) => {
     if (!pair) return;
+
+    // Save current state to history before moving on
+    setHistory((h) => [...h, { pair, progress }]);
 
     try {
       const res = await fetch(`/api/jams/${jamSlug}/vote`, {
@@ -105,7 +127,7 @@ export function useJudging(jamSlug: string) {
         body: JSON.stringify({
           entryAId: pair.entryA.id,
           entryBId: pair.entryB.id,
-          winnerId,
+          score,
         }),
       });
 
@@ -118,16 +140,20 @@ export function useJudging(jamSlug: string) {
         setProgress((p) => ({ ...p, sessionComplete: true, completed: 10 }));
         setPair(null);
       } else {
-        // Fetch next pair
         fetchPair();
       }
     } catch (e) {
+      // Remove history entry on failure
+      setHistory((h) => h.slice(0, -1));
       setError(e instanceof Error ? e.message : 'Failed to submit vote');
     }
   };
 
-  const skip = async () => {
+  // Report an invalid pair
+  const reportInvalidPair = async () => {
     if (!pair) return;
+
+    setHistory((h) => [...h, { pair, progress }]);
 
     try {
       const res = await fetch(`/api/jams/${jamSlug}/vote`, {
@@ -137,23 +163,35 @@ export function useJudging(jamSlug: string) {
         body: JSON.stringify({
           entryAId: pair.entryA.id,
           entryBId: pair.entryB.id,
-          winnerId: null, // null indicates skip
+          score: null,
+          invalid: true,
         }),
       });
 
       if (!res.ok) {
-        throw new Error('Failed to skip');
+        throw new Error('Failed to report invalid pair');
       }
 
-      // Fetch next pair
       fetchPair();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to skip');
+      setHistory((h) => h.slice(0, -1));
+      setError(e instanceof Error ? e.message : 'Failed to report invalid pair');
     }
+  };
+
+  // Go back to the previous pair (client-side only — vote is not undone)
+  const goBack = () => {
+    if (history.length === 0) return;
+
+    const prev = history[history.length - 1];
+    setHistory((h) => h.slice(0, -1));
+    setPair(prev.pair);
+    setProgress(prev.progress);
   };
 
   const continueSession = () => {
     setProgress((p) => ({ ...p, sessionComplete: false, completed: 0 }));
+    setHistory([]);
     fetchPair();
   };
 
@@ -163,8 +201,10 @@ export function useJudging(jamSlug: string) {
     progress,
     loading,
     error,
-    selectWinner,
-    skip,
+    canGoBack: history.length > 0,
+    submitScore,
+    reportInvalidPair,
+    goBack,
     continueSession,
   };
 }

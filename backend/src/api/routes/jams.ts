@@ -67,14 +67,26 @@ router.get('/:slug/pair', async (req: Request, res: Response): Promise<void> => 
   }
 });
 
-// POST /api/jams/:slug/vote - Record a vote
+// POST /api/jams/:slug/vote - Record a vote (Likert scale)
+// Body: { entryAId, entryBId, score } where score is 0.0-1.0
+// Or: { entryAId, entryBId, score: null, invalid: true } to flag an invalid pair
 router.post('/:slug/vote', async (req: Request, res: Response): Promise<void> => {
   const slug = getSlug(req.params);
-  const { entryAId, entryBId, winnerId } = req.body;
+  const { entryAId, entryBId, score, invalid } = req.body;
   const judgeId = req.user!.id;
 
   if (!entryAId || !entryBId) {
     res.status(400).json({ error: 'Missing entry IDs' });
+    return;
+  }
+
+  if (invalid) {
+    if (score !== null && score !== undefined) {
+      res.status(400).json({ error: 'Invalid pair must have null score' });
+      return;
+    }
+  } else if (typeof score !== 'number' || score < 0 || score > 1) {
+    res.status(400).json({ error: 'Score must be a number between 0.0 and 1.0' });
     return;
   }
 
@@ -90,19 +102,7 @@ router.post('/:slug/vote', async (req: Request, res: Response): Promise<void> =>
       return;
     }
 
-    // Calculate score
-    // winnerId = null means skip
-    // winnerId = entryAId means A wins (score = 1.0)
-    // winnerId = entryBId means B wins (score = 0.0)
-    let score: number | null = null;
-    if (winnerId === entryAId) {
-      score = 1.0;
-    } else if (winnerId === entryBId) {
-      score = 0.0;
-    }
-    // winnerId = null -> score = null (skipped)
-
-    await insertComparison(slug, judgeId, entryAId, entryBId, score);
+    await insertComparison(slug, judgeId, entryAId, entryBId, invalid ? null : score);
 
     // Check if session is complete
     const progress = await getSessionProgress(slug, judgeId);
