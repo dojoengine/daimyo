@@ -86,7 +86,7 @@
 }
 
 .home-title {
-  font-family: 'Noto Serif JP', serif;
+  font-family: 'Noto Serif', 'Noto Serif JP', serif;
   font-size: 64px;
   font-weight: 900;
   margin: 0;
@@ -335,22 +335,31 @@
 }
 
 .home-link {
-  color: var(--parchment);
+  color: #fff;
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
   letter-spacing: 0.04em;
   transition: all 0.25s ease;
   padding: 12px 24px;
-  border: 1px solid var(--ash);
+  border: 1px solid var(--neon-red);
   border-radius: 4px;
   background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .home-link:hover {
-  color: var(--parchment);
-  border-color: var(--stone);
-  background: var(--scroll);
+  color: #fff;
+  background: var(--neon-red);
+  box-shadow: 0 0 20px var(--neon-glow);
+}
+
+.home-link-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
 /* ─── Animations ─── */
