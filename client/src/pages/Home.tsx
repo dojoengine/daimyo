@@ -5,16 +5,19 @@ const features = [
     title: 'Reputation',
     description:
       'Peer-driven role progression via :dojo: reactions. Kōhai → Senpai → Sensei → Meijin.',
+    href: 'https://github.com/dojoengine/daimyo/blob/main/spec/REPUTATION.md',
   },
   {
     title: 'Game Jam Judging',
     description:
       'Pairwise comparison system for ranking community game jam entries.',
+    href: 'https://github.com/dojoengine/daimyo/blob/main/spec/JUDGING.md',
   },
   {
     title: 'Content Pipeline',
     description:
       'Automated Discord-to-Twitter content generation with AI-crafted images.',
+    href: 'https://github.com/dojoengine/daimyo/blob/main/spec/CONTENT.md',
   },
 ];
 
@@ -47,10 +50,16 @@ export default function Home() {
         {/* Features */}
         <div className="home-features">
           {features.map((f) => (
-            <div key={f.title} className="home-feature">
+            <a
+              key={f.title}
+              href={f.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="home-feature"
+            >
               <h2 className="home-feature-title">{f.title}</h2>
               <p className="home-feature-desc">{f.description}</p>
-            </div>
+            </a>
           ))}
         </div>
 
