@@ -36,6 +36,14 @@ railway run pnpm run --filter backend test-content-pipeline
 
 > [See here](https://docs.railway.com/guides/cli) for more information about installing the Railway shell locally.
 
+To deploy Discord slash commands after changing command definitions:
+
+```
+railway run pnpm --filter backend deploy-commands
+```
+
+This is not part of the automatic deploy pipeline — run it manually when command definitions change.
+
 To connect to the Railway database, run the following command:
 
 ```
