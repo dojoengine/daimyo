@@ -2,7 +2,7 @@
 buildCommand = "pnpm install --frozen-lockfile && pnpm --filter daimyo-client build && pnpm --filter backend build"
 
 [deploy]
-preDeployCommand = "pnpm --filter backend run migrate"
+preDeployCommand = "timeout 60 pnpm --filter backend run migrate"
 startCommand = "pnpm --filter backend start"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
