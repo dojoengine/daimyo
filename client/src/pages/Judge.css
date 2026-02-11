@@ -1,0 +1,89 @@
+/* ─── Judge Page ─── */
+
+.judge-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 32px;
+  min-height: 100vh;
+}
+
+.judge-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.judge-title {
+  font-family: 'Noto Serif', 'Noto Serif JP', serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--parchment);
+  margin: 0;
+}
+
+.judge-user {
+  color: var(--stone);
+  font-size: 14px;
+}
+
+.judge-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50vh;
+  font-size: 18px;
+  color: var(--stone);
+}
+
+.judge-error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50vh;
+  font-size: 18px;
+  color: var(--neon-red);
+}
+
+.judge-complete {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 50vh;
+  text-align: center;
+  gap: 20px;
+}
+
+.judge-complete h1 {
+  font-family: 'Noto Serif', 'Noto Serif JP', serif;
+  font-size: 36px;
+  font-weight: 900;
+  color: var(--parchment);
+  margin: 0;
+}
+
+.judge-complete p {
+  font-size: 16px;
+  color: var(--stone);
+  margin: 0;
+}
+
+.judge-continue-btn {
+  padding: 14px 32px;
+  font-size: 15px;
+  font-weight: 600;
+  background: var(--neon-red);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: all 0.25s ease;
+  box-shadow: 0 0 20px var(--neon-glow);
+}
+
+.judge-continue-btn:hover {
+  box-shadow: 0 0 30px #ff1a3d60;
+  transform: translateY(-1px);
+}

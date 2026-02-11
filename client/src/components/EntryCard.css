@@ -1,0 +1,85 @@
+/* ─── Entry Card ─── */
+
+.entry-card {
+  flex: 1;
+  background: var(--ink);
+  border: 1px solid var(--ash);
+  border-radius: 12px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: background 0.3s ease;
+}
+
+.entry-card:hover {
+  background: var(--scroll);
+}
+
+.entry-title {
+  font-family: 'Noto Serif', 'Noto Serif JP', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--parchment);
+  margin: 0;
+}
+
+.entry-desc {
+  font-size: 15px;
+  color: var(--stone);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.entry-meta {
+  font-size: 14px;
+  color: var(--stone);
+}
+
+.entry-author {
+  color: var(--mist);
+}
+
+.entry-links {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.entry-link {
+  display: inline-block;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  background: var(--scroll);
+  color: var(--neon-red);
+  text-decoration: none;
+  border-radius: 4px;
+  border: 1px solid var(--ash);
+  transition: all 0.25s ease;
+}
+
+.entry-link:hover {
+  background: var(--ash);
+  border-color: var(--stone);
+}
+
+.entry-select-btn {
+  margin-top: auto;
+  padding: 14px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  background: var(--neon-red);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 0 20px var(--neon-glow);
+  letter-spacing: 0.02em;
+}
+
+.entry-select-btn:hover {
+  box-shadow: 0 0 30px #ff1a3d60;
+  transform: translateY(-1px);
+}

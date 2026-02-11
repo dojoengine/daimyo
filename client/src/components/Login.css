@@ -1,0 +1,71 @@
+/* ─── Login ─── */
+
+.login-page {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-content {
+  text-align: center;
+}
+
+.login-title {
+  font-family: 'Noto Serif', 'Noto Serif JP', serif;
+  font-size: 36px;
+  font-weight: 900;
+  margin-bottom: 12px;
+  color: var(--parchment);
+  background: linear-gradient(135deg, var(--parchment) 0%, var(--gold) 50%, var(--parchment) 100%);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.login-subtitle {
+  font-size: 18px;
+  color: var(--stone);
+  margin-bottom: 32px;
+}
+
+.login-description {
+  font-size: 16px;
+  color: var(--mist);
+  margin-bottom: 32px;
+}
+
+.login-description strong {
+  color: var(--gold);
+}
+
+.login-discord-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 32px;
+  font-size: 16px;
+  font-weight: 600;
+  background: #5865f2;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  letter-spacing: 0.02em;
+}
+
+.login-discord-btn:hover {
+  background: #4752c4;
+  transform: translateY(-1px);
+}
+
+.login-discord-icon {
+  width: 20px;
+  height: 20px;
+}

@@ -1,0 +1,33 @@
+/* ─── Auth Callback ─── */
+
+.auth-page {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.auth-loading {
+  font-size: 18px;
+  color: var(--stone);
+}
+
+.auth-error {
+  text-align: center;
+}
+
+.auth-error h1 {
+  font-family: 'Noto Serif', 'Noto Serif JP', serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--neon-red);
+  margin-bottom: 12px;
+}
+
+.auth-error p {
+  font-size: 16px;
+  color: var(--stone);
+}

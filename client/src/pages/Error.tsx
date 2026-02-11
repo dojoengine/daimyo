@@ -1,4 +1,5 @@
 import { useSearchParams } from 'react-router-dom';
+import './Error.css';
 
 export default function ErrorPage() {
   const [searchParams] = useSearchParams();
@@ -12,43 +13,14 @@ export default function ErrorPage() {
   }
 
   return (
-    <div style={styles.container}>
-      <div style={styles.content}>
-        <h1 style={styles.title}>Access Denied</h1>
-        <p style={styles.message}>{message}</p>
-        <a href="/" style={styles.link}>
+    <div className="error-page">
+      <div className="error-content">
+        <h1 className="error-title">Access Denied</h1>
+        <p className="error-message">{message}</p>
+        <a href="/" className="error-home-link">
           Return Home
         </a>
       </div>
     </div>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    maxWidth: '600px',
-    margin: '0 auto',
-    padding: '20px',
-    minHeight: '100vh',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  content: {
-    textAlign: 'center',
-  },
-  title: {
-    fontSize: '32px',
-    marginBottom: '20px',
-    color: '#ff6b6b',
-  },
-  message: {
-    fontSize: '18px',
-    color: '#888',
-    marginBottom: '30px',
-  },
-  link: {
-    color: '#5865f2',
-    textDecoration: 'none',
-  },
-};
