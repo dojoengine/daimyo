@@ -1,3 +1,5 @@
+import './Home.css';
+
 const features = [
   {
     title: 'Reputation',
@@ -31,77 +33,82 @@ const links = [
 
 export default function Home() {
   return (
-    <div style={styles.page}>
-      <div style={styles.container}>
+    <div className="home-page">
+      <div className="home-container">
         {/* Hero */}
-        <div style={styles.hero}>
-          <img src="/logo.png" alt="Daimyō" style={styles.logo} />
-          <h1 style={styles.title}>Daimyō</h1>
-          <p style={styles.tagline}>Community bot for the Dojo Discord</p>
+        <div className="home-hero">
+          <img src="/logo.png" alt="Daimyō" className="home-logo" />
+          <h1 className="home-title">Daimyō</h1>
+          <p className="home-tagline">Community bot for the Dojo Discord</p>
         </div>
 
+        <div className="home-divider" />
+
         {/* Features */}
-        <div style={styles.features}>
+        <div className="home-features">
           {features.map((f) => (
-            <div key={f.title} style={styles.card}>
-              <h2 style={styles.cardTitle}>{f.title}</h2>
-              <p style={styles.cardDescription}>{f.description}</p>
+            <div key={f.title} className="home-feature">
+              <h2 className="home-feature-title">{f.title}</h2>
+              <p className="home-feature-desc">{f.description}</p>
             </div>
           ))}
         </div>
 
         {/* Game Jam */}
-        <div style={styles.jam}>
-          <h2 style={styles.jamTitle}>Game Jam VIII</h2>
-          <p style={styles.jamDates}>Feb 27 – Mar 2, 2026 · 72 hours · Online</p>
-          <p style={styles.jamDescription}>
-            Build a fully onchain game with Dojo and Cartridge in 72 hours.
-            $10,000 in prizes. Up to 5 per team.
-          </p>
-          <div style={styles.jamDetails}>
-            <div style={styles.jamDetail}>
-              <h3 style={styles.jamDetailTitle}>Requirements</h3>
-              <ul style={styles.jamList}>
-                <li>Built with Dojo Engine (Cairo contracts)</li>
-                <li>Deployed to Slot or Sepolia testnet</li>
-                <li>Cartridge Controller integration</li>
-                <li>Functional frontend using Dojo SDK</li>
-              </ul>
+        <div className="home-jam">
+          <div className="home-jam-inner">
+            <span className="home-jam-label">Now Open</span>
+            <h2 className="home-jam-title">Game Jam VIII</h2>
+            <p className="home-jam-dates">Feb 27 – Mar 2, 2026 · 72 hours · Online</p>
+            <p className="home-jam-desc">
+              Build a fully onchain game with Dojo and Cartridge in 72 hours.
+              $10,000 in prizes. Up to 5 per team.
+            </p>
+            <div className="home-jam-grid">
+              <div>
+                <h3 className="home-jam-section-title">Requirements</h3>
+                <ul className="home-jam-list">
+                  <li>Built with Dojo Engine (Cairo contracts)</li>
+                  <li>Deployed to Slot or Sepolia testnet</li>
+                  <li>Cartridge Controller integration</li>
+                  <li>Functional frontend using Dojo SDK</li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="home-jam-section-title">Judging</h3>
+                <ul className="home-jam-list">
+                  <li>Novel use of Dojo's unique features</li>
+                  <li>Concept and mechanic originality</li>
+                  <li>Visual and game design quality</li>
+                  <li>Entertainment value</li>
+                </ul>
+              </div>
             </div>
-            <div style={styles.jamDetail}>
-              <h3 style={styles.jamDetailTitle}>Judging</h3>
-              <ul style={styles.jamList}>
-                <li>Novel use of Dojo's unique features</li>
-                <li>Concept and mechanic originality</li>
-                <li>Visual and game design quality</li>
-                <li>Entertainment value</li>
-              </ul>
+            <div className="home-jam-actions">
+              <a
+                href="https://luma.com/w1wxpfv3"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="home-jam-cta home-jam-cta-primary"
+              >
+                Register on Luma
+              </a>
+              <a href="/judge/gj8" className="home-jam-cta home-jam-cta-secondary">
+                Judge Entries
+              </a>
             </div>
-          </div>
-          <div style={styles.jamActions}>
-            <a
-              href="https://luma.com/w1wxpfv3"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={styles.jamCta}
-            >
-              Register on Luma →
-            </a>
-            <a href="/judge/gj8" style={styles.jamCtaSecondary}>
-              Judge Entries →
-            </a>
           </div>
         </div>
 
         {/* Links */}
-        <div style={styles.links}>
+        <div className="home-links">
           {links.map((l) => (
             <a
               key={l.label}
               href={l.href}
               target="_blank"
               rel="noopener noreferrer"
-              style={styles.link}
+              className="home-link"
             >
               {l.label}
             </a>
@@ -111,156 +118,3 @@ export default function Home() {
     </div>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  page: {
-    minHeight: '100vh',
-    background: '#0a1628',
-    color: '#e0e0e0',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '48px 24px',
-  },
-  container: {
-    maxWidth: 900,
-    width: '100%',
-  },
-  hero: {
-    textAlign: 'center',
-    marginBottom: 64,
-  },
-  logo: {
-    width: 200,
-    height: 200,
-    borderRadius: 24,
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 48,
-    fontWeight: 700,
-    margin: 0,
-    letterSpacing: '-0.02em',
-  },
-  tagline: {
-    fontSize: 20,
-    color: '#8899aa',
-    marginTop: 12,
-  },
-  features: {
-    display: 'flex',
-    gap: 20,
-    marginBottom: 64,
-    flexWrap: 'wrap' as const,
-  },
-  card: {
-    flex: '1 1 240px',
-    background: '#0f1d32',
-    border: '1px solid #1a2a44',
-    borderRadius: 12,
-    padding: '28px 24px',
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: 600,
-    marginBottom: 8,
-    color: '#e0e0e0',
-  },
-  cardDescription: {
-    fontSize: 15,
-    lineHeight: 1.5,
-    color: '#8899aa',
-    margin: 0,
-  },
-  jam: {
-    background: '#0f1d32',
-    border: '1px solid #1a2a44',
-    borderRadius: 12,
-    padding: '36px 32px',
-    marginBottom: 64,
-    textAlign: 'center' as const,
-  },
-  jamTitle: {
-    fontSize: 28,
-    fontWeight: 700,
-    margin: 0,
-    color: '#e0e0e0',
-  },
-  jamDates: {
-    fontSize: 16,
-    color: '#8899aa',
-    marginTop: 8,
-    marginBottom: 16,
-  },
-  jamDescription: {
-    fontSize: 16,
-    lineHeight: 1.6,
-    color: '#b0bec5',
-    margin: '0 auto 24px',
-    maxWidth: 560,
-  },
-  jamDetails: {
-    display: 'flex',
-    gap: 32,
-    justifyContent: 'center',
-    flexWrap: 'wrap' as const,
-    textAlign: 'left' as const,
-    marginBottom: 28,
-  },
-  jamDetail: {
-    flex: '1 1 240px',
-    maxWidth: 340,
-  },
-  jamDetailTitle: {
-    fontSize: 15,
-    fontWeight: 600,
-    color: '#e0e0e0',
-    marginBottom: 8,
-  },
-  jamList: {
-    margin: 0,
-    paddingLeft: 20,
-    fontSize: 14,
-    lineHeight: 1.8,
-    color: '#8899aa',
-  },
-  jamActions: {
-    display: 'flex',
-    gap: 16,
-    justifyContent: 'center',
-    flexWrap: 'wrap' as const,
-  },
-  jamCta: {
-    display: 'inline-block',
-    background: '#ff1a3d',
-    color: '#ffffff',
-    textDecoration: 'none',
-    padding: '12px 32px',
-    borderRadius: 8,
-    fontSize: 16,
-    fontWeight: 600,
-  },
-  jamCtaSecondary: {
-    display: 'inline-block',
-    background: 'transparent',
-    color: '#ff1a3d',
-    border: '1px solid #ff1a3d',
-    textDecoration: 'none',
-    padding: '12px 32px',
-    borderRadius: 8,
-    fontSize: 16,
-    fontWeight: 600,
-  },
-  links: {
-    display: 'flex',
-    justifyContent: 'center',
-    gap: 32,
-    flexWrap: 'wrap' as const,
-  },
-  link: {
-    color: '#ff1a3d',
-    textDecoration: 'none',
-    fontSize: 16,
-    fontWeight: 500,
-  },
-};

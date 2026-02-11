@@ -1,0 +1,430 @@
+/* ═══════════════════════════════════════════
+   Daimyō — Feudal Japanese Cyberpunk Theme
+   ═══════════════════════════════════════════ */
+
+:root {
+  --void: #0a0a0f;
+  --ink: #141420;
+  --scroll: #1c1c2c;
+  --ash: #2a2a3a;
+  --stone: #787892;
+  --mist: #a4a4bc;
+  --parchment: #d4d4e0;
+  --neon-red: #ff1a3d;
+  --neon-glow: #ff1a3d40;
+  --ember: #ff4d2a;
+  --gold: #c9a84c;
+  --gold-dim: #c9a84c30;
+}
+
+/* ─── Page ─── */
+.home-page {
+  min-height: 100vh;
+  background: var(--void);
+  color: var(--parchment);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Ink wash background texture */
+.home-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 10%, #2a0a2a33 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 80%, #0a1a3a33 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 50% 50%, #2a0a0a22 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Vertical kanji accent — right edge */
+.home-page::after {
+  content: '大名';
+  position: fixed;
+  right: 32px;
+  top: 50%;
+  transform: translateY(-50%);
+  writing-mode: vertical-rl;
+  font-family: 'Noto Serif JP', serif;
+  font-size: 120px;
+  font-weight: 900;
+  color: #ffffff08;
+  letter-spacing: 0.2em;
+  pointer-events: none;
+  z-index: 0;
+  user-select: none;
+}
+
+.home-container {
+  max-width: 940px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 80px 32px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── Hero ─── */
+.home-hero {
+  text-align: center;
+  margin-bottom: 100px;
+  animation: fadeIn 0.8s ease-out;
+}
+
+.home-logo {
+  width: 160px;
+  height: 160px;
+  border-radius: 20px;
+  margin-bottom: 32px;
+  border: 1px solid var(--ash);
+  box-shadow:
+    0 0 40px var(--neon-glow),
+    0 0 80px #ff1a3d15;
+  animation: logoGlow 4s ease-in-out infinite alternate;
+}
+
+.home-title {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 64px;
+  font-weight: 900;
+  margin: 0;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--parchment) 0%, var(--gold) 50%, var(--parchment) 100%);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 6s ease-in-out infinite;
+}
+
+.home-tagline {
+  font-size: 18px;
+  color: var(--stone);
+  margin-top: 16px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ─── Divider ─── */
+.home-divider {
+  width: 60px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--neon-red), transparent);
+  margin: 0 auto 80px;
+  box-shadow: 0 0 12px var(--neon-glow);
+}
+
+/* ─── Features ─── */
+.home-features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  margin-bottom: 100px;
+  animation: fadeUp 0.8s ease-out;
+}
+
+.home-feature {
+  background: var(--ink);
+  border: 1px solid var(--ash);
+  padding: 36px 28px;
+  position: relative;
+  transition: background 0.3s ease;
+}
+
+.home-feature:hover {
+  background: var(--scroll);
+}
+
+.home-feature:first-child {
+  border-radius: 8px 0 0 8px;
+}
+
+.home-feature:last-child {
+  border-radius: 0 8px 8px 0;
+}
+
+.home-feature-title {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--parchment);
+}
+
+.home-feature-desc {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--stone);
+  margin: 0;
+}
+
+/* ─── Game Jam ─── */
+.home-jam {
+  position: relative;
+  margin-bottom: 100px;
+  animation: fadeUp 0.8s ease-out;
+}
+
+.home-jam-inner {
+  background: var(--ink);
+  border: 1px solid var(--ash);
+  border-radius: 12px;
+  padding: 56px 48px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Neon top edge */
+.home-jam-inner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--neon-red), transparent);
+  box-shadow: 0 0 20px var(--neon-glow);
+}
+
+/* Watermark kanji */
+.home-jam-inner::after {
+  content: '闘';
+  position: absolute;
+  right: -20px;
+  bottom: -30px;
+  font-family: 'Noto Serif JP', serif;
+  font-size: 200px;
+  font-weight: 900;
+  color: #ffffff06;
+  pointer-events: none;
+  user-select: none;
+  line-height: 1;
+}
+
+.home-jam-label {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--neon-red);
+  margin-bottom: 16px;
+  padding: 4px 12px;
+  border: 1px solid var(--neon-red);
+  border-radius: 2px;
+  box-shadow: 0 0 12px var(--neon-glow);
+}
+
+.home-jam-title {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 36px;
+  font-weight: 900;
+  margin: 0 0 8px;
+  color: var(--parchment);
+}
+
+.home-jam-dates {
+  font-size: 15px;
+  color: var(--stone);
+  margin-bottom: 20px;
+}
+
+.home-jam-desc {
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--mist);
+  margin: 0 0 40px;
+  max-width: 520px;
+}
+
+.home-jam-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 44px;
+}
+
+.home-jam-section-title {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--gold-dim);
+}
+
+.home-jam-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.home-jam-list li {
+  font-size: 14px;
+  line-height: 2;
+  color: var(--mist);
+  padding-left: 16px;
+  position: relative;
+}
+
+.home-jam-list li::before {
+  content: '—';
+  position: absolute;
+  left: 0;
+  color: var(--ash);
+}
+
+.home-jam-actions {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.home-jam-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: all 0.25s ease;
+  letter-spacing: 0.02em;
+}
+
+.home-jam-cta-primary {
+  background: var(--neon-red);
+  color: #fff;
+  box-shadow: 0 0 20px var(--neon-glow);
+}
+
+.home-jam-cta-primary:hover {
+  box-shadow: 0 0 30px #ff1a3d60;
+  transform: translateY(-1px);
+}
+
+.home-jam-cta-secondary {
+  background: transparent;
+  color: var(--parchment);
+  border: 1px solid var(--ash);
+}
+
+.home-jam-cta-secondary:hover {
+  border-color: var(--stone);
+  background: var(--scroll);
+}
+
+/* ─── Links ─── */
+.home-links {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+  animation: fadeUp 0.8s ease-out;
+}
+
+.home-link {
+  color: var(--stone);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  transition: color 0.2s ease;
+  position: relative;
+}
+
+.home-link:hover {
+  color: var(--parchment);
+}
+
+.home-link::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--neon-red);
+  transition: width 0.3s ease;
+  box-shadow: 0 0 4px var(--neon-glow);
+}
+
+.home-link:hover::after {
+  width: 100%;
+}
+
+/* ─── Animations ─── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes logoGlow {
+  0% { box-shadow: 0 0 30px var(--neon-glow), 0 0 60px #ff1a3d10; }
+  100% { box-shadow: 0 0 50px var(--neon-glow), 0 0 100px #ff1a3d20; }
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+  .home-container {
+    padding: 48px 20px;
+  }
+
+  .home-title {
+    font-size: 44px;
+  }
+
+  .home-features {
+    grid-template-columns: 1fr;
+    gap: 1px;
+  }
+
+  .home-feature:first-child {
+    border-radius: 8px 8px 0 0;
+  }
+
+  .home-feature:last-child {
+    border-radius: 0 0 8px 8px;
+  }
+
+  .home-jam-inner {
+    padding: 36px 24px;
+  }
+
+  .home-jam-grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .home-page::after {
+    display: none;
+  }
+
+  .home-hero {
+    margin-bottom: 64px;
+  }
+}
