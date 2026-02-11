@@ -6,31 +6,42 @@
   gap: 24px;
 }
 
+/* Prompt banner */
+.comparison-prompt {
+  font-family: 'Noto Serif', 'Noto Serif JP', serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--mist);
+  text-align: center;
+  margin: 0;
+  font-style: italic;
+}
+
+/* Side-by-side cards */
 .comparison-cards {
   display: flex;
   gap: 20px;
   align-items: stretch;
 }
 
-.comparison-vs {
+/* Controls area */
+.comparison-controls {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  font-family: 'Noto Serif', 'Noto Serif JP', serif;
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--stone);
-  min-width: 60px;
+  gap: 16px;
 }
 
-.comparison-skip-wrap {
+/* Secondary buttons (Back, Invalid Pair) */
+.comparison-secondary {
   display: flex;
+  gap: 12px;
   justify-content: center;
 }
 
-.comparison-skip {
-  padding: 10px 24px;
-  font-size: 14px;
+.comparison-btn {
+  padding: 8px 20px;
+  font-size: 13px;
   font-weight: 500;
   background: transparent;
   color: var(--stone);
@@ -41,19 +52,28 @@
   letter-spacing: 0.02em;
 }
 
-.comparison-skip:hover {
+.comparison-btn:hover:not(:disabled) {
   border-color: var(--stone);
   background: var(--scroll);
   color: var(--parchment);
 }
 
+.comparison-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.comparison-invalid {
+  color: var(--ember);
+  border-color: transparent;
+}
+
+.comparison-invalid:hover {
+  border-color: var(--ember);
+}
+
 @media (max-width: 768px) {
   .comparison-cards {
     flex-direction: column;
-  }
-
-  .comparison-vs {
-    min-width: auto;
-    padding: 8px 0;
   }
 }

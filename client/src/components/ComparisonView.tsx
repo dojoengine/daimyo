@@ -1,29 +1,58 @@
 import { Entry } from '../hooks/useJudging';
 import EntryCard from './EntryCard';
+import LikertScale from './LikertScale';
 import './ComparisonView.css';
 
 interface ComparisonViewProps {
   entryA: Entry;
   entryB: Entry;
-  onSelect: (winnerId: string) => void;
-  onSkip: () => void;
+  canGoBack: boolean;
+  onScore: (score: number) => void;
+  onInvalidPair: () => void;
+  onBack: () => void;
 }
 
-export default function ComparisonView({ entryA, entryB, onSelect, onSkip }: ComparisonViewProps) {
+export default function ComparisonView({
+  entryA,
+  entryB,
+  canGoBack,
+  onScore,
+  onInvalidPair,
+  onBack,
+}: ComparisonViewProps) {
   return (
     <div className="comparison-container">
+      <p className="comparison-prompt">
+        Which game better demonstrates the potential of fully on-chain gaming?
+      </p>
+
       <div className="comparison-cards">
-        <EntryCard entry={entryA} onSelect={() => onSelect(entryA.id)} />
-
-        <div className="comparison-vs">VS</div>
-
-        <EntryCard entry={entryB} onSelect={() => onSelect(entryB.id)} />
+        <EntryCard entry={entryA} />
+        <EntryCard entry={entryB} />
       </div>
 
-      <div className="comparison-skip-wrap">
-        <button className="comparison-skip" onClick={onSkip}>
-          Skip (can't decide)
-        </button>
+      <div className="comparison-controls">
+        <LikertScale
+          labelA={entryA.title}
+          labelB={entryB.title}
+          onScore={onScore}
+        />
+
+        <div className="comparison-secondary">
+          <button
+            className="comparison-btn comparison-back"
+            onClick={onBack}
+            disabled={!canGoBack}
+          >
+            Back
+          </button>
+          <button
+            className="comparison-btn comparison-invalid"
+            onClick={onInvalidPair}
+          >
+            Invalid Pair
+          </button>
+        </div>
       </div>
     </div>
   );

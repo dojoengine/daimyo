@@ -7,9 +7,18 @@ import './Judge.css';
 
 export default function Judge() {
   const { slug } = useParams<{ slug: string }>();
-  const { user, pair, progress, loading, error, selectWinner, skip, continueSession } = useJudging(
-    slug || ''
-  );
+  const {
+    user,
+    pair,
+    progress,
+    loading,
+    error,
+    canGoBack,
+    submitScore,
+    reportInvalidPair,
+    goBack,
+    continueSession,
+  } = useJudging(slug || '');
 
   if (loading) {
     return (
@@ -75,7 +84,14 @@ export default function Judge() {
 
       <ProgressBar completed={progress.completed} total={progress.total} />
 
-      <ComparisonView entryA={pair.entryA} entryB={pair.entryB} onSelect={selectWinner} onSkip={skip} />
+      <ComparisonView
+        entryA={pair.entryA}
+        entryB={pair.entryB}
+        canGoBack={canGoBack}
+        onScore={submitScore}
+        onInvalidPair={reportInvalidPair}
+        onBack={goBack}
+      />
     </div>
   );
 }
