@@ -91,7 +91,8 @@
   font-weight: 900;
   margin: 0;
   letter-spacing: -0.02em;
-  line-height: 1;
+  line-height: 1.15;
+  padding-bottom: 4px;
   background: linear-gradient(135deg, var(--parchment) 0%, var(--gold) 50%, var(--parchment) 100%);
   background-size: 200% 200%;
   -webkit-background-clip: text;
@@ -133,6 +134,8 @@
   padding: 36px 28px;
   position: relative;
   transition: background 0.3s ease;
+  text-decoration: none;
+  cursor: pointer;
 }
 
 .home-feature:hover {
@@ -326,39 +329,28 @@
 .home-links {
   display: flex;
   justify-content: center;
-  gap: 40px;
+  gap: 16px;
   flex-wrap: wrap;
   animation: fadeUp 0.8s ease-out;
 }
 
 .home-link {
-  color: var(--stone);
+  color: var(--parchment);
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
   letter-spacing: 0.04em;
-  transition: color 0.2s ease;
-  position: relative;
+  transition: all 0.25s ease;
+  padding: 12px 24px;
+  border: 1px solid var(--ash);
+  border-radius: 4px;
+  background: transparent;
 }
 
 .home-link:hover {
   color: var(--parchment);
-}
-
-.home-link::after {
-  content: '';
-  position: absolute;
-  bottom: -4px;
-  left: 0;
-  width: 0;
-  height: 1px;
-  background: var(--neon-red);
-  transition: width 0.3s ease;
-  box-shadow: 0 0 4px var(--neon-glow);
-}
-
-.home-link:hover::after {
-  width: 100%;
+  border-color: var(--stone);
+  background: var(--scroll);
 }
 
 /* ─── Animations ─── */
