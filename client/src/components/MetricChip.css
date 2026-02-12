@@ -3,25 +3,31 @@
 .metric-chip {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 6px 10px;
+  gap: 3px;
+  padding: 8px 12px;
   background: var(--scroll);
   border: 1px solid var(--ash);
   border-radius: 6px;
   min-width: 0;
+  transition: all 0.2s ease;
+}
+
+.metric-chip:hover {
+  border-color: #3a3a4e;
+  background: #1e1e30;
 }
 
 .metric-chip-label {
   font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   color: var(--stone);
 }
 
 .metric-chip-value {
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--parchment);
   white-space: nowrap;
   overflow: hidden;

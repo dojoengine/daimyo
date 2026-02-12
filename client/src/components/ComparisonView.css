@@ -3,25 +3,54 @@
 .comparison-container {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 28px;
+  animation: compFadeUp 0.5s ease-out 0.3s both;
 }
 
 /* Prompt banner */
 .comparison-prompt {
   font-family: 'Noto Serif', 'Noto Serif JP', serif;
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 500;
   color: var(--mist);
   text-align: center;
   margin: 0;
   font-style: italic;
+  padding: 16px 32px;
+  background: linear-gradient(135deg, transparent, #ffffff03, transparent);
+  border-radius: 8px;
+  border: 1px solid #ffffff06;
 }
 
 /* Side-by-side cards */
 .comparison-cards {
   display: flex;
-  gap: 20px;
+  gap: 24px;
   align-items: stretch;
+  position: relative;
+}
+
+/* VS badge between cards */
+.comparison-vs {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Noto Serif', 'Noto Serif JP', serif;
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--neon-red);
+  background: var(--void);
+  border: 2px solid var(--ash);
+  border-radius: 50%;
+  letter-spacing: 0.08em;
+  box-shadow: 0 0 20px var(--neon-glow);
 }
 
 /* Controls area */
@@ -29,7 +58,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
 }
 
 /* Secondary buttons (Back, Invalid Pair) */
@@ -72,8 +101,32 @@
   border-color: var(--ember);
 }
 
+@keyframes compFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (max-width: 768px) {
   .comparison-cards {
     flex-direction: column;
+  }
+
+  .comparison-vs {
+    position: relative;
+    left: auto;
+    top: auto;
+    transform: none;
+    margin: -12px auto;
+  }
+
+  .comparison-prompt {
+    font-size: 16px;
+    padding: 12px 20px;
   }
 }

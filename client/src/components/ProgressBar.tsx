@@ -19,6 +19,14 @@ export default function ProgressBar({ completed, total }: ProgressBarProps) {
       <div className="progress-track">
         <div className="progress-fill" style={{ width: `${percent}%` }} />
       </div>
+      <div className="progress-steps">
+        {Array.from({ length: total }, (_, i) => (
+          <div
+            key={i}
+            className={`progress-step${i < completed ? ' progress-step-done' : ''}${i === completed ? ' progress-step-current' : ''}`}
+          />
+        ))}
+      </div>
     </div>
   );
 }
