@@ -10,9 +10,9 @@
 
 .likert-anchor {
   font-family: 'Noto Serif', 'Noto Serif JP', serif;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
-  color: var(--stone);
+  color: var(--parchment);
   min-width: 80px;
   transition: color 0.2s ease;
 }
@@ -112,6 +112,8 @@
 @media (max-width: 768px) {
   .likert-scale {
     flex-direction: column;
+    align-items: center;
+    width: 80%;
     gap: 10px;
     padding: 12px 0;
   }
@@ -121,13 +123,12 @@
   }
 
   .likert-buttons {
-    flex-wrap: wrap;
-    justify-content: center;
+    flex-direction: column;
+    width: 100%;
   }
 
   .likert-btn {
-    flex: 1;
-    min-width: 80px;
+    width: 100%;
     text-align: center;
   }
 }

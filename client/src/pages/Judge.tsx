@@ -1,5 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { useJudging } from '../hooks/useJudging';
+import { formatJamTitle } from '../utils/jam';
 import ComparisonView from '../components/ComparisonView';
 import ProgressBar from '../components/ProgressBar';
 import Login from '../components/Login';
@@ -78,7 +79,7 @@ export default function Judge() {
       <header className="judge-header">
         <div className="judge-header-left">
           <Link to="/" className="judge-home-link">Daimyo</Link>
-          <h1 className="judge-title">Game Jam {slug?.toUpperCase()} Judging</h1>
+          <h1 className="judge-title">{formatJamTitle(slug || '')} Judging</h1>
         </div>
         <div className="judge-user">
           <span>{user.username}</span>

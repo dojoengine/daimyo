@@ -7,11 +7,11 @@ interface LikertScaleProps {
 }
 
 const LIKERT_OPTIONS: { label: string; score: number; className: string }[] = [
-  { label: 'Strong', score: 1.0, className: 'likert-strong-a' },
-  { label: 'Weak', score: 0.75, className: 'likert-weak-a' },
-  { label: 'Indifferent', score: 0.5, className: 'likert-neutral' },
-  { label: 'Weak', score: 0.25, className: 'likert-weak-b' },
-  { label: 'Strong', score: 0.0, className: 'likert-strong-b' },
+  { label: 'Much', score: 1.0, className: 'likert-strong-a' },
+  { label: 'Slightly', score: 0.75, className: 'likert-weak-a' },
+  { label: 'Even', score: 0.5, className: 'likert-neutral' },
+  { label: 'Slightly', score: 0.25, className: 'likert-weak-b' },
+  { label: 'Much', score: 0.0, className: 'likert-strong-b' },
 ];
 
 export default function LikertScale({ labelA, labelB, onScore }: LikertScaleProps) {
