@@ -1,8 +1,8 @@
 [build]
-buildCommand = "pnpm install --frozen-lockfile && pnpm --filter daimyo-client build && pnpm --filter backend build"
+buildCommand = "npm ci && npm run build -w client && npm run build -w backend"
 
 [deploy]
-preDeployCommand = "pnpm --filter backend run migrate"
-startCommand = "pnpm --filter backend start"
+preDeployCommand = "npm run migrate -w backend"
+startCommand = "npm run start -w backend"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10

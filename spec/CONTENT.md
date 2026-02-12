@@ -87,17 +87,17 @@ The pipeline can be run manually via npm scripts:
 
 ```bash
 # Dry run - outputs drafts to terminal, no side effects
-pnpm test-content-pipeline
+npm run test-content-pipeline
 
 # Actually upload to Typefully
-pnpm test-content-pipeline --upload
+npm run test-content-pipeline -- --upload
 ```
 
 Or via Railway:
 
 ```bash
-railway run pnpm --filter backend test-content-pipeline
-railway run pnpm --filter backend test-content-pipeline --upload
+railway run npm run test-content-pipeline -w backend
+railway run npm run test-content-pipeline -w backend -- --upload
 ```
 
 ### Dry Run Output
