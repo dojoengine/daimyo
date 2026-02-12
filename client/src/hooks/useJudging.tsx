@@ -4,16 +4,18 @@ export interface EntryMetrics {
   classification: 'Whole Game' | 'Feature';
   team_size: number;
   dojo_contracts: string;
-  frontend_sdk: boolean;
   jam_commits_pct: number;
-  playability: 'Live' | 'Video' | 'Local';
+  playability: 'Live' | 'Video' | 'None';
 }
 
 export interface Entry {
   id: string;
+  emoji: string;
   title: string;
   summary_short: string;
   summary_long: string;
+  work_done_short: string;
+  work_done_long: string;
   repo_url: string;
   demo_url?: string;
   video_url?: string;

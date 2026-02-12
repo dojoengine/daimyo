@@ -8,7 +8,7 @@
   padding: 28px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
@@ -64,22 +64,85 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
+  width: 56px;
   height: 34px;
-  font-size: 14px;
-  color: var(--stone);
-  background: var(--scroll);
-  border: 1px solid var(--ash);
   border-radius: 6px;
   text-decoration: none;
   transition: all 0.2s ease;
 }
 
 .entry-icon-link:hover {
-  color: var(--parchment);
-  border-color: var(--stone);
-  background: var(--ash);
   transform: translateY(-1px);
+}
+
+/* Play — green */
+.entry-icon-play {
+  color: #4ade80;
+  background: #4ade8012;
+  border: 1px solid #4ade8030;
+}
+
+.entry-icon-play:hover {
+  color: #6ee7a0;
+  background: #4ade8020;
+  border-color: #4ade8060;
+  box-shadow: 0 0 12px #4ade8025;
+}
+
+/* Video — purple */
+.entry-icon-video {
+  color: #c084fc;
+  background: #c084fc12;
+  border: 1px solid #c084fc30;
+}
+
+.entry-icon-video:hover {
+  color: #d4a0ff;
+  background: #c084fc20;
+  border-color: #c084fc60;
+  box-shadow: 0 0 12px #c084fc25;
+}
+
+/* Code — blue */
+.entry-icon-code {
+  color: #60a5fa;
+  background: #60a5fa12;
+  border: 1px solid #60a5fa30;
+}
+
+.entry-icon-code:hover {
+  color: #7dbdff;
+  background: #60a5fa20;
+  border-color: #60a5fa60;
+  box-shadow: 0 0 12px #60a5fa25;
+}
+
+/* Section labels */
+.entry-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.entry-section-label {
+  background: none;
+  border: none;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  margin: 0;
+  padding: 0 0 4px;
+  border-bottom: 1px solid var(--gold-dim);
+  cursor: pointer;
+  text-align: left;
+  transition: color 0.2s ease;
+  font-family: inherit;
+}
+
+.entry-section-label:hover {
+  color: var(--parchment);
 }
 
 /* Short summary */
@@ -88,6 +151,22 @@
   color: var(--mist);
   line-height: 1.65;
   margin: 0;
+}
+
+/* Expanded detail text */
+.entry-expanded-text {
+  animation: entryReveal 0.3s ease-out;
+}
+
+@keyframes entryReveal {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+  }
 }
 
 /* Metrics grid */

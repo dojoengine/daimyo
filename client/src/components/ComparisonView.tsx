@@ -22,10 +22,6 @@ export default function ComparisonView({
 }: ComparisonViewProps) {
   return (
     <div className="comparison-container">
-      <p className="comparison-prompt">
-        Which project is the stronger game jam entry?
-      </p>
-
       <div className="comparison-cards">
         <EntryCard entry={entryA} />
         <div className="comparison-vs">VS</div>
@@ -33,9 +29,12 @@ export default function ComparisonView({
       </div>
 
       <div className="comparison-controls">
+        <p className="comparison-prompt">
+          Which is the stronger game jam entry?
+        </p>
         <LikertScale
-          labelA={entryA.title}
-          labelB={entryB.title}
+          labelA={`${entryA.emoji} ${entryA.title}`}
+          labelB={`${entryB.emoji} ${entryB.title}`}
           onScore={onScore}
         />
 
@@ -51,7 +50,7 @@ export default function ComparisonView({
             className="comparison-btn comparison-invalid"
             onClick={onInvalidPair}
           >
-            Invalid Pair
+            Skip
           </button>
         </div>
       </div>
