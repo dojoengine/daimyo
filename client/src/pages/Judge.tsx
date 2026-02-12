@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useJudging } from '../hooks/useJudging';
 import ComparisonView from '../components/ComparisonView';
 import ProgressBar from '../components/ProgressBar';
@@ -76,11 +76,16 @@ export default function Judge() {
   return (
     <div className="judge-page">
       <header className="judge-header">
-        <h1 className="judge-title">Game Jam {slug?.toUpperCase()} Judging</h1>
+        <div className="judge-header-left">
+          <Link to="/" className="judge-home-link">Daimyo</Link>
+          <h1 className="judge-title">Game Jam {slug?.toUpperCase()} Judging</h1>
+        </div>
         <div className="judge-user">
           <span>{user.username}</span>
         </div>
       </header>
+
+      <div className="judge-divider" />
 
       <ProgressBar completed={progress.completed} total={progress.total} />
 

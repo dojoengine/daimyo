@@ -23,11 +23,12 @@ export default function ComparisonView({
   return (
     <div className="comparison-container">
       <p className="comparison-prompt">
-        Which game better demonstrates the potential of fully on-chain gaming?
+        Which project is the stronger game jam entry?
       </p>
 
       <div className="comparison-cards">
         <EntryCard entry={entryA} />
+        <div className="comparison-vs">VS</div>
         <EntryCard entry={entryB} />
       </div>
 

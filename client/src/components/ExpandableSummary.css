@@ -2,7 +2,7 @@
 
 .expandable-summary {
   border-top: 1px solid var(--ash);
-  padding-top: 8px;
+  padding-top: 10px;
 }
 
 .expandable-summary-toggle {
@@ -10,18 +10,32 @@
   border: none;
   color: var(--stone);
   font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
   padding: 4px 0;
   transition: color 0.2s ease;
+  letter-spacing: 0.02em;
 }
 
 .expandable-summary-toggle:hover {
-  color: var(--parchment);
+  color: var(--gold);
 }
 
 .expandable-summary-text {
   font-size: 14px;
   color: var(--mist);
-  line-height: 1.6;
-  margin: 8px 0 0;
+  line-height: 1.7;
+  margin: 10px 0 0;
+  animation: summaryReveal 0.3s ease-out;
+}
+
+@keyframes summaryReveal {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+  }
 }
