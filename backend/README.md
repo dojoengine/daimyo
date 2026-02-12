@@ -24,7 +24,7 @@ Implements a reputation system where users earn roles (Kōhai → Senpai → Sen
 
 ### Prerequisites
 
-- Node.js 18+ and pnpm
+- Node.js 18+ and npm
 - Discord bot token and application
 - Discord server (guild) with administrator permissions
 
@@ -32,7 +32,7 @@ Implements a reputation system where users earn roles (Kōhai → Senpai → Sen
 
 ```bash
 cd backend
-pnpm install
+npm install
 ```
 
 ### 2. Discord Bot Setup
@@ -100,7 +100,7 @@ SENSEI_UNIQUE_PERCENT=0.20
 Register slash commands with Discord:
 
 ```bash
-pnpm deploy-commands
+npm run deploy-commands
 ```
 
 This only needs to be run once, or when command definitions change.
@@ -110,14 +110,14 @@ This only needs to be run once, or when command definitions change.
 **Development mode** (with auto-reload):
 
 ```bash
-pnpm dev
+npm run dev
 ```
 
 **Production mode**:
 
 ```bash
-pnpm build
-pnpm start
+npm run build
+npm start
 ```
 
 The bot will:
@@ -280,7 +280,7 @@ CREATE TABLE role_history (
 
 ### Commands don't appear
 
-- Run `pnpm deploy-commands` to register commands
+- Run `npm run deploy-commands` to register commands
 - Wait a few minutes for Discord to propagate
 - Check bot has `applications.commands` scope
 
@@ -327,13 +327,13 @@ The project includes a comprehensive test suite using Jest with Discord.js mocks
 
 ```bash
 # Run all tests
-pnpm test
+npm test
 
 # Run tests in watch mode (auto-reruns on file changes)
-pnpm test:watch
+npm run test:watch
 
 # Run tests with coverage report
-pnpm test:coverage
+npm run test:coverage
 ```
 
 #### Test Structure

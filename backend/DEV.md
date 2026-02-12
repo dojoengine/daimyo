@@ -31,7 +31,7 @@ Pushes to `main` automatically deploy after CI passes.
 To run commands in the Railway environment, use the following syntax:
 
 ```
-railway run pnpm run --filter backend test-content-pipeline
+railway run npm run test-content-pipeline -w backend
 ```
 
 > [See here](https://docs.railway.com/guides/cli) for more information about installing the Railway shell locally.
@@ -39,7 +39,7 @@ railway run pnpm run --filter backend test-content-pipeline
 To deploy Discord slash commands after changing command definitions:
 
 ```
-railway run pnpm --filter backend deploy-commands
+railway run npm run deploy-commands -w backend
 ```
 
 This is not part of the automatic deploy pipeline — run it manually when command definitions change.

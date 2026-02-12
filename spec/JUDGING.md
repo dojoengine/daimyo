@@ -26,7 +26,7 @@ Final rankings are calculated using a PageRank-style spectral method (principal 
 2. Admin shares judging URL: `daimyo.cartridge.gg/judge/gj7`
 3. Judges authenticate via Discord OAuth, Sensei role verified
 4. Judges complete 10-comparison sessions through web UI
-5. Admin runs `pnpm jam:rankings --jam gj7` to view results (with optional date filtering)
+5. Admin runs `npm run jam:rankings -- --jam gj7` to view results (with optional date filtering)
 
 ## Authentication
 
@@ -226,7 +226,7 @@ See reference implementation here: https://github.com/zaratanDotWorld/powerRanke
 
 ### Results Visibility
 
-Rankings are admin-only via CLI: `pnpm jam:rankings --jam gj7`
+Rankings are admin-only via CLI: `npm run jam:rankings -- --jam gj7`
 
 No public rankings endpoint - admin shares results when ready.
 
@@ -302,17 +302,17 @@ Returns: `{ recorded: true, sessionComplete: boolean }`
 
 ## CLI Scripts
 
-### `pnpm jam:rankings`
+### `npm run jam:rankings`
 
 View rankings for a game jam.
 Optionally filter by date range.
 
 ```bash
 # All comparisons
-pnpm jam:rankings --jam gj7
+npm run jam:rankings -- --jam gj7
 
 # Filter by date range
-pnpm jam:rankings --jam gj7 --from 2026-01-15 --to 2026-01-31
+npm run jam:rankings -- --jam gj7 --from 2026-01-15 --to 2026-01-31
 ```
 
 **Options**:
@@ -414,7 +414,7 @@ GITHUB_TOKEN=ghp_...
 **Backend**:
 - Same Railway deployment as existing bot
 - Express runs on HTTP_PORT alongside Discord.js
-- Run migrations before deploy: `pnpm --filter backend migrate`
+- Run migrations before deploy: `npm run migrate -w backend`
 
 **Frontend**:
 - Deploy to Vercel from `/client` directory
@@ -488,7 +488,7 @@ daimyo/
 │   │   │   ├── pairing.ts         # Active ranking pair selection
 │   │   │   └── ranking.ts         # Spectral ranking algorithm
 │   │   └── scripts/
-│   │       └── jam-rankings.ts    # pnpm jam:rankings
+│   │       └── jam-rankings.ts    # npm run jam:rankings
 │   └── migrations/
 │       └── [timestamp]_judging.cjs
 ├── client/
