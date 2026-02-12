@@ -1,5 +1,5 @@
 [build]
-buildCommand = "npm ci && npm run build -w client && npm run build -w backend"
+buildCommand = "npm run build -w client && npm run build -w backend"
 
 [deploy]
 preDeployCommand = "npm run migrate -w backend"
