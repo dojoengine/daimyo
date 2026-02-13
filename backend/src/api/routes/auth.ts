@@ -1,22 +1,11 @@
 import express, { Request, Response } from 'express';
-import crypto from 'crypto';
 import { optionalAuthMiddleware, createSessionToken, AuthUser } from '../middleware/auth.js';
+import { getDiscordOAuthConfig } from '../authConfig.js';
+import { buildOAuthState, verifyOAuthState } from './authState.js';
 
 const router: express.Router = express.Router();
 
-const DISCORD_SESSION_SECRET =
-  process.env.DISCORD_SESSION_SECRET || 'dev-secret-change-in-production';
-const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
-const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
-const SENSEI_ROLE_ID = process.env.SENSEI_ROLE_ID;
-const DISCORD_GUILD_ID = process.env.DISCORD_GUILD_ID;
-
-/** Derive the OAuth callback URI from the incoming request's Host header. */
-function getRedirectUri(req: Request): string {
-  const protocol = req.get('x-forwarded-proto') || req.protocol;
-  const host = req.get('host');
-  return `${protocol}://${host}/api/auth/callback`;
-}
+type AuthErrorReason = 'auth' | 'role';
 
 interface DiscordTokenResponse {
   access_token: string;
@@ -36,6 +25,77 @@ interface DiscordMember {
   roles: string[];
 }
 
+/** Derive the OAuth callback URI from the incoming request's Host header. */
+function getRedirectUri(req: Request): string {
+  const protocol = req.get('x-forwarded-proto') || req.protocol;
+  const host = req.get('host');
+  return `${protocol}://${host}/api/auth/callback`;
+}
+
+function redirectWithReason(res: Response, reason: AuthErrorReason): void {
+  res.redirect(`/error?reason=${reason}`);
+}
+
+async function exchangeCodeForAccessToken(
+  req: Request,
+  code: string,
+  clientId: string,
+  clientSecret: string
+): Promise<string | null> {
+  const tokenRes = await fetch('https://discord.com/api/oauth2/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      grant_type: 'authorization_code',
+      code,
+      redirect_uri: getRedirectUri(req),
+    }),
+  });
+
+  if (!tokenRes.ok) {
+    console.error('Token exchange failed:', await tokenRes.text());
+    return null;
+  }
+
+  const tokenData = (await tokenRes.json()) as DiscordTokenResponse;
+  return tokenData.access_token;
+}
+
+async function fetchCurrentDiscordUser(accessToken: string): Promise<DiscordUser | null> {
+  const userRes = await fetch('https://discord.com/api/users/@me', {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+
+  if (!userRes.ok) {
+    return null;
+  }
+
+  return (await userRes.json()) as DiscordUser;
+}
+
+async function checkSenseiRole(
+  accessToken: string,
+  senseiRoleId: string,
+  guildId: string
+): Promise<{ hasRole: boolean; requestFailed: boolean }> {
+  const memberRes = await fetch(`https://discord.com/api/users/@me/guilds/${guildId}/member`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+
+  if (!memberRes.ok) {
+    console.error('Failed to get member info:', await memberRes.text());
+    return { hasRole: false, requestFailed: true };
+  }
+
+  const memberData = (await memberRes.json()) as DiscordMember;
+  return {
+    hasRole: memberData.roles?.includes(senseiRoleId) || false,
+    requestFailed: false,
+  };
+}
+
 // GET /api/auth/me - Get current user info
 router.get('/me', optionalAuthMiddleware, (req: Request, res: Response): void => {
   if (!req.user) {
@@ -48,24 +108,17 @@ router.get('/me', optionalAuthMiddleware, (req: Request, res: Response): void =>
 // GET /api/auth/discord?jam={slug} - Start Discord OAuth flow
 router.get('/discord', (req: Request, res: Response): void => {
   const jamSlug = req.query.jam as string;
+  const { clientId } = getDiscordOAuthConfig();
 
-  if (!DISCORD_CLIENT_ID) {
+  if (!clientId) {
     res.status(500).json({ error: 'Discord OAuth not configured' });
     return;
   }
 
-  // Create stateless state token: {timestamp}.{jam_slug}.{hmac}
-  const timestamp = Date.now().toString();
-  const data = `${timestamp}.${jamSlug || 'gj7'}`;
-  const hmac = crypto
-    .createHmac('sha256', DISCORD_SESSION_SECRET)
-    .update(data)
-    .digest('hex')
-    .slice(0, 16);
-  const state = `${data}.${hmac}`;
+  const state = buildOAuthState(jamSlug);
 
   const params = new URLSearchParams({
-    client_id: DISCORD_CLIENT_ID,
+    client_id: clientId,
     redirect_uri: getRedirectUri(req),
     response_type: 'code',
     scope: 'identify guilds.members.read',
@@ -80,108 +133,53 @@ router.get('/discord', (req: Request, res: Response): void => {
 router.get('/callback', async (req: Request, res: Response): Promise<void> => {
   const { code, state, error: oauthError } = req.query;
 
-  if (oauthError) {
-    res.redirect(`/error?reason=auth`);
+  if (oauthError || !code || !state) {
+    redirectWithReason(res, 'auth');
     return;
   }
 
-  if (!code || !state) {
-    res.redirect(`/error?reason=auth`);
+  const verifiedState = verifyOAuthState(state as string);
+  if (!verifiedState) {
+    redirectWithReason(res, 'auth');
     return;
   }
 
-  // Verify state token
-  const parts = (state as string).split('.');
-  if (parts.length !== 3) {
-    res.redirect(`/error?reason=auth`);
-    return;
-  }
+  const { jamSlug } = verifiedState;
+  const { clientId, clientSecret, senseiRoleId, guildId } = getDiscordOAuthConfig();
 
-  const [timestamp, jamSlug, hmac] = parts;
-  const data = `${timestamp}.${jamSlug}`;
-  const expectedHmac = crypto
-    .createHmac('sha256', DISCORD_SESSION_SECRET)
-    .update(data)
-    .digest('hex')
-    .slice(0, 16);
-
-  if (hmac !== expectedHmac) {
-    res.redirect(`/error?reason=auth`);
-    return;
-  }
-
-  // Check timestamp (24 hour TTL)
-  const ts = parseInt(timestamp, 10);
-  if (Date.now() - ts > 24 * 60 * 60 * 1000) {
-    res.redirect(`/error?reason=auth`);
-    return;
-  }
-
-  if (!DISCORD_CLIENT_ID || !DISCORD_CLIENT_SECRET) {
-    res.redirect(`/error?reason=auth`);
+  if (!clientId || !clientSecret) {
+    redirectWithReason(res, 'auth');
     return;
   }
 
   try {
-    // Exchange code for access token
-    const tokenRes = await fetch('https://discord.com/api/oauth2/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        client_id: DISCORD_CLIENT_ID,
-        client_secret: DISCORD_CLIENT_SECRET,
-        grant_type: 'authorization_code',
-        code: code as string,
-        redirect_uri: getRedirectUri(req),
-      }),
-    });
-
-    if (!tokenRes.ok) {
-      console.error('Token exchange failed:', await tokenRes.text());
-      res.redirect(`/error?reason=auth`);
+    const accessToken = await exchangeCodeForAccessToken(
+      req,
+      code as string,
+      clientId,
+      clientSecret
+    );
+    if (!accessToken) {
+      redirectWithReason(res, 'auth');
       return;
     }
 
-    const tokenData = (await tokenRes.json()) as DiscordTokenResponse;
-    const accessToken = tokenData.access_token;
-
-    // Get user info
-    const userRes = await fetch('https://discord.com/api/users/@me', {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
-
-    if (!userRes.ok) {
-      res.redirect(`/error?reason=auth`);
+    const userData = await fetchCurrentDiscordUser(accessToken);
+    if (!userData) {
+      redirectWithReason(res, 'auth');
       return;
     }
-
-    const userData = (await userRes.json()) as DiscordUser;
 
     // Check if user has Sensei role in the guild
-    if (SENSEI_ROLE_ID && DISCORD_GUILD_ID) {
-      const memberRes = await fetch(
-        `https://discord.com/api/users/@me/guilds/${DISCORD_GUILD_ID}/member`,
-        {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        }
-      );
+    if (senseiRoleId && guildId) {
+      const roleCheck = await checkSenseiRole(accessToken, senseiRoleId, guildId);
 
-      if (!memberRes.ok) {
-        console.error('Failed to get member info:', await memberRes.text());
-        res.redirect(`/error?reason=role`);
-        return;
-      }
-
-      const memberData = (await memberRes.json()) as DiscordMember;
-      const hasRole = memberData.roles?.includes(SENSEI_ROLE_ID);
-
-      if (!hasRole) {
-        res.redirect(`/error?reason=role`);
+      if (roleCheck.requestFailed || !roleCheck.hasRole) {
+        redirectWithReason(res, 'role');
         return;
       }
     }
 
-    // Create session
     const user: AuthUser = {
       id: userData.id,
       username: userData.username,
@@ -192,7 +190,6 @@ router.get('/callback', async (req: Request, res: Response): Promise<void> => {
 
     const token = createSessionToken(user);
 
-    // Set cookie and redirect
     res.cookie('session', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -203,7 +200,7 @@ router.get('/callback', async (req: Request, res: Response): Promise<void> => {
     res.redirect(`/judge/${jamSlug}`);
   } catch (err) {
     console.error('OAuth callback error:', err);
-    res.redirect(`/error?reason=auth`);
+    redirectWithReason(res, 'auth');
   }
 });
 

@@ -3,6 +3,7 @@ import { Entry } from '../hooks/useJudging';
 import { formatJamTitle } from '../utils/jam';
 import ComparisonView from '../components/ComparisonView';
 import ProgressBar from '../components/ProgressBar';
+import { JUDGING_SESSION_SIZE } from '../constants/judging';
 import './Judge.css';
 
 const DUMMY_ENTRIES: Entry[] = [
@@ -74,7 +75,7 @@ export default function DevPreview() {
 
       <div className="judge-divider" />
 
-      <ProgressBar completed={3} total={10} />
+      <ProgressBar completed={3} total={JUDGING_SESSION_SIZE} />
 
       <ComparisonView
         entryA={DUMMY_ENTRIES[a]}

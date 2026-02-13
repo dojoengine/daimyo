@@ -1,5 +1,6 @@
 import { Entry } from './entries.js';
-import { getComparisonsForJam } from './database.js';
+import { getComparisonsForJam, getComparisonCountForJudge } from './database.js';
+import { getTotalPairCount, JUDGING_SESSION_SIZE } from '../constants/judging.js';
 
 interface PairScore {
   entryA: Entry;
@@ -119,17 +120,16 @@ function randomizeOrder(entryA: Entry, entryB: Entry): { entryA: Entry; entryB: 
 }
 
 /**
- * Get the number of comparisons this judge has made in current session (modulo 10)
+ * Get the number of comparisons this judge has made in current session.
  */
 export async function getSessionProgress(
   jamSlug: string,
   judgeId: string
 ): Promise<{ completed: number; total: number; sessions: number }> {
-  const comparisons = await getComparisonsForJam(jamSlug);
-  const judgeComparisons = comparisons.filter((c) => c.judge_id === judgeId);
-  const completed = judgeComparisons.length % 10;
-  const sessions = Math.floor(judgeComparisons.length / 10);
-  return { completed, total: 10, sessions };
+  const comparisonCount = await getComparisonCountForJudge(jamSlug, judgeId);
+  const completed = comparisonCount % JUDGING_SESSION_SIZE;
+  const sessions = Math.floor(comparisonCount / JUDGING_SESSION_SIZE);
+  return { completed, total: JUDGING_SESSION_SIZE, sessions };
 }
 
 /**
@@ -140,8 +140,7 @@ export async function hasExhaustedAllPairs(
   judgeId: string,
   entries: Entry[]
 ): Promise<boolean> {
-  const totalPairs = (entries.length * (entries.length - 1)) / 2;
-  const comparisons = await getComparisonsForJam(jamSlug);
-  const judgeComparisons = comparisons.filter((c) => c.judge_id === judgeId);
-  return judgeComparisons.length >= totalPairs;
+  const totalPairs = getTotalPairCount(entries.length);
+  const comparisonCount = await getComparisonCountForJudge(jamSlug, judgeId);
+  return comparisonCount >= totalPairs;
 }

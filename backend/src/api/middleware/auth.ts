@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { getSessionSecret, isDevAuthBypass } from '../authConfig.js';
 
 export interface AuthUser {
   id: string;
@@ -22,17 +23,9 @@ const DEV_USER: AuthUser = {
   avatar: undefined,
 };
 
-function getSessionSecret(): string {
-  return process.env.DISCORD_SESSION_SECRET || 'dev-secret-change-in-production';
-}
-
-function isDevBypass(): boolean {
-  return process.env.DEV_AUTH_BYPASS === 'true';
-}
-
 export function authMiddleware(req: Request, res: Response, next: NextFunction) {
   // Dev bypass mode - auto-authenticate as a mock user
-  if (isDevBypass()) {
+  if (isDevAuthBypass()) {
     req.user = DEV_USER;
     return next();
   }
@@ -54,7 +47,7 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction) 
 
 export function optionalAuthMiddleware(req: Request, res: Response, next: NextFunction) {
   // Dev bypass mode - auto-authenticate as a mock user
-  if (isDevBypass()) {
+  if (isDevAuthBypass()) {
     req.user = DEV_USER;
     return next();
   }
