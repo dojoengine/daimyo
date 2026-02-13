@@ -66,11 +66,10 @@ Lead with the core mechanic or concept.
 Mention the most interesting technical or gameplay feature.
 Write for someone deciding whether to look closer.
 
-#### `summary_long` (~250 words)
-Expand on summary_short.
+#### `summary_long` (~100 words)
+Continue from summary_short (they display as a single paragraph — the long version flows after the short).
 Cover: core gameplay, technical implementation, what makes it interesting.
 Mention specific Dojo features used (models, systems, SDK integration).
-Don't repeat the short summary verbatim — extend it.
 
 #### `work_done_short` (~35 words)
 What was BUILT during the jam specifically.
@@ -96,7 +95,7 @@ title: "<project name>"
 summary_short: >
   <~50 words>
 summary_long: >
-  <~250 words>
+  <~100 words>
 work_done_short: >
   <~35 words>
 work_done_long: >
@@ -161,10 +160,9 @@ summary_long: >
   threefold repetition draws — with each move validated by Cairo contracts before
   execution. Game state is serialized across 4 Dojo models, allowing players to
   resume matches across sessions. The PvC mode uses a minimax algorithm with
-  adjustable difficulty. Spectators can stake tokens on match outcomes, with
-  payouts based on prediction timing and accuracy, blending chess strategy with
-  DeFi incentives. The React frontend connects via the Dojo SDK with smooth piece
-  animations, move history, and real-time board updates through Torii indexing.
+  adjustable difficulty. Spectators can stake tokens on match outcomes, blending
+  chess strategy with DeFi incentives. The React frontend connects via the Dojo
+  SDK with real-time board updates through Torii.
 work_done_short: >
   Built from scratch during the jam. Full chess engine in Cairo with move
   validation, check/checkmate detection, and game state serialization across 4
