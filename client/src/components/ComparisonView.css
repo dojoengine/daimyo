@@ -112,6 +112,95 @@
   }
 }
 
+/* ─── Celebration Animation ─── */
+
+.comparison-container.celebrating {
+  animation: compCelebrateExit 400ms ease-in 500ms forwards;
+}
+
+@keyframes compCelebrateExit {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+/* Sparkle container — centered in viewport */
+.sparkle-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  z-index: 100;
+  pointer-events: none;
+}
+
+/* Base sparkle — invisible by default */
+.sparkle {
+  position: absolute;
+  font-size: 20px;
+  line-height: 1;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Sparkles animate immediately on mount (only rendered when celebrating) */
+.sparkle-0 { animation: celebSparkle0 650ms ease-out forwards; }
+.sparkle-1 { animation: celebSparkle1 600ms ease-out 50ms forwards; }
+.sparkle-2 { animation: celebSparkle2 700ms ease-out 30ms forwards; }
+.sparkle-3 { animation: celebSparkle3 620ms ease-out 80ms forwards; }
+.sparkle-4 { animation: celebSparkle4 680ms ease-out 20ms forwards; }
+.sparkle-5 { animation: celebSparkle5 640ms ease-out 60ms forwards; }
+.sparkle-6 { animation: celebSparkle6 660ms ease-out 40ms forwards; }
+.sparkle-7 { animation: celebSparkle7 610ms ease-out 70ms forwards; }
+
+/* Each sparkle flies in a different direction — roughly evenly spaced around 360° */
+/* 0: up-right */
+@keyframes celebSparkle0 {
+  0%   { opacity: 1; transform: translate(0, 0) scale(2); }
+  100% { opacity: 0; transform: translate(140px, -160px) scale(0); }
+}
+/* 1: right */
+@keyframes celebSparkle1 {
+  0%   { opacity: 1; transform: translate(0, 0) scale(2); }
+  100% { opacity: 0; transform: translate(190px, -30px) scale(0); }
+}
+/* 2: down-right */
+@keyframes celebSparkle2 {
+  0%   { opacity: 1; transform: translate(0, 0) scale(2); }
+  100% { opacity: 0; transform: translate(120px, 110px) scale(0); }
+}
+/* 3: down */
+@keyframes celebSparkle3 {
+  0%   { opacity: 1; transform: translate(0, 0) scale(2); }
+  100% { opacity: 0; transform: translate(-20px, 150px) scale(0); }
+}
+/* 4: down-left */
+@keyframes celebSparkle4 {
+  0%   { opacity: 1; transform: translate(0, 0) scale(2); }
+  100% { opacity: 0; transform: translate(-130px, 100px) scale(0); }
+}
+/* 5: left */
+@keyframes celebSparkle5 {
+  0%   { opacity: 1; transform: translate(0, 0) scale(2); }
+  100% { opacity: 0; transform: translate(-180px, -40px) scale(0); }
+}
+/* 6: up-left */
+@keyframes celebSparkle6 {
+  0%   { opacity: 1; transform: translate(0, 0) scale(2); }
+  100% { opacity: 0; transform: translate(-110px, -170px) scale(0); }
+}
+/* 7: up */
+@keyframes celebSparkle7 {
+  0%   { opacity: 1; transform: translate(0, 0) scale(2); }
+  100% { opacity: 0; transform: translate(10px, -190px) scale(0); }
+}
+
 @media (max-width: 768px) {
   .comparison-cards {
     flex-direction: column;
