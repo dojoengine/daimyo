@@ -37,6 +37,7 @@ interface Pair {
 interface Progress {
   completed: number;
   total: number;
+  sessions: number;
   sessionComplete: boolean;
   allPairsExhausted: boolean;
 }
@@ -52,6 +53,7 @@ export function useJudging(jamSlug: string) {
   const [progress, setProgress] = useState<Progress>({
     completed: 0,
     total: 10,
+    sessions: 0,
     sessionComplete: false,
     allPairsExhausted: false,
   });
@@ -89,16 +91,17 @@ export function useJudging(jamSlug: string) {
       const data = await res.json();
 
       if (data.allPairsExhausted) {
-        setProgress((p) => ({ ...p, allPairsExhausted: true }));
+        setProgress((p) => ({ ...p, allPairsExhausted: true, sessions: data.progress?.sessions ?? p.sessions }));
         setPair(null);
       } else if (data.sessionComplete) {
-        setProgress((p) => ({ ...p, sessionComplete: true, completed: data.progress?.completed || p.completed }));
+        setProgress((p) => ({ ...p, sessionComplete: true, completed: data.progress?.completed || p.completed, sessions: data.progress?.sessions ?? p.sessions }));
         setPair(null);
       } else {
         setPair({ entryA: data.entryA, entryB: data.entryB });
         setProgress({
           completed: data.progress.completed,
           total: data.progress.total,
+          sessions: data.progress.sessions ?? 0,
           sessionComplete: false,
           allPairsExhausted: false,
         });
@@ -139,7 +142,7 @@ export function useJudging(jamSlug: string) {
 
       const data = await res.json();
       if (data.sessionComplete) {
-        setProgress((p) => ({ ...p, sessionComplete: true, completed: 10 }));
+        setProgress((p) => ({ ...p, sessionComplete: true, completed: 10, sessions: data.sessions ?? p.sessions }));
         setPair(null);
       } else {
         fetchPair();

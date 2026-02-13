@@ -47,6 +47,9 @@ export default function Judge() {
         <div className="judge-complete">
           <h1>All Done!</h1>
           <p>You've judged all possible pairs. Thank you for your contribution!</p>
+          {progress.sessions > 0 && (
+            <p className="judge-sessions-count">{progress.sessions} {progress.sessions === 1 ? 'session' : 'sessions'} completed</p>
+          )}
         </div>
       </div>
     );
@@ -57,7 +60,7 @@ export default function Judge() {
       <div className="judge-page">
         <div className="judge-complete">
           <h1>Session Complete!</h1>
-          <p>You've completed 10 comparisons.</p>
+          <p className="judge-sessions-count">{progress.sessions} {progress.sessions === 1 ? 'session' : 'sessions'} completed</p>
           <button className="judge-continue-btn" onClick={continueSession}>
             Start Another Session
           </button>
@@ -83,6 +86,9 @@ export default function Judge() {
         </div>
         <div className="judge-user">
           <span>{user.username}</span>
+          {progress.sessions > 0 && (
+            <span className="judge-sessions">{progress.sessions} {progress.sessions === 1 ? 'session' : 'sessions'}</span>
+          )}
         </div>
       </header>
 

@@ -124,11 +124,12 @@ function randomizeOrder(entryA: Entry, entryB: Entry): { entryA: Entry; entryB: 
 export async function getSessionProgress(
   jamSlug: string,
   judgeId: string
-): Promise<{ completed: number; total: number }> {
+): Promise<{ completed: number; total: number; sessions: number }> {
   const comparisons = await getComparisonsForJam(jamSlug);
   const judgeComparisons = comparisons.filter((c) => c.judge_id === judgeId);
   const completed = judgeComparisons.length % 10;
-  return { completed, total: 10 };
+  const sessions = Math.floor(judgeComparisons.length / 10);
+  return { completed, total: 10, sessions };
 }
 
 /**
