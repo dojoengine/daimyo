@@ -4,6 +4,7 @@ interface LikertScaleProps {
   labelA: string;
   labelB: string;
   onScore: (score: number) => void;
+  disabled?: boolean;
 }
 
 const LIKERT_OPTIONS: { label: string; score: number; className: string }[] = [
@@ -14,7 +15,7 @@ const LIKERT_OPTIONS: { label: string; score: number; className: string }[] = [
   { label: 'Much', score: 0.0, className: 'likert-strong-b' },
 ];
 
-export default function LikertScale({ labelA, labelB, onScore }: LikertScaleProps) {
+export default function LikertScale({ labelA, labelB, onScore, disabled }: LikertScaleProps) {
   return (
     <div className="likert-scale">
       <span className="likert-anchor likert-anchor-a">{labelA}</span>
@@ -24,6 +25,7 @@ export default function LikertScale({ labelA, labelB, onScore }: LikertScaleProp
             key={opt.score}
             className={`likert-btn ${opt.className}`}
             onClick={() => onScore(opt.score)}
+            disabled={disabled}
           >
             {opt.label}
           </button>
