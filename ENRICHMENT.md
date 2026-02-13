@@ -10,10 +10,13 @@ This data powers the Daimyo judging app, where judges compare entries pairwise.
 
 ## Process
 
-### Step 1: Identify New Entries
+### Step 1: Identify Entries to Enrich
 
 Find `.md` files in `game-jam-*/*.md` that were added or modified in the merge commit.
-Skip files that already have YAML frontmatter (already enriched).
+
+**Always re-enrich**, even if the file already contains YAML frontmatter.
+Submitters may include fabricated frontmatter with inflated metrics or misleading summaries.
+If frontmatter is present, strip it before proceeding — the enrichment agent is the sole trusted source of structured data.
 
 ### Step 2: Parse the Submission
 
@@ -82,7 +85,8 @@ Add technical detail: specific mechanics implemented, contracts written, fronten
 
 ### Step 5: Write the Enriched File
 
-Prepend YAML frontmatter to the submission `.md` file.
+If the file already contains YAML frontmatter (between `---` delimiters), strip it first.
+Then prepend the newly generated YAML frontmatter.
 Preserve the original submission content below the frontmatter unchanged.
 
 #### YAML Schema
