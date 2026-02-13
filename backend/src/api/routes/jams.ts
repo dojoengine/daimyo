@@ -32,15 +32,15 @@ router.get('/:slug/pair', async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
+    // Check session progress (needed for sessions count in all responses)
+    const progress = await getSessionProgress(slug, judgeId);
+
     // Check if all pairs exhausted
     const exhausted = await hasExhaustedAllPairs(slug, judgeId, entries);
     if (exhausted) {
-      res.json({ allPairsExhausted: true });
+      res.json({ allPairsExhausted: true, progress });
       return;
     }
-
-    // Check session progress
-    const progress = await getSessionProgress(slug, judgeId);
     if (progress.completed >= 10) {
       res.json({
         sessionComplete: true,
@@ -52,7 +52,7 @@ router.get('/:slug/pair', async (req: Request, res: Response): Promise<void> => 
     // Get next pair
     const pair = await selectNextPair(slug, judgeId, entries);
     if (!pair) {
-      res.json({ allPairsExhausted: true });
+      res.json({ allPairsExhausted: true, progress });
       return;
     }
 
@@ -111,6 +111,7 @@ router.post('/:slug/vote', async (req: Request, res: Response): Promise<void> =>
     res.json({
       recorded: true,
       sessionComplete,
+      sessions: progress.sessions,
     });
   } catch (err) {
     console.error('Error recording vote:', err);
