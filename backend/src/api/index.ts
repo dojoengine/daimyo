@@ -6,6 +6,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import authRoutes from './routes/auth.js';
 import jamsRoutes from './routes/jams.js';
+import { getApiPort, getCorsOrigin } from './serverConfig.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -15,7 +16,7 @@ export function createApiServer(): Express {
   // Middleware
   app.use(
     cors({
-      origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+      origin: getCorsOrigin(),
       credentials: true,
     })
   );
@@ -49,7 +50,7 @@ export function createApiServer(): Express {
 
 export function startApiServer(): Express {
   const app = createApiServer();
-  const port = process.env.PORT || process.env.HTTP_PORT || 3000;
+  const port = getApiPort();
 
   app.listen(port, () => {
     console.log(`API server listening on port ${port}`);

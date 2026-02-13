@@ -7,6 +7,7 @@ import {
   hasExhaustedAllPairs,
 } from '../../services/pairing.js';
 import { insertComparison } from '../../services/database.js';
+import { JUDGING_SESSION_SIZE } from '../../constants/judging.js';
 
 const router: express.Router = express.Router();
 
@@ -41,7 +42,7 @@ router.get('/:slug/pair', async (req: Request, res: Response): Promise<void> => 
       res.json({ allPairsExhausted: true, progress });
       return;
     }
-    if (progress.completed >= 10) {
+    if (progress.completed >= JUDGING_SESSION_SIZE) {
       res.json({
         sessionComplete: true,
         progress,
@@ -106,7 +107,7 @@ router.post('/:slug/vote', async (req: Request, res: Response): Promise<void> =>
 
     // Check if session is complete
     const progress = await getSessionProgress(slug, judgeId);
-    const sessionComplete = progress.completed >= 10;
+    const sessionComplete = progress.completed >= JUDGING_SESSION_SIZE;
 
     res.json({
       recorded: true,

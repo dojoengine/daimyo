@@ -2,7 +2,7 @@ import cron from 'node-cron';
 import { Client } from 'discord.js';
 import { config } from '../utils/config.js';
 import { scanChannelsForMessages, scanAllChannels } from '../services/discordScanner.js';
-import { createAIProvider } from '../services/ai/openai.js';
+import { createAIProvider } from '../services/ai/factory.js';
 import { createDraft, isTypefullyConfigured } from '../services/typefully.js';
 import { ThreadDraft, GeneratedImage } from '../types.js';
 
