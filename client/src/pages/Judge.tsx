@@ -3,7 +3,6 @@ import { useJudging } from '../hooks/useJudging';
 import { formatJamTitle } from '../utils/jam';
 import ComparisonView from '../components/ComparisonView';
 import ProgressBar from '../components/ProgressBar';
-import Login from '../components/Login';
 import './Judge.css';
 
 export default function Judge() {
@@ -13,12 +12,14 @@ export default function Judge() {
     pair,
     progress,
     loading,
+    status,
+    sessions,
     error,
     canGoBack,
     submitScore,
-    reportInvalidPair,
     goBack,
-    continueSession,
+    submitSession,
+    startNewSession,
   } = useJudging(slug || '');
 
   if (loading) {
@@ -29,11 +30,7 @@ export default function Judge() {
     );
   }
 
-  if (!user) {
-    return <Login jamSlug={slug || ''} />;
-  }
-
-  if (error) {
+  if (status === 'error') {
     return (
       <div className="judge-page">
         <div className="judge-error">{error}</div>
@@ -41,27 +38,61 @@ export default function Judge() {
     );
   }
 
-  if (progress.allPairsExhausted) {
+  // Review screen — session voting complete
+  if (status === 'review' || status === 'submitting') {
     return (
       <div className="judge-page">
         <div className="judge-complete">
-          <h1>All Done!</h1>
-          <p>You've judged all possible pairs. Thank you for your contribution!</p>
-          {progress.sessions > 0 && (
-            <p className="judge-sessions-count">{progress.sessions} {progress.sessions === 1 ? 'session' : 'sessions'} completed</p>
+          <h1>Session Complete!</h1>
+          {sessions > 0 && (
+            <p className="judge-sessions-count">
+              {sessions} {sessions === 1 ? 'session' : 'sessions'} submitted
+            </p>
           )}
+
+          {user ? (
+            <>
+              <p>Ready to submit your votes to the ranking.</p>
+              <button
+                className="judge-continue-btn"
+                onClick={submitSession}
+                disabled={status === 'submitting'}
+              >
+                {status === 'submitting' ? 'Submitting...' : 'Submit Session'}
+              </button>
+              {error && <p className="judge-review-error">{error}</p>}
+            </>
+          ) : (
+            <>
+              <p>Log in as a Sensei to submit your votes to the official ranking.</p>
+              <button
+                className="judge-continue-btn"
+                onClick={() => { window.location.href = `/api/auth/discord?jam=${slug}`; }}
+              >
+                Login with Discord
+              </button>
+            </>
+          )}
+
+          <button className="judge-secondary-btn" onClick={startNewSession}>
+            Start New Session
+          </button>
         </div>
       </div>
     );
   }
 
-  if (progress.sessionComplete) {
+  // Submitted screen
+  if (status === 'submitted') {
     return (
       <div className="judge-page">
         <div className="judge-complete">
-          <h1>Session Complete!</h1>
-          <p className="judge-sessions-count">{progress.sessions} {progress.sessions === 1 ? 'session' : 'sessions'} completed</p>
-          <button className="judge-continue-btn" onClick={continueSession}>
+          <h1>Votes Submitted!</h1>
+          <p className="judge-sessions-count">
+            {sessions} {sessions === 1 ? 'session' : 'sessions'} completed
+          </p>
+          <p>Thank you for your contribution to the ranking.</p>
+          <button className="judge-continue-btn" onClick={startNewSession}>
             Start Another Session
           </button>
         </div>
@@ -81,13 +112,19 @@ export default function Judge() {
     <div className="judge-page">
       <header className="judge-header">
         <div className="judge-header-left">
-          <Link to="/" className="judge-home-link">Daimyo</Link>
+          <Link to="/judge" className="judge-home-link">Daimyo</Link>
           <h1 className="judge-title">{formatJamTitle(slug || '')} Judging</h1>
         </div>
         <div className="judge-user">
-          <span>{user.username}</span>
-          {progress.sessions > 0 && (
-            <span className="judge-sessions">{progress.sessions} {progress.sessions === 1 ? 'session' : 'sessions'}</span>
+          {user ? (
+            <>
+              <span>{user.username}</span>
+              {sessions > 0 && (
+                <span className="judge-sessions">{sessions} {sessions === 1 ? 'session' : 'sessions'}</span>
+              )}
+            </>
+          ) : (
+            <span className="judge-guest">Guest</span>
           )}
         </div>
       </header>
@@ -101,7 +138,6 @@ export default function Judge() {
         entryB={pair.entryB}
         canGoBack={canGoBack}
         onScore={submitScore}
-        onInvalidPair={reportInvalidPair}
         onBack={goBack}
       />
     </div>

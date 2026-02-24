@@ -134,5 +134,28 @@ export function getEntryById(entries: Entry[], id: string): Entry | undefined {
   return entries.find((e) => e.id === id);
 }
 
+// In-memory cache for jam slug discovery
+let jamSlugsCache: { slugs: string[]; fetchedAt: number } | null = null;
+
+/**
+ * Discover all jam slugs by listing directories in the game-jams repo.
+ */
+export async function getJamSlugs(): Promise<string[]> {
+  if (jamSlugsCache && Date.now() - jamSlugsCache.fetchedAt < CACHE_TTL) {
+    return jamSlugsCache.slugs;
+  }
+
+  const res = await fetch('https://api.github.com/repos/dojoengine/game-jams/contents', {
+    headers: { Accept: 'application/vnd.github.v3+json' },
+  });
+  if (!res.ok) return jamSlugsCache?.slugs ?? [];
+
+  const items = (await res.json()) as Array<{ name: string; type: string }>;
+  const slugs = items.filter((i) => i.type === 'dir' && /^gj\d+$/.test(i.name)).map((i) => i.name);
+
+  jamSlugsCache = { slugs, fetchedAt: Date.now() };
+  return slugs;
+}
+
 // Exported for testing
 export { parseFrontmatter, frontmatterToEntry };

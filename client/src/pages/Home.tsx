@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import './Home.css';
 
 function DiscordIcon() {
@@ -75,6 +76,7 @@ export default function Home() {
           <img src="/logo.png" alt="Daimyō" className="home-logo" />
           <h1 className="home-title">Daimyō</h1>
           <p className="home-tagline">Community bot for the Dojo Discord</p>
+          <Link to="/judge" className="home-hero-cta">Judge Game Jams</Link>
         </div>
 
         <div className="home-divider" />
@@ -134,9 +136,9 @@ export default function Home() {
               >
                 Register on Luma
               </a>
-              <a href="/judge/gj8" className="home-jam-cta home-jam-cta-secondary">
+              <Link to="/judge" className="home-jam-cta home-jam-cta-secondary">
                 Judge Entries
-              </a>
+              </Link>
             </div>
           </div>
         </div>

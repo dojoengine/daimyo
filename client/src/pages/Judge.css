@@ -207,6 +207,40 @@
   transform: translateY(-2px);
 }
 
+.judge-continue-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.judge-secondary-btn {
+  padding: 12px 32px;
+  font-size: 14px;
+  font-weight: 600;
+  background: transparent;
+  color: var(--stone);
+  border: 1px solid var(--ash);
+  border-radius: 4px;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: all 0.25s ease;
+}
+
+.judge-secondary-btn:hover {
+  color: var(--parchment);
+  border-color: var(--stone);
+}
+
+.judge-guest {
+  font-style: italic;
+}
+
+.judge-review-error {
+  color: var(--neon-red);
+  font-size: 14px;
+  margin: 0;
+}
+
 @keyframes judgeSpin {
   to { transform: rotate(360deg); }
 }
