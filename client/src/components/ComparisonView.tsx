@@ -24,26 +24,33 @@ export default function ComparisonView({
   onInvalidPair,
   onBack,
 }: ComparisonViewProps) {
-  const [burstPositions, setBurstPositions] = useState<{ top: string; left: string }[] | null>(null);
+  const [burstPositions, setBurstPositions] = useState<{ top: string; left: string; wave: number; emoji: string }[] | null>(null);
 
   const handleVote = useCallback((score: number) => {
     if (burstPositions) return;
 
-    // Generate 3 random burst positions across the viewport
-    const positions = Array.from({ length: 3 }, () => ({
+    // Generate 15 random burst positions, staggered in 5 waves of 3
+    // Each wave cycles: sparkle, entry A emoji, entry B emoji
+    const emojis = ['✨', entryA.emoji, entryB.emoji];
+    const positions = Array.from({ length: 15 }, (_, i) => ({
       top: `${20 + Math.random() * 60}%`,
       left: `${15 + Math.random() * 70}%`,
+      wave: Math.floor(i / 3),
+      emoji: emojis[i % 3],
     }));
     setBurstPositions(positions);
 
-    setTimeout(() => onScore(score), 300);
-    setTimeout(() => setBurstPositions(null), 900);
-  }, [burstPositions, onScore]);
+    // Wait for fade-out to complete before swapping content
+    setTimeout(() => {
+      onScore(score);
+      setBurstPositions(null);
+    }, 1200);
+  }, [burstPositions, onScore, entryA.emoji, entryB.emoji]);
 
   const celebrating = !!burstPositions;
 
   return (
-    <div className={`comparison-container ${celebrating ? 'celebrating' : ''}`}>
+    <div key={`${entryA.id}-${entryB.id}`} className={`comparison-container ${celebrating ? 'celebrating' : ''}`}>
       <div className="comparison-cards">
         <EntryCard entry={entryA} />
         <div className="comparison-vs">VS</div>
@@ -83,9 +90,9 @@ export default function ComparisonView({
       {burstPositions && createPortal(
         <>
           {burstPositions.map((pos, b) => (
-            <div key={b} className="sparkle-container" style={{ top: pos.top, left: pos.left }} aria-hidden="true">
+            <div key={b} className={`sparkle-container sparkle-wave-${pos.wave}`} style={{ top: pos.top, left: pos.left }} aria-hidden="true">
               {Array.from({ length: SPARKLE_COUNT }, (_, i) => (
-                <span key={i} className={`sparkle sparkle-${i}`}>✨</span>
+                <span key={i} className={`sparkle sparkle-${i}`}>{pos.emoji}</span>
               ))}
             </div>
           ))}
