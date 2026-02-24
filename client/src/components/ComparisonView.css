@@ -34,8 +34,8 @@
 .comparison-vs {
   position: absolute;
   left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+  top: 120px;
+  transform: translateX(-50%);
   z-index: 2;
   width: 48px;
   height: 48px;
@@ -115,7 +115,7 @@
 /* ─── Celebration Animation ─── */
 
 .comparison-container.celebrating {
-  animation: compCelebrateExit 400ms ease-in 500ms forwards;
+  animation: compCelebrateExit 500ms ease-in 600ms forwards;
 }
 
 @keyframes compCelebrateExit {
@@ -149,15 +149,51 @@
   pointer-events: none;
 }
 
-/* Sparkles animate immediately on mount (only rendered when celebrating) */
-.sparkle-0 { animation: celebSparkle0 650ms ease-out forwards; }
-.sparkle-1 { animation: celebSparkle1 600ms ease-out 50ms forwards; }
-.sparkle-2 { animation: celebSparkle2 700ms ease-out 30ms forwards; }
-.sparkle-3 { animation: celebSparkle3 620ms ease-out 80ms forwards; }
-.sparkle-4 { animation: celebSparkle4 680ms ease-out 20ms forwards; }
-.sparkle-5 { animation: celebSparkle5 640ms ease-out 60ms forwards; }
-.sparkle-6 { animation: celebSparkle6 660ms ease-out 40ms forwards; }
-.sparkle-7 { animation: celebSparkle7 610ms ease-out 70ms forwards; }
+/* Sparkles animate on mount — wave classes stagger by 100ms */
+.sparkle-wave-0 .sparkle-0 { animation: celebSparkle0 650ms ease-out forwards; }
+.sparkle-wave-0 .sparkle-1 { animation: celebSparkle1 600ms ease-out 50ms forwards; }
+.sparkle-wave-0 .sparkle-2 { animation: celebSparkle2 700ms ease-out 30ms forwards; }
+.sparkle-wave-0 .sparkle-3 { animation: celebSparkle3 620ms ease-out 80ms forwards; }
+.sparkle-wave-0 .sparkle-4 { animation: celebSparkle4 680ms ease-out 20ms forwards; }
+.sparkle-wave-0 .sparkle-5 { animation: celebSparkle5 640ms ease-out 60ms forwards; }
+.sparkle-wave-0 .sparkle-6 { animation: celebSparkle6 660ms ease-out 40ms forwards; }
+.sparkle-wave-0 .sparkle-7 { animation: celebSparkle7 610ms ease-out 70ms forwards; }
+
+.sparkle-wave-1 .sparkle-0 { animation: celebSparkle0 650ms ease-out 100ms forwards; }
+.sparkle-wave-1 .sparkle-1 { animation: celebSparkle1 600ms ease-out 150ms forwards; }
+.sparkle-wave-1 .sparkle-2 { animation: celebSparkle2 700ms ease-out 130ms forwards; }
+.sparkle-wave-1 .sparkle-3 { animation: celebSparkle3 620ms ease-out 180ms forwards; }
+.sparkle-wave-1 .sparkle-4 { animation: celebSparkle4 680ms ease-out 120ms forwards; }
+.sparkle-wave-1 .sparkle-5 { animation: celebSparkle5 640ms ease-out 160ms forwards; }
+.sparkle-wave-1 .sparkle-6 { animation: celebSparkle6 660ms ease-out 140ms forwards; }
+.sparkle-wave-1 .sparkle-7 { animation: celebSparkle7 610ms ease-out 170ms forwards; }
+
+.sparkle-wave-2 .sparkle-0 { animation: celebSparkle0 650ms ease-out 200ms forwards; }
+.sparkle-wave-2 .sparkle-1 { animation: celebSparkle1 600ms ease-out 250ms forwards; }
+.sparkle-wave-2 .sparkle-2 { animation: celebSparkle2 700ms ease-out 230ms forwards; }
+.sparkle-wave-2 .sparkle-3 { animation: celebSparkle3 620ms ease-out 280ms forwards; }
+.sparkle-wave-2 .sparkle-4 { animation: celebSparkle4 680ms ease-out 220ms forwards; }
+.sparkle-wave-2 .sparkle-5 { animation: celebSparkle5 640ms ease-out 260ms forwards; }
+.sparkle-wave-2 .sparkle-6 { animation: celebSparkle6 660ms ease-out 240ms forwards; }
+.sparkle-wave-2 .sparkle-7 { animation: celebSparkle7 610ms ease-out 270ms forwards; }
+
+.sparkle-wave-3 .sparkle-0 { animation: celebSparkle0 650ms ease-out 300ms forwards; }
+.sparkle-wave-3 .sparkle-1 { animation: celebSparkle1 600ms ease-out 350ms forwards; }
+.sparkle-wave-3 .sparkle-2 { animation: celebSparkle2 700ms ease-out 330ms forwards; }
+.sparkle-wave-3 .sparkle-3 { animation: celebSparkle3 620ms ease-out 380ms forwards; }
+.sparkle-wave-3 .sparkle-4 { animation: celebSparkle4 680ms ease-out 320ms forwards; }
+.sparkle-wave-3 .sparkle-5 { animation: celebSparkle5 640ms ease-out 360ms forwards; }
+.sparkle-wave-3 .sparkle-6 { animation: celebSparkle6 660ms ease-out 340ms forwards; }
+.sparkle-wave-3 .sparkle-7 { animation: celebSparkle7 610ms ease-out 370ms forwards; }
+
+.sparkle-wave-4 .sparkle-0 { animation: celebSparkle0 650ms ease-out 400ms forwards; }
+.sparkle-wave-4 .sparkle-1 { animation: celebSparkle1 600ms ease-out 450ms forwards; }
+.sparkle-wave-4 .sparkle-2 { animation: celebSparkle2 700ms ease-out 430ms forwards; }
+.sparkle-wave-4 .sparkle-3 { animation: celebSparkle3 620ms ease-out 480ms forwards; }
+.sparkle-wave-4 .sparkle-4 { animation: celebSparkle4 680ms ease-out 420ms forwards; }
+.sparkle-wave-4 .sparkle-5 { animation: celebSparkle5 640ms ease-out 460ms forwards; }
+.sparkle-wave-4 .sparkle-6 { animation: celebSparkle6 660ms ease-out 440ms forwards; }
+.sparkle-wave-4 .sparkle-7 { animation: celebSparkle7 610ms ease-out 470ms forwards; }
 
 /* Each sparkle flies in a different direction — roughly evenly spaced around 360° */
 /* 0: up-right */

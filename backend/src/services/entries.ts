@@ -1,5 +1,4 @@
 import yaml from 'js-yaml';
-import { DUMMY_ENTRIES } from './entries.dummy.js';
 
 export interface EntryMetrics {
   classification: 'Whole Game' | 'Feature';
@@ -120,11 +119,6 @@ export async function getEntries(jamSlug: string): Promise<Entry[]> {
   const cached = entriesCache.get(jamSlug);
   if (cached && Date.now() - cached.fetchedAt < CACHE_TTL) {
     return cached.entries;
-  }
-
-  // In dev mode, use dummy data
-  if (process.env.DEV_AUTH_BYPASS === 'true') {
-    return DUMMY_ENTRIES[jamSlug] || DUMMY_ENTRIES['gj7'];
   }
 
   // Fetch enriched .md files from GitHub
