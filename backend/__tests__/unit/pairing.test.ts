@@ -1,15 +1,12 @@
 import { describe, test, expect, beforeEach, jest } from '@jest/globals';
 
 const mockGetComparisonsForJam = jest.fn();
-const mockGetComparisonCountForJudge = jest.fn();
 
 jest.unstable_mockModule('../../src/services/database.js', () => ({
   getComparisonsForJam: mockGetComparisonsForJam,
-  getComparisonCountForJudge: mockGetComparisonCountForJudge,
 }));
 
-const { selectNextPair, getSessionProgress, hasExhaustedAllPairs } =
-  await import('../../src/services/pairing.js');
+const { selectSessionPairs } = await import('../../src/services/pairing.js');
 
 function makeEntry(id: string) {
   return {
@@ -35,45 +32,30 @@ function makeEntry(id: string) {
   };
 }
 
-describe('pairing service', () => {
+describe('selectSessionPairs', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  test('getSessionProgress derives completed and sessions from judge comparison count', async () => {
-    mockGetComparisonCountForJudge.mockResolvedValue(12);
-
-    const progress = await getSessionProgress('gj8', 'judge-1');
-
-    expect(mockGetComparisonCountForJudge).toHaveBeenCalledWith('gj8', 'judge-1');
-    expect(progress).toEqual({ completed: 2, total: 10, sessions: 1 });
+  test('returns empty array when fewer than 2 entries', async () => {
+    mockGetComparisonsForJam.mockResolvedValue([]);
+    const pairs = await selectSessionPairs('gj8', null, [makeEntry('a')], 10);
+    expect(pairs).toEqual([]);
   });
 
-  test('hasExhaustedAllPairs returns true when count reaches total pair count', async () => {
-    mockGetComparisonCountForJudge.mockResolvedValue(3);
+  test('returns pairs for anonymous users', async () => {
+    mockGetComparisonsForJam.mockResolvedValue([]);
+    const entries = [makeEntry('a'), makeEntry('b'), makeEntry('c')];
 
-    const exhausted = await hasExhaustedAllPairs('gj8', 'judge-1', [
-      makeEntry('a'),
-      makeEntry('b'),
-      makeEntry('c'),
-    ]);
+    const pairs = await selectSessionPairs('gj8', null, entries, 3);
 
-    expect(exhausted).toBe(true);
+    expect(pairs).toHaveLength(3);
+    for (const pair of pairs) {
+      expect(new Set([pair.entryA.id, pair.entryB.id]).size).toBe(2);
+    }
   });
 
-  test('hasExhaustedAllPairs returns false when count is below total pair count', async () => {
-    mockGetComparisonCountForJudge.mockResolvedValue(2);
-
-    const exhausted = await hasExhaustedAllPairs('gj8', 'judge-1', [
-      makeEntry('a'),
-      makeEntry('b'),
-      makeEntry('c'),
-    ]);
-
-    expect(exhausted).toBe(false);
-  });
-
-  test('selectNextPair returns null when judge has already compared all pairs', async () => {
+  test('excludes pairs already judged by authenticated user', async () => {
     mockGetComparisonsForJam.mockResolvedValue([
       {
         id: 'cmp-1',
@@ -86,17 +68,46 @@ describe('pairing service', () => {
       },
     ]);
 
-    const pair = await selectNextPair('gj8', 'judge-1', [makeEntry('a'), makeEntry('b')]);
+    const entries = [makeEntry('a'), makeEntry('b'), makeEntry('c')];
+    const pairs = await selectSessionPairs('gj8', 'judge-1', entries, 10);
 
-    expect(pair).toBeNull();
+    // Only 2 remaining pairs: a-c and b-c (a-b already judged)
+    expect(pairs).toHaveLength(2);
+    const pairSets = pairs.map((p) => [p.entryA.id, p.entryB.id].sort().join(':'));
+    expect(pairSets).not.toContain('a:b');
   });
 
-  test('selectNextPair returns an available pair for a judge', async () => {
+  test('returns empty when judge has exhausted all pairs', async () => {
+    mockGetComparisonsForJam.mockResolvedValue([
+      {
+        id: '1',
+        jam_slug: 'gj8',
+        judge_id: 'j',
+        entry_a_id: 'a',
+        entry_b_id: 'b',
+        score: 1,
+        timestamp: 1,
+      },
+    ]);
+
+    const pairs = await selectSessionPairs('gj8', 'j', [makeEntry('a'), makeEntry('b')], 10);
+    expect(pairs).toEqual([]);
+  });
+
+  test('respects count parameter', async () => {
     mockGetComparisonsForJam.mockResolvedValue([]);
+    const entries = [makeEntry('a'), makeEntry('b'), makeEntry('c'), makeEntry('d')];
 
-    const pair = await selectNextPair('gj8', 'judge-1', [makeEntry('a'), makeEntry('b')]);
+    const pairs = await selectSessionPairs('gj8', null, entries, 2);
+    expect(pairs).toHaveLength(2);
+  });
 
-    expect(pair).not.toBeNull();
-    expect(new Set([pair!.entryA.id, pair!.entryB.id])).toEqual(new Set(['a', 'b']));
+  test('returns no duplicate pairs', async () => {
+    mockGetComparisonsForJam.mockResolvedValue([]);
+    const entries = [makeEntry('a'), makeEntry('b'), makeEntry('c'), makeEntry('d')];
+
+    const pairs = await selectSessionPairs('gj8', null, entries, 6);
+    const keys = pairs.map((p) => [p.entryA.id, p.entryB.id].sort().join(':'));
+    expect(new Set(keys).size).toBe(keys.length);
   });
 });

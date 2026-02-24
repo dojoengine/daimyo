@@ -110,6 +110,26 @@
   text-transform: uppercase;
 }
 
+.home-hero-cta {
+  display: inline-block;
+  margin-top: 32px;
+  padding: 14px 36px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: var(--neon-red);
+  border-radius: 4px;
+  text-decoration: none;
+  box-shadow: 0 0 20px var(--neon-glow);
+  transition: all 0.25s ease;
+}
+
+.home-hero-cta:hover {
+  box-shadow: 0 0 30px #ff1a3d60;
+  transform: translateY(-1px);
+}
+
 /* ─── Divider ─── */
 .home-divider {
   width: 60px;

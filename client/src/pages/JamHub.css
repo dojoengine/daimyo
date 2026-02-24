@@ -1,0 +1,253 @@
+/* ─── Jam Hub Page ─── */
+
+.hub-page {
+  min-height: 100vh;
+  background: var(--void);
+  color: var(--parchment);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Ink wash background */
+.hub-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 10%, #2a0a2a33 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 80%, #0a1a3a33 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 50% 50%, #2a0a0a22 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Kanji watermark — 覧 (overview) */
+.hub-page::after {
+  content: '覧';
+  position: fixed;
+  right: 32px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: 'Noto Serif JP', serif;
+  font-size: 200px;
+  font-weight: 900;
+  color: #ffffff06;
+  pointer-events: none;
+  z-index: -1;
+  user-select: none;
+}
+
+.hub-container {
+  max-width: 940px;
+  margin: 0 auto;
+  padding: 64px 32px 80px;
+  position: relative;
+  z-index: 1;
+  animation: hubFadeIn 0.6s ease-out;
+}
+
+/* ─── Header ─── */
+
+.hub-header {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.hub-home-link {
+  font-family: 'Noto Serif', 'Noto Serif JP', serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--stone);
+  text-decoration: none;
+  letter-spacing: 0.04em;
+  transition: color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.hub-home-link:hover {
+  color: var(--neon-red);
+}
+
+.hub-title {
+  font-family: 'Noto Serif', 'Noto Serif JP', serif;
+  font-size: 32px;
+  font-weight: 900;
+  margin: 0;
+  letter-spacing: -0.01em;
+  background: linear-gradient(135deg, var(--parchment) 0%, var(--gold) 50%, var(--parchment) 100%);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: hubShimmer 6s ease-in-out infinite;
+}
+
+.hub-divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--neon-red), transparent);
+  margin-bottom: 40px;
+  box-shadow: 0 0 12px var(--neon-glow);
+}
+
+/* ─── Jam Grid ─── */
+
+.hub-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.hub-card {
+  background: var(--ink);
+  border: 1px solid var(--ash);
+  border-radius: 12px;
+  padding: 32px 28px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Neon top edge on hover */
+.hub-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--neon-red), transparent);
+  box-shadow: 0 0 20px var(--neon-glow);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.hub-card:hover {
+  background: var(--scroll);
+}
+
+.hub-card:hover::before {
+  opacity: 1;
+}
+
+.hub-card-title {
+  font-family: 'Noto Serif', 'Noto Serif JP', serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--parchment);
+  margin: 0;
+}
+
+.hub-card-stats {
+  display: flex;
+  gap: 20px;
+}
+
+.hub-card-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hub-card-stat-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--parchment);
+}
+
+.hub-card-stat-label {
+  font-size: 11px;
+  color: var(--stone);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.hub-card-cta {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--neon-red);
+  letter-spacing: 0.04em;
+  margin-top: auto;
+  transition: transform 0.2s ease;
+  display: inline-block;
+}
+
+.hub-card:hover .hub-card-cta {
+  transform: translateX(4px);
+}
+
+/* ─── States ─── */
+
+.hub-loading {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 80px 0;
+  font-size: 18px;
+  color: var(--stone);
+  gap: 16px;
+}
+
+.hub-loading::after {
+  content: '';
+  width: 32px;
+  height: 32px;
+  border: 2px solid var(--ash);
+  border-top-color: var(--neon-red);
+  border-radius: 50%;
+  animation: hubSpin 0.8s linear infinite;
+}
+
+.hub-error,
+.hub-empty {
+  text-align: center;
+  padding: 80px 0;
+  font-size: 16px;
+  color: var(--stone);
+}
+
+.hub-error {
+  color: var(--neon-red);
+}
+
+/* ─── Animations ─── */
+
+@keyframes hubFadeIn {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes hubShimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes hubSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── Responsive ─── */
+
+@media (max-width: 768px) {
+  .hub-container {
+    padding: 40px 16px 60px;
+  }
+
+  .hub-title {
+    font-size: 24px;
+  }
+
+  .hub-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hub-page::after {
+    display: none;
+  }
+}

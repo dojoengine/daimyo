@@ -117,3 +117,30 @@ export async function getUniqueJudgeCount(jamSlug: string): Promise<number> {
 
   return parseCount(results[0]?.count);
 }
+
+/**
+ * Aggregate stats for all jams in one query.
+ */
+export interface JamStats {
+  jam_slug: string;
+  vote_count: number;
+  judge_count: number;
+}
+
+export async function getAllJamStats(): Promise<JamStats[]> {
+  const sql = getSql();
+
+  const results = await sql<{ jam_slug: string; vote_count: string; judge_count: string }[]>`
+    SELECT jam_slug,
+           COUNT(*) as vote_count,
+           COUNT(DISTINCT judge_id) as judge_count
+    FROM jam_comparisons
+    GROUP BY jam_slug
+  `;
+
+  return results.map((r) => ({
+    jam_slug: r.jam_slug,
+    vote_count: parseCount(r.vote_count),
+    judge_count: parseCount(r.judge_count),
+  }));
+}

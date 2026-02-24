@@ -10,7 +10,7 @@ interface ComparisonViewProps {
   entryB: Entry;
   canGoBack: boolean;
   onScore: (score: number) => void;
-  onInvalidPair: () => void;
+  onInvalidPair?: () => void;
   onBack: () => void;
 }
 
@@ -76,13 +76,15 @@ export default function ComparisonView({
           >
             Back
           </button>
-          <button
-            className="comparison-btn comparison-invalid"
-            onClick={onInvalidPair}
-            disabled={celebrating}
-          >
-            Skip
-          </button>
+          {onInvalidPair && (
+            <button
+              className="comparison-btn comparison-invalid"
+              onClick={onInvalidPair}
+              disabled={celebrating}
+            >
+              Skip
+            </button>
+          )}
         </div>
       </div>
 

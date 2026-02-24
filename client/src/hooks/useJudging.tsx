@@ -39,125 +39,141 @@ interface Pair {
   entryB: Entry;
 }
 
-interface Progress {
-  completed: number;
-  total: number;
+// localStorage schema
+interface StoredSession {
+  pairs: Pair[];
+  votes: (number | null)[];
+  currentIndex: number;
+  fetchedAt: number;
   sessions: number;
-  sessionComplete: boolean;
-  allPairsExhausted: boolean;
+  judgeId?: string;
 }
 
-interface HistoryItem {
-  pair: Pair;
-  progress: Progress;
+const STORAGE_KEY_PREFIX = 'daimyo-session-';
+const SESSION_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+function loadSession(slug: string, userId: string | null): StoredSession | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_PREFIX + slug);
+    if (!raw) return null;
+    const stored: StoredSession = JSON.parse(raw);
+
+    // Expired?
+    if (Date.now() - stored.fetchedAt > SESSION_TTL) {
+      localStorage.removeItem(STORAGE_KEY_PREFIX + slug);
+      return null;
+    }
+
+    // Discard if an authenticated user encounters a session they didn't create
+    if (userId && stored.judgeId !== userId) {
+      localStorage.removeItem(STORAGE_KEY_PREFIX + slug);
+      return null;
+    }
+
+    return stored;
+  } catch {
+    return null;
+  }
 }
 
-interface JudgingState {
-  pair: Pair | null;
-  progress: Progress;
-  history: HistoryItem[];
+function saveSession(slug: string, session: StoredSession): void {
+  try {
+    localStorage.setItem(STORAGE_KEY_PREFIX + slug, JSON.stringify(session));
+  } catch {
+    // Storage full or unavailable — non-critical
+  }
+}
+
+function clearSession(slug: string): void {
+  localStorage.removeItem(STORAGE_KEY_PREFIX + slug);
+}
+
+// State
+
+type Status = 'loading' | 'voting' | 'review' | 'submitting' | 'submitted' | 'error';
+
+interface SessionState {
+  pairs: Pair[];
+  votes: (number | null)[];
+  currentIndex: number;
+  fetchedAt: number;
+  status: Status;
+  sessions: number;
   error: string | null;
 }
 
-const initialProgress: Progress = {
-  completed: 0,
-  total: JUDGING_SESSION_SIZE,
+const initialState: SessionState = {
+  pairs: [],
+  votes: [],
+  currentIndex: 0,
+  fetchedAt: 0,
+  status: 'loading',
   sessions: 0,
-  sessionComplete: false,
-  allPairsExhausted: false,
-};
-
-const initialState: JudgingState = {
-  pair: null,
-  progress: initialProgress,
-  history: [],
   error: null,
 };
 
-type JudgingAction =
-  | { type: 'SET_PAIR_AND_PROGRESS'; pair: Pair; progress: Progress }
-  | { type: 'MARK_ALL_PAIRS_EXHAUSTED'; sessions?: number }
-  | { type: 'MARK_SESSION_COMPLETE'; completed?: number; sessions?: number }
-  | { type: 'PUSH_HISTORY'; pair: Pair; progress: Progress }
-  | { type: 'ROLLBACK_HISTORY' }
+type SessionAction =
+  | { type: 'LOAD_SESSION'; pairs: Pair[]; votes: (number | null)[]; currentIndex: number; fetchedAt: number; sessions: number }
+  | { type: 'VOTE'; score: number }
   | { type: 'GO_BACK' }
-  | { type: 'CONTINUE_SESSION' }
+  | { type: 'RESET' }
+  | { type: 'SUBMIT_START' }
+  | { type: 'SUBMIT_SUCCESS'; sessions: number }
+  | { type: 'SUBMIT_ERROR'; error: string }
   | { type: 'SET_ERROR'; error: string };
 
-function judgingReducer(state: JudgingState, action: JudgingAction): JudgingState {
+function sessionReducer(state: SessionState, action: SessionAction): SessionState {
   switch (action.type) {
-    case 'SET_PAIR_AND_PROGRESS':
+    case 'LOAD_SESSION': {
+      const status = action.currentIndex >= action.pairs.length ? 'review' : 'voting';
       return {
         ...state,
-        pair: action.pair,
-        progress: action.progress,
-      };
-
-    case 'MARK_ALL_PAIRS_EXHAUSTED':
-      return {
-        ...state,
-        pair: null,
-        progress: {
-          ...state.progress,
-          allPairsExhausted: true,
-          sessions: action.sessions ?? state.progress.sessions,
-        },
-      };
-
-    case 'MARK_SESSION_COMPLETE':
-      return {
-        ...state,
-        pair: null,
-        progress: {
-          ...state.progress,
-          sessionComplete: true,
-          completed: action.completed ?? state.progress.completed,
-          sessions: action.sessions ?? state.progress.sessions,
-        },
-      };
-
-    case 'PUSH_HISTORY':
-      return {
-        ...state,
-        history: [...state.history, { pair: action.pair, progress: action.progress }],
-      };
-
-    case 'ROLLBACK_HISTORY':
-      return {
-        ...state,
-        history: state.history.slice(0, -1),
-      };
-
-    case 'GO_BACK': {
-      const previous = state.history[state.history.length - 1];
-      if (!previous) {
-        return state;
-      }
-
-      return {
-        ...state,
-        history: state.history.slice(0, -1),
-        pair: previous.pair,
-        progress: previous.progress,
+        pairs: action.pairs,
+        votes: action.votes,
+        currentIndex: action.currentIndex,
+        fetchedAt: action.fetchedAt,
+        sessions: action.sessions,
+        status,
+        error: null,
       };
     }
 
-    case 'CONTINUE_SESSION':
+    case 'VOTE': {
+      const newVotes = [...state.votes];
+      newVotes[state.currentIndex] = action.score;
+      const nextIndex = state.currentIndex + 1;
+      const done = nextIndex >= state.pairs.length;
       return {
         ...state,
-        history: [],
-        progress: {
-          ...state.progress,
-          sessionComplete: false,
-          completed: 0,
-        },
+        votes: newVotes,
+        currentIndex: nextIndex,
+        status: done ? 'review' : 'voting',
       };
+    }
+
+    case 'GO_BACK': {
+      if (state.currentIndex <= 0) return state;
+      return {
+        ...state,
+        currentIndex: state.currentIndex - 1,
+        status: 'voting',
+      };
+    }
+
+    case 'RESET':
+      return { ...initialState, sessions: state.sessions };
+
+    case 'SUBMIT_START':
+      return { ...state, status: 'submitting' };
+
+    case 'SUBMIT_SUCCESS':
+      return { ...state, status: 'submitted', sessions: action.sessions };
+
+    case 'SUBMIT_ERROR':
+      return { ...state, status: 'review', error: action.error };
 
     case 'SET_ERROR':
-      return {
-        ...state,
-        error: action.error,
-      };
+      return { ...state, status: 'error', error: action.error };
 
     default:
       return state;
@@ -166,164 +182,154 @@ function judgingReducer(state: JudgingState, action: JudgingAction): JudgingStat
 
 export function useJudging(jamSlug: string) {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [state, dispatch] = useReducer(judgingReducer, initialState);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [state, dispatch] = useReducer(sessionReducer, initialState);
 
-  const { pair, progress, history, error } = state;
-
-  // Check auth status
+  // Check auth status (non-blocking)
   useEffect(() => {
     async function checkAuth() {
       try {
         const res = await fetch('/api/auth/me', { credentials: 'include' });
         if (res.ok) {
-          const data = await res.json();
-          setUser(data);
+          setUser(await res.json());
         }
-      } catch (e) {
-        console.error('Auth check failed:', e);
+      } catch {
+        // Not authenticated — that's fine
       } finally {
-        setLoading(false);
+        setAuthChecked(true);
       }
     }
     checkAuth();
   }, []);
 
-  // Fetch next pair when user is authenticated
-  const fetchPair = useCallback(async () => {
-    if (!user || !jamSlug) return;
-
+  // Fetch a new session from the server
+  const fetchSession = useCallback(async (userId: string | null) => {
     try {
-      const res = await fetch(`/api/jams/${jamSlug}/pair`, { credentials: 'include' });
-      if (!res.ok) {
-        throw new Error('Failed to fetch pair');
-      }
+      const res = await fetch(`/api/jams/${jamSlug}/session`, { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to load session');
       const data = await res.json();
 
-      if (data.allPairsExhausted) {
-        dispatch({
-          type: 'MARK_ALL_PAIRS_EXHAUSTED',
-          sessions: data.progress?.sessions,
-        });
+      const pairs: Pair[] = data.pairs;
+      if (pairs.length === 0) {
+        dispatch({ type: 'SET_ERROR', error: 'No more pairs available to judge.' });
         return;
       }
 
-      if (data.sessionComplete) {
-        dispatch({
-          type: 'MARK_SESSION_COMPLETE',
-          completed: data.progress?.completed || progress.completed,
-          sessions: data.progress?.sessions,
-        });
-        return;
-      }
+      const votes = new Array(pairs.length).fill(null);
+      const sessions = data.sessions ?? 0;
+      const fetchedAt = Date.now();
 
-      dispatch({
-        type: 'SET_PAIR_AND_PROGRESS',
-        pair: { entryA: data.entryA, entryB: data.entryB },
-        progress: {
-          completed: data.progress.completed,
-          total: data.progress.total,
-          sessions: data.progress.sessions ?? 0,
-          sessionComplete: false,
-          allPairsExhausted: false,
-        },
-      });
+      dispatch({ type: 'LOAD_SESSION', pairs, votes, currentIndex: 0, fetchedAt, sessions });
+      saveSession(jamSlug, { pairs, votes, currentIndex: 0, fetchedAt, sessions, judgeId: userId ?? undefined });
     } catch (e) {
+      dispatch({ type: 'SET_ERROR', error: e instanceof Error ? e.message : 'Failed to load session' });
+    }
+  }, [jamSlug]);
+
+  // Initialize: try localStorage first, then fetch
+  useEffect(() => {
+    if (!authChecked) return;
+
+    const stored = loadSession(jamSlug, user?.id ?? null);
+    if (stored && stored.pairs.length > 0) {
       dispatch({
-        type: 'SET_ERROR',
-        error: e instanceof Error ? e.message : 'Failed to load pair',
+        type: 'LOAD_SESSION',
+        pairs: stored.pairs,
+        votes: stored.votes,
+        currentIndex: stored.currentIndex,
+        fetchedAt: stored.fetchedAt,
+        sessions: stored.sessions ?? 0,
+      });
+    } else {
+      fetchSession(user?.id ?? null);
+    }
+  }, [authChecked, jamSlug, user?.id, fetchSession]);
+
+  // Persist to localStorage on state changes (preserve original fetchedAt)
+  useEffect(() => {
+    if ((state.status === 'voting' || state.status === 'review') && state.fetchedAt > 0) {
+      saveSession(jamSlug, {
+        pairs: state.pairs,
+        votes: state.votes,
+        currentIndex: state.currentIndex,
+        fetchedAt: state.fetchedAt,
+        sessions: state.sessions,
+        judgeId: user?.id,
       });
     }
-  }, [user, jamSlug, progress.completed]);
+  }, [jamSlug, state.pairs, state.votes, state.currentIndex, state.status, state.fetchedAt, state.sessions, user?.id]);
 
-  useEffect(() => {
-    if (user) {
-      fetchPair();
-    }
-  }, [user, fetchPair]);
+  // Vote on current pair
+  const submitScore = useCallback((score: number) => {
+    dispatch({ type: 'VOTE', score });
+  }, []);
 
-  const submitVote = useCallback(
-    async (params: { score: number | null; invalid?: boolean; errorMessage: string }) => {
-      if (!pair) return;
-
-      dispatch({ type: 'PUSH_HISTORY', pair, progress });
-
-      try {
-        const res = await fetch(`/api/jams/${jamSlug}/vote`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            entryAId: pair.entryA.id,
-            entryBId: pair.entryB.id,
-            score: params.score,
-            invalid: params.invalid || undefined,
-          }),
-        });
-
-        if (!res.ok) {
-          throw new Error(params.errorMessage);
-        }
-
-        const data = await res.json();
-        if (data.sessionComplete) {
-          dispatch({
-            type: 'MARK_SESSION_COMPLETE',
-            completed: JUDGING_SESSION_SIZE,
-            sessions: data.sessions,
-          });
-          return;
-        }
-
-        await fetchPair();
-      } catch (e) {
-        dispatch({ type: 'ROLLBACK_HISTORY' });
-        dispatch({
-          type: 'SET_ERROR',
-          error: e instanceof Error ? e.message : params.errorMessage,
-        });
-      }
-    },
-    [pair, progress, jamSlug, fetchPair]
-  );
-
-  // Submit a Likert score (0.0 - 1.0)
-  const submitScore = useCallback(
-    async (score: number) => {
-      await submitVote({ score, errorMessage: 'Failed to submit vote' });
-    },
-    [submitVote]
-  );
-
-  // Report an invalid pair
-  const reportInvalidPair = useCallback(async () => {
-    await submitVote({
-      score: null,
-      invalid: true,
-      errorMessage: 'Failed to report invalid pair',
-    });
-  }, [submitVote]);
-
-  // Go back to the previous pair (client-side only — vote is not undone)
+  // Go back to previous pair
   const goBack = useCallback(() => {
     dispatch({ type: 'GO_BACK' });
   }, []);
 
-  const continueSession = useCallback(() => {
-    dispatch({ type: 'CONTINUE_SESSION' });
-    fetchPair();
-  }, [fetchPair]);
+  // Submit session to server (auth required)
+  const submitSession = useCallback(async () => {
+    dispatch({ type: 'SUBMIT_START' });
+
+    const votes = state.pairs.map((pair, i) => ({
+      entryAId: pair.entryA.id,
+      entryBId: pair.entryB.id,
+      score: state.votes[i],
+    })).filter((v) => v.score !== null);
+
+    try {
+      const res = await fetch(`/api/jams/${jamSlug}/session`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ votes }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Failed to submit session');
+      }
+
+      const data = await res.json();
+      clearSession(jamSlug);
+      dispatch({ type: 'SUBMIT_SUCCESS', sessions: data.sessions ?? 0 });
+    } catch (e) {
+      dispatch({ type: 'SUBMIT_ERROR', error: e instanceof Error ? e.message : 'Failed to submit session' });
+    }
+  }, [jamSlug, state.pairs, state.votes]);
+
+  // Start a new session (discard current)
+  const startNewSession = useCallback(() => {
+    clearSession(jamSlug);
+    dispatch({ type: 'RESET' });
+    fetchSession(user?.id ?? null);
+  }, [jamSlug, user?.id, fetchSession]);
+
+  const pair = state.status === 'voting' && state.currentIndex < state.pairs.length
+    ? state.pairs[state.currentIndex]
+    : null;
+
+  const progress = {
+    completed: state.currentIndex,
+    total: state.pairs.length || JUDGING_SESSION_SIZE,
+  };
 
   return {
     user,
     pair,
     progress,
-    loading,
-    error,
-    canGoBack: history.length > 0,
+    loading: state.status === 'loading',
+    status: state.status,
+    sessions: state.sessions,
+    error: state.error,
+    votes: state.votes,
+    pairs: state.pairs,
+    canGoBack: state.currentIndex > 0,
     submitScore,
-    reportInvalidPair,
     goBack,
-    continueSession,
+    submitSession,
+    startNewSession,
   };
 }

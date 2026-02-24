@@ -5,6 +5,7 @@ import { existsSync } from 'fs';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import authRoutes from './routes/auth.js';
+import hubRoutes from './routes/hub.js';
 import jamsRoutes from './routes/jams.js';
 import { getApiPort, getCorsOrigin } from './serverConfig.js';
 
@@ -30,7 +31,8 @@ export function createApiServer(): Express {
 
   // API routes
   app.use('/api/auth', authRoutes);
-  app.use('/api/jams', jamsRoutes);
+  app.use('/api/jams', hubRoutes); // public — GET /api/jams
+  app.use('/api/jams', jamsRoutes); // /:slug/session (GET public, POST auth)
 
   // Serve React SPA static files in production
   const clientDist = path.resolve(__dirname, '../../../client/dist');

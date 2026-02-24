@@ -1,18 +1,11 @@
 import express, { Request, Response } from 'express';
-import { authMiddleware } from '../middleware/auth.js';
+import { authMiddleware, optionalAuthMiddleware } from '../middleware/auth.js';
 import { getEntries, getEntryById } from '../../services/entries.js';
-import {
-  selectNextPair,
-  getSessionProgress,
-  hasExhaustedAllPairs,
-} from '../../services/pairing.js';
-import { insertComparison } from '../../services/database.js';
+import { selectSessionPairs } from '../../services/pairing.js';
+import { insertComparison, getComparisonCountForJudge } from '../../services/database.js';
 import { JUDGING_SESSION_SIZE } from '../../constants/judging.js';
 
 const router: express.Router = express.Router();
-
-// All jam routes require authentication
-router.use(authMiddleware);
 
 // Helper to safely get slug from params
 function getSlug(params: Record<string, string | string[] | undefined>): string {
@@ -20,104 +13,93 @@ function getSlug(params: Record<string, string | string[] | undefined>): string 
   return Array.isArray(slug) ? slug[0] : slug || '';
 }
 
-// GET /api/jams/:slug/pair - Get next comparison pair
-router.get('/:slug/pair', async (req: Request, res: Response): Promise<void> => {
-  const slug = getSlug(req.params);
-  const judgeId = req.user!.id;
+// GET /api/jams/:slug/session - Get a batch of pairs for a judging session (public)
+router.get(
+  '/:slug/session',
+  optionalAuthMiddleware,
+  async (req: Request, res: Response): Promise<void> => {
+    const slug = getSlug(req.params);
+    const judgeId = req.user?.id ?? null;
 
-  try {
-    const entries = await getEntries(slug);
+    try {
+      const entries = await getEntries(slug);
 
-    if (entries.length < 2) {
-      res.status(400).json({ error: 'Not enough entries for comparison' });
-      return;
+      if (entries.length < 2) {
+        res.status(400).json({ error: 'Not enough entries for comparison' });
+        return;
+      }
+
+      const pairs = await selectSessionPairs(slug, judgeId, entries);
+
+      const response: Record<string, unknown> = {
+        pairs,
+        sessionSize: JUDGING_SESSION_SIZE,
+      };
+
+      // Include session count for authenticated judges
+      if (judgeId) {
+        const count = await getComparisonCountForJudge(slug, judgeId);
+        response.sessions = Math.floor(count / JUDGING_SESSION_SIZE);
+      }
+
+      res.json(response);
+    } catch (err) {
+      console.error('Error generating session:', err);
+      res.status(500).json({ error: 'Failed to generate session' });
     }
-
-    // Check session progress (needed for sessions count in all responses)
-    const progress = await getSessionProgress(slug, judgeId);
-
-    // Check if all pairs exhausted
-    const exhausted = await hasExhaustedAllPairs(slug, judgeId, entries);
-    if (exhausted) {
-      res.json({ allPairsExhausted: true, progress });
-      return;
-    }
-    if (progress.completed >= JUDGING_SESSION_SIZE) {
-      res.json({
-        sessionComplete: true,
-        progress,
-      });
-      return;
-    }
-
-    // Get next pair
-    const pair = await selectNextPair(slug, judgeId, entries);
-    if (!pair) {
-      res.json({ allPairsExhausted: true, progress });
-      return;
-    }
-
-    res.json({
-      entryA: pair.entryA,
-      entryB: pair.entryB,
-      progress,
-    });
-  } catch (err) {
-    console.error('Error fetching pair:', err);
-    res.status(500).json({ error: 'Failed to fetch pair' });
   }
-});
+);
 
-// POST /api/jams/:slug/vote - Record a vote (Likert scale)
-// Body: { entryAId, entryBId, score } where score is 0.0-1.0
-// Or: { entryAId, entryBId, score: null, invalid: true } to flag an invalid pair
-router.post('/:slug/vote', async (req: Request, res: Response): Promise<void> => {
-  const slug = getSlug(req.params);
-  const { entryAId, entryBId, score, invalid } = req.body;
-  const judgeId = req.user!.id;
+// POST /api/jams/:slug/session - Submit a batch of votes (auth required)
+router.post(
+  '/:slug/session',
+  authMiddleware,
+  async (req: Request, res: Response): Promise<void> => {
+    const slug = getSlug(req.params);
+    const judgeId = req.user!.id;
+    const { votes } = req.body;
 
-  if (!entryAId || !entryBId) {
-    res.status(400).json({ error: 'Missing entry IDs' });
-    return;
-  }
-
-  if (invalid) {
-    if (score !== null && score !== undefined) {
-      res.status(400).json({ error: 'Invalid pair must have null score' });
-      return;
-    }
-  } else if (typeof score !== 'number' || score < 0 || score > 1) {
-    res.status(400).json({ error: 'Score must be a number between 0.0 and 1.0' });
-    return;
-  }
-
-  try {
-    const entries = await getEntries(slug);
-
-    // Verify entries exist
-    const entryA = getEntryById(entries, entryAId);
-    const entryB = getEntryById(entries, entryBId);
-
-    if (!entryA || !entryB) {
-      res.status(400).json({ error: 'Invalid entry IDs' });
+    if (!Array.isArray(votes) || votes.length === 0) {
+      res.status(400).json({ error: 'Missing or empty votes array' });
       return;
     }
 
-    await insertComparison(slug, judgeId, entryAId, entryBId, invalid ? null : score);
+    try {
+      const entries = await getEntries(slug);
 
-    // Check if session is complete
-    const progress = await getSessionProgress(slug, judgeId);
-    const sessionComplete = progress.completed >= JUDGING_SESSION_SIZE;
+      for (const vote of votes) {
+        const { entryAId, entryBId, score } = vote;
 
-    res.json({
-      recorded: true,
-      sessionComplete,
-      sessions: progress.sessions,
-    });
-  } catch (err) {
-    console.error('Error recording vote:', err);
-    res.status(500).json({ error: 'Failed to record vote' });
+        if (!entryAId || !entryBId) {
+          res.status(400).json({ error: 'Missing entry IDs in vote' });
+          return;
+        }
+
+        if (typeof score !== 'number' || !Number.isFinite(score) || score < 0 || score > 1) {
+          res.status(400).json({ error: 'Score must be a number between 0.0 and 1.0' });
+          return;
+        }
+
+        if (!getEntryById(entries, entryAId) || !getEntryById(entries, entryBId)) {
+          res.status(400).json({ error: `Invalid entry IDs: ${entryAId}, ${entryBId}` });
+          return;
+        }
+      }
+
+      // All validated — insert sequentially
+      for (const vote of votes) {
+        await insertComparison(slug, judgeId, vote.entryAId, vote.entryBId, vote.score);
+      }
+
+      const count = await getComparisonCountForJudge(slug, judgeId);
+      const sessions = Math.floor(count / JUDGING_SESSION_SIZE);
+
+      res.json({ recorded: true, count: votes.length, sessions });
+    } catch (err) {
+      console.error('Error recording session:', err);
+      res.status(500).json({ error: 'Failed to record session' });
+    }
   }
-});
+);
 
 export default router;
