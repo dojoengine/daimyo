@@ -87,18 +87,21 @@ entries:
     metrics:
       classification: "Whole Game"
       team_size: 2
-      dojo_contracts: "4 models, 3 systems"
+      dojo_models: 4
+      dojo_systems: 3
+      dojo_events: 0
+      frontend_sdk: true
       jam_commits_pct: 95
       playability: "Live"
 ```
 
-**Required Fields**: `id` (PR number), `emoji`, `title`, `summary_short`, `summary_long`, `work_done_short`, `work_done_long`, `repo_url`, `team`, `metrics`
+**Required Fields**: `id` (filename-based), `emoji`, `title`, `summary_short`, `summary_long`, `work_done_short`, `work_done_long`, `repo_url`, `team`, `metrics`
 
 **Optional Fields**: `demo_url`, `video_url`
 
 **Text Fields**:
 - `summary_short`: ~50 words — what the game is and how it plays
-- `summary_long`: ~250 words — detailed game description
+- `summary_long`: ~100 words — detailed game description
 - `work_done_short`: ~35 words — what was specifically built during the jam (whole game vs. feature, key systems)
 - `work_done_long`: ~65 words — detailed continuation describing implementation specifics (together with short, forms a flowing ~100-word narrative)
 
@@ -108,9 +111,13 @@ entries:
 |-------|-------------|
 | `classification` | "Whole Game" or "Feature" |
 | `team_size` | Number of team members |
-| `dojo_contracts` | Contract summary (e.g. "4 models, 3 systems") |
+| `dojo_models` | Number of Dojo models |
+| `dojo_systems` | Number of Dojo systems/contracts |
+| `dojo_events` | Number of Dojo events |
+| `frontend_sdk` | Whether the project uses @dojoengine frontend SDK |
 | `jam_commits_pct` | Percentage of commits within jam window |
 | `playability` | "Live", "Video", or "None" |
+| `repo_unavailable` | true if repo could not be cloned (optional) |
 
 ### Fetching Entries
 

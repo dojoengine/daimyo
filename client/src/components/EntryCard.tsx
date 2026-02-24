@@ -82,7 +82,8 @@ export default function EntryCard({ entry }: EntryCardProps) {
       <div className="entry-metrics">
         <MetricChip label="Type" value={metrics.classification} tooltip="Whole Game = built from scratch; Feature = added to an existing project" />
         <MetricChip label="Team" value={`${metrics.team_size} member${metrics.team_size !== 1 ? 's' : ''}`} tooltip="Number of people who contributed during the jam" />
-        <MetricChip label="Contracts" value={metrics.dojo_contracts} tooltip="Dojo models and systems deployed on-chain" />
+        <MetricChip label="Dojo" value={`${metrics.dojo_models}M ${metrics.dojo_systems}S ${metrics.dojo_events}E`} tooltip="Dojo models / systems / events" />
+        <MetricChip label="SDK" value={metrics.frontend_sdk ? 'Yes' : 'No'} tooltip="Uses @dojoengine frontend SDK" />
         <MetricChip label="Jam Commits" value={`${metrics.jam_commits_pct}%`} tooltip="Percentage of repo commits made during the jam period" />
         <MetricChip label="Playability" value={metrics.playability} tooltip="Live = hosted and playable; Video = demo video only; None = no demo available" />
       </div>

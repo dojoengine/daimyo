@@ -25,7 +25,10 @@ function makeEntry(id: string) {
     metrics: {
       classification: 'Whole Game',
       team_size: 1,
-      dojo_contracts: '',
+      dojo_models: 0,
+      dojo_systems: 0,
+      dojo_events: 0,
+      frontend_sdk: false,
       jam_commits_pct: 0,
       playability: 'None',
     },
