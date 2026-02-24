@@ -4,9 +4,13 @@ import { JUDGING_SESSION_SIZE } from '../constants/judging';
 export interface EntryMetrics {
   classification: 'Whole Game' | 'Feature';
   team_size: number;
-  dojo_contracts: string;
+  dojo_models: number;
+  dojo_systems: number;
+  dojo_events: number;
+  frontend_sdk: boolean;
   jam_commits_pct: number;
   playability: 'Live' | 'Video' | 'None';
+  repo_unavailable?: boolean;
 }
 
 export interface Entry {

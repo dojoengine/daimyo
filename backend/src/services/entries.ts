@@ -4,9 +4,13 @@ import { DUMMY_ENTRIES } from './entries.dummy.js';
 export interface EntryMetrics {
   classification: 'Whole Game' | 'Feature';
   team_size: number;
-  dojo_contracts: string;
+  dojo_models: number;
+  dojo_systems: number;
+  dojo_events: number;
+  frontend_sdk: boolean;
   jam_commits_pct: number;
   playability: 'Live' | 'Video' | 'None';
+  repo_unavailable?: boolean;
 }
 
 export interface Entry {
@@ -56,7 +60,10 @@ function frontmatterToEntry(data: Record<string, unknown>): Entry | null {
     metrics: {
       classification: metrics.classification === 'Feature' ? 'Feature' : 'Whole Game',
       team_size: Number(metrics.team_size) || 1,
-      dojo_contracts: String(metrics.dojo_contracts || ''),
+      dojo_models: Number(metrics.dojo_models) || 0,
+      dojo_systems: Number(metrics.dojo_systems) || 0,
+      dojo_events: Number(metrics.dojo_events) || 0,
+      frontend_sdk: Boolean(metrics.frontend_sdk),
       jam_commits_pct: Number(metrics.jam_commits_pct) || 0,
       playability:
         metrics.playability === 'Live'
@@ -64,6 +71,7 @@ function frontmatterToEntry(data: Record<string, unknown>): Entry | null {
           : metrics.playability === 'Video'
             ? 'Video'
             : 'None',
+      ...(metrics.repo_unavailable ? { repo_unavailable: true } : {}),
     },
   };
 }

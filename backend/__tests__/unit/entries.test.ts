@@ -67,7 +67,10 @@ describe('frontmatterToEntry', () => {
     metrics: {
       classification: 'Whole Game',
       team_size: 2,
-      dojo_contracts: '4 models, 3 systems',
+      dojo_models: 4,
+      dojo_systems: 3,
+      dojo_events: 0,
+      frontend_sdk: true,
       jam_commits_pct: 95,
       playability: 'Live',
     },
@@ -102,7 +105,10 @@ describe('frontmatterToEntry', () => {
       metrics: {
         classification: 'Whole Game',
         team_size: 1,
-        dojo_contracts: '1 model',
+        dojo_models: 1,
+        dojo_systems: 0,
+        dojo_events: 0,
+        frontend_sdk: false,
         jam_commits_pct: 100,
         playability: 'None',
       },

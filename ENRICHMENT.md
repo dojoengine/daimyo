@@ -22,12 +22,17 @@ If frontmatter is present, strip it before proceeding — the enrichment agent i
 
 Read the submission `.md` file and extract:
 - Project name
-- GitHub repository URL
+- GitHub repository URL (may appear in various formats — extract owner/repo from any GitHub link)
 - Play instructions (live URL, video link, local setup)
-- Team members
+- Team members (keep as plaintext — whatever the submitter provided)
 - Any other details the submitter provided
 
-### Step 3: Analyze the Repository
+### Step 3: Parse Jam Dates
+
+Read the jam directory's `README.md` and find the **Jam Window** field (ISO dates: `YYYY-MM-DD / YYYY-MM-DD`).
+Allow a 1-day buffer on each side for setup and polish.
+
+### Step 4: Analyze the Repository
 
 Clone the submitted repository and gather:
 
@@ -36,24 +41,35 @@ Clone the submitted repository and gather:
 - Check for frontend SDK usage (`@dojoengine/*` packages)
 
 #### Classification
-Calculate what percentage of the repository's total codebase was changed during the jam window.
-Compare lines changed (additions + deletions) in jam-window commits vs total lines in the repo.
-Exclude lockfiles, generated bindings, and vendored assets — they skew the ratio.
 
-- **90% or more changed during jam** → `Whole Game`
-- **Less than 90%** → `Feature`
+Use `git diff --stat` between boundary commits (last commit before jam start vs last commit at jam end) for a high-level picture of how much of the codebase was built during the jam.
+Also check the `jam_commits / total_commits` ratio.
+
+Use your judgment — both signals together are more reliable than either alone.
+Rebased or squashed histories can make boundary diffs look cleaner than they are, so weigh accordingly.
+
+- **Whole Game** — the vast majority of the codebase was built during the jam
+- **Feature** — meaningful work during the jam, but built on a substantial pre-existing codebase
+
+Exclude lockfiles, generated bindings, and vendored assets from line counts — they skew the ratio.
 
 #### Commit History
 - Count total commits and jam-window commits
 - Calculate `jam_commits_pct` (percentage of commits within the jam window, with 1-day buffer on each side)
 
 #### Playability
-Based on the submission's play instructions:
-- `Live` — a deployed URL is provided and accessible
-- `Video` — a video demo link is provided but no live deployment
+Based on the submission's play instructions and URLs:
+- `Live` — a deployed URL is provided (common patterns: vercel.app, netlify.app, custom domains)
+- `Video` — a video demo link is provided but no live deployment (common patterns: youtube.com, drive.google.com, loom.com)
 - `None` — only local setup instructions or nothing
 
-### Step 4: Generate Entry Content
+#### Deleted / Inaccessible Repos
+
+If the repository cannot be cloned (deleted, private, or inaccessible), note `repo_unavailable: true` in the metrics.
+Treat as: 0 Dojo markers, 0 jam commits, classification "Feature".
+Still generate the other frontmatter fields from the submission content alone.
+
+### Step 5: Generate Entry Content
 
 Write the following fields. Quality matters — judges read these to evaluate games they can't always play.
 
@@ -70,7 +86,7 @@ Mention the most interesting technical or gameplay feature.
 Write for someone deciding whether to look closer.
 
 #### `summary_long` (~100 words)
-Continue from summary_short (they display as a single paragraph — the long version flows after the short).
+Continues from summary_short (they display as a single paragraph — the long version flows after the short).
 Cover: core gameplay, technical implementation, what makes it interesting.
 Mention specific Dojo features used (models, systems, SDK integration).
 
@@ -80,20 +96,28 @@ For Whole Game submissions: what the team accomplished.
 For Feature submissions: what new features were added to the existing game.
 
 #### `work_done_long` (~65 words)
-Continue from work_done_short (they display as a single paragraph — the long version flows after the short).
+Continues from work_done_short (they display as a single paragraph — the long version flows after the short).
 Add technical detail: specific mechanics implemented, contracts written, frontend work done.
 
-### Step 5: Write the Enriched File
+### Step 6: Write the Enriched File
 
 If the file already contains YAML frontmatter (between `---` delimiters), strip it first.
 Then prepend the newly generated YAML frontmatter.
 Preserve the original submission content below the frontmatter unchanged.
 
+#### Filename Normalization
+
+If the submission filename is not `kebab-case.md`, rename it to `kebab-case.md` before writing.
+
+#### ID Field
+
+Use the submission filename (without extension, after normalization) as the `id` field.
+
 #### YAML Schema
 
 ```yaml
 ---
-id: "<PR number>"
+id: "<filename without extension>"
 emoji: "<single emoji>"
 title: "<project name>"
 summary_short: >
@@ -108,13 +132,17 @@ repo_url: "<GitHub URL>"
 demo_url: <URL or null>
 video_url: <URL or null>
 team:
-  - "<@username or name>"
+  - "<name or handle as provided>"
 metrics:
   classification: "<Whole Game or Feature>"
   team_size: <number>
-  dojo_contracts: "<X models, Y systems, Z events>"
+  dojo_models: <number>
+  dojo_systems: <number>
+  dojo_events: <number>
+  frontend_sdk: <true or false>
   jam_commits_pct: <number 0-100>
   playability: "<Live, Video, or None>"
+  repo_unavailable: <true, only if repo could not be cloned>
 ---
 ```
 
@@ -122,7 +150,7 @@ All string values with special characters should be quoted.
 Use YAML `>` (folded scalar) for multi-line prose fields.
 `demo_url` and `video_url` should be `null` (not omitted) when not available.
 
-### Step 6: Commit
+### Step 7: Commit
 
 Commit the enriched file with message: `enrich: <project-name>`
 Push to main.
@@ -137,13 +165,13 @@ Given a submission like:
 ### Project Summary
 Fully on-chain chess with PvP and PvC modes, spectator staking, powered by Dojo.
 
-### GitHub
+### Source Code
 https://github.com/morelucks/stark-chess
 
-### Play
-Video demo: https://www.youtube.com/watch?v=5k4-K923fM4
+### Gameplay Video
+https://www.youtube.com/watch?v=5k4-K923fM4
 
-### Team members
+### Team Members
 - @morelucks — Backend/Smart Contracts
 - @Itodo-S — Frontend/Smart Contracts
 ```
@@ -152,8 +180,8 @@ The enriched file becomes:
 
 ```yaml
 ---
-id: "42"
-emoji: "♟"
+id: "stark-chess"
+emoji: "♟️"
 title: "StarkChess"
 summary_short: >
   A fully on-chain chess engine built with Dojo. Play PvP or PvC chess where
@@ -186,7 +214,10 @@ team:
 metrics:
   classification: "Whole Game"
   team_size: 2
-  dojo_contracts: "4 models, 3 systems"
+  dojo_models: 4
+  dojo_systems: 3
+  dojo_events: 0
+  frontend_sdk: true
   jam_commits_pct: 95
   playability: "Video"
 ---
@@ -196,13 +227,13 @@ metrics:
 ### Project Summary
 Fully on-chain chess with PvP and PvC modes, spectator staking, powered by Dojo.
 
-### GitHub
+### Source Code
 https://github.com/morelucks/stark-chess
 
-### Play
-Video demo: https://www.youtube.com/watch?v=5k4-K923fM4
+### Gameplay Video
+https://www.youtube.com/watch?v=5k4-K923fM4
 
-### Team members
+### Team Members
 - @morelucks — Backend/Smart Contracts
 - @Itodo-S — Frontend/Smart Contracts
 ```
