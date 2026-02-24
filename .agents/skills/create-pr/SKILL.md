@@ -1,6 +1,6 @@
 ---
 name: create-pr
-description: Create or update a PR from current branch to main, watch CI, and address feedback
+description: Create or update a PR from current branch to main and address feedback
 ---
 The user likes the state of the code.
 
@@ -40,50 +40,19 @@ Follow these exact steps:
 
 The PR description should summarize ALL commits in the PR, not just the latest changes.
 
-## Phase 3: Monitor CI and Address Issues
+## Phase 3: Completion
 
-Note: Keep commands CI-safe and avoid interactive `gh` prompts. Ensure `GH_TOKEN` or `GITHUB_TOKEN` is set in CI.
+11. Report the PR URL to the user. Do not poll for CI status — the user monitors CI externally.
 
-11. Watch CI status and feedback using the polling script (instead of running `gh` in a loop):
-   - Run `./.agents/skills/create-pr/scripts/poll-pr.sh --triage-on-change --exit-when-green` (polls every 30s for 10 mins).
-   - If checks fail, use `gh pr checks` or `gh run list` to find the failing run id, then:
-     - Fetch the failed check logs using `gh run view <run-id> --log-failed`
-     - Analyze the failure and fix the issue
-     - Commit and push the fix
-     - Continue polling until all checks pass
+12. If the user reports CI failures or review feedback, address them:
+    - Fix issues, commit, and push
+    - For bot reviews, address clearly actionable comments (bug fixes, typos, simple improvements)
+    - Skip comments that require design decisions or user input
 
-12. Check for merge conflicts:
-   - Run `git fetch origin main && git merge origin/main`
-   - If conflicts exist, resolve them sensibly
-   - Commit the merge resolution and push
-
-13. Use the polling script output to notice new reviews and comments (avoid direct polling via `gh`):
-   - If you need a full snapshot, run `./.agents/skills/create-pr/scripts/triage-pr.sh` once.
-   - If you need full context after the script reports a new item, fetch details once with `gh pr view --comments` or `gh api ...`.
-   - **Address feedback**:
-     - For bot reviews, read the review body and any inline comments carefully
-     - Address comments that are clearly actionable (bug fixes, typos, simple improvements)
-     - Skip comments that require design decisions or user input
-     - For addressed feedback, commit fixes with a message referencing the review/comment
-
-## Phase 4: Merge and Cleanup
-
-14. Once CI passes and the PR is approved, ask the user if they want to merge the PR.
-
-15. If the user confirms, merge the PR:
+13. If the user asks to merge:
     - Use `gh pr merge --squash --delete-branch` to squash-merge and delete the remote branch
-
-16. After successful merge, check if we're in a git worktree:
-    - Run: `[ "$(git rev-parse --git-common-dir)" != "$(git rev-parse --git-dir)" ]`
-    - **If in a worktree**: Use the ask user question tool (`request_user_input`) to ask if they want to clean up the worktree. If yes, run `wt remove --yes --force` to remove the worktree and local branch, then switch back to the main worktree.
-    - **If not in a worktree**: Just switch back to main with `git checkout main && git pull`
-
-## Completion
-
-Report the final PR status to the user, including:
-- PR URL
-- CI status (passed/merged)
-- Any unresolved review comments that need user attention
-- Cleanup status (worktree removed or branch switched)
+    - Check if we're in a git worktree: `[ "$(git rev-parse --git-common-dir)" != "$(git rev-parse --git-dir)" ]`
+    - **If in a worktree**: Ask if they want to clean up the worktree. If yes, run `wt remove --yes --force`.
+    - **If not in a worktree**: `git checkout main && git pull`
 
 If any step fails in a way you cannot resolve, ask the user for help.
