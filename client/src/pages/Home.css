@@ -69,7 +69,7 @@
 /* ─── Hero ─── */
 .home-hero {
   text-align: center;
-  margin-bottom: 100px;
+  margin-bottom: 48px;
   animation: fadeIn 0.8s ease-out;
 }
 
@@ -110,85 +110,45 @@
   text-transform: uppercase;
 }
 
-.home-hero-cta {
-  display: inline-block;
-  margin-top: 32px;
-  padding: 14px 36px;
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: #fff;
-  background: var(--neon-red);
-  border-radius: 4px;
-  text-decoration: none;
-  box-shadow: 0 0 20px var(--neon-glow);
-  transition: all 0.25s ease;
-}
-
-.home-hero-cta:hover {
-  box-shadow: 0 0 30px #ff1a3d60;
-  transform: translateY(-1px);
-}
-
-/* ─── Divider ─── */
-.home-divider {
-  width: 60px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--neon-red), transparent);
-  margin: 0 auto 80px;
-  box-shadow: 0 0 12px var(--neon-glow);
-}
-
-/* ─── Features ─── */
-.home-features {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2px;
-  margin-bottom: 100px;
-  animation: fadeUp 0.8s ease-out;
-}
-
-.home-feature {
-  background: var(--ink);
-  border: 1px solid var(--ash);
-  padding: 36px 28px;
-  position: relative;
-  transition: background 0.3s ease;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.home-feature:hover {
-  background: var(--scroll);
-}
-
-.home-feature:first-child {
-  border-radius: 8px 0 0 8px;
-}
-
-.home-feature:last-child {
-  border-radius: 0 8px 8px 0;
-}
-
-.home-feature-title {
-  font-family: 'Noto Serif JP', serif;
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 12px;
+.home-tagline-link {
   color: var(--parchment);
+  text-decoration: none;
+  transition: color 0.2s ease;
 }
 
-.home-feature-desc {
-  font-size: 14px;
-  line-height: 1.7;
+.home-tagline-link:hover {
+  color: #fff;
+}
+
+.home-pillars {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.home-pillar {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: var(--stone);
-  margin: 0;
+  padding: 4px 14px;
+  border: 1px solid var(--ash);
+  border-radius: 2px;
+  text-decoration: none;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.home-pillar:hover {
+  color: var(--parchment);
+  border-color: var(--stone);
 }
 
 /* ─── Game Jam ─── */
 .home-jam {
   position: relative;
-  margin-bottom: 100px;
+  margin-bottom: 32px;
   animation: fadeUp 0.8s ease-out;
 }
 
@@ -196,7 +156,7 @@
   background: var(--ink);
   border: 1px solid var(--ash);
   border-radius: 12px;
-  padding: 56px 48px;
+  padding: 32px 48px;
   position: relative;
   overflow: hidden;
 }
@@ -228,121 +188,85 @@
   line-height: 1;
 }
 
+.home-jam-header {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  margin-bottom: 0;
+}
+
+.home-jam-header-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
 .home-jam-label {
-  display: inline-block;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--neon-red);
-  margin-bottom: 16px;
-  padding: 4px 12px;
+  padding: 8px 20px;
   border: 1px solid var(--neon-red);
   border-radius: 2px;
   box-shadow: 0 0 12px var(--neon-glow);
+  flex-shrink: 0;
+  text-decoration: none;
+  transition: all 0.25s ease;
+}
+
+.home-jam-label:hover {
+  background: var(--neon-red);
+  color: #fff;
+  box-shadow: 0 0 20px var(--neon-glow);
 }
 
 .home-jam-title {
   font-family: 'Noto Serif JP', serif;
   font-size: 36px;
   font-weight: 900;
-  margin: 0 0 8px;
+  margin: 0;
   color: var(--parchment);
 }
 
 .home-jam-dates {
   font-size: 15px;
   color: var(--stone);
-  margin-bottom: 20px;
-}
-
-.home-jam-desc {
-  font-size: 16px;
-  line-height: 1.7;
-  color: var(--mist);
-  margin: 0 0 40px;
-  max-width: 520px;
-}
-
-.home-jam-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 40px;
-  margin-bottom: 44px;
-}
-
-.home-jam-section-title {
-  font-family: 'Noto Serif JP', serif;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--gold);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin-bottom: 16px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--gold-dim);
-}
-
-.home-jam-list {
   margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.home-jam-list li {
-  font-size: 14px;
-  line-height: 2;
-  color: var(--mist);
-  padding-left: 16px;
-  position: relative;
-}
-
-.home-jam-list li::before {
-  content: '—';
-  position: absolute;
-  left: 0;
-  color: var(--ash);
-}
-
-.home-jam-actions {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.home-jam-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 14px 32px;
-  font-size: 15px;
-  font-weight: 600;
-  text-decoration: none;
-  border-radius: 4px;
-  transition: all 0.25s ease;
-  letter-spacing: 0.02em;
-}
-
-.home-jam-cta-primary {
-  background: var(--neon-red);
-  color: #fff;
-  box-shadow: 0 0 20px var(--neon-glow);
-}
-
-.home-jam-cta-primary:hover {
-  box-shadow: 0 0 30px #ff1a3d60;
-  transform: translateY(-1px);
 }
 
 .home-jam-cta-secondary {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-radius: 2px;
+  transition: all 0.25s ease;
   background: transparent;
-  color: var(--parchment);
-  border: 1px solid var(--ash);
+  color: var(--gold);
+  border: 1px solid var(--gold);
 }
 
 .home-jam-cta-secondary:hover {
-  border-color: var(--stone);
-  background: var(--scroll);
+  background: var(--gold);
+  color: var(--void);
+}
+
+/* ─── Divider ─── */
+.home-divider {
+  width: 60px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--neon-red), transparent);
+  box-shadow: 0 0 12px var(--neon-glow);
+  margin: 0 auto 32px;
 }
 
 /* ─── Links ─── */
@@ -417,19 +341,6 @@
 
   .home-title {
     font-size: 44px;
-  }
-
-  .home-features {
-    grid-template-columns: 1fr;
-    gap: 1px;
-  }
-
-  .home-feature:first-child {
-    border-radius: 8px 8px 0 0;
-  }
-
-  .home-feature:last-child {
-    border-radius: 0 0 8px 8px;
   }
 
   .home-jam-inner {
