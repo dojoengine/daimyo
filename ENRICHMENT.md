@@ -38,7 +38,7 @@ Clone the submitted repository and gather:
 
 #### Codebase Structure
 - Count Dojo models (`#[dojo::model]`), systems/contracts (`#[dojo::contract]`), and events (`#[dojo::event]`)
-- Check for frontend SDK usage (`@dojoengine/*` packages)
+- Identify which Dojo client SDK is used (if any): `dojo.js`, `dojo.unity`, `dojo.unreal`, `dojo.c`, `dojo.godot`, or `None`
 
 #### Classification
 
@@ -144,7 +144,7 @@ metrics:
   dojo_models: <number>
   dojo_systems: <number>
   dojo_events: <number>
-  frontend_sdk: <true or false>
+  client_sdk: "<dojo.js, dojo.unity, dojo.unreal, dojo.c, dojo.godot, or None>"
   jam_commits_pct: <number 0-100>
   playability: "<Live, Video, or None>"
   repo_unavailable: <true, only if repo could not be cloned>
@@ -222,7 +222,7 @@ metrics:
   dojo_models: 4
   dojo_systems: 3
   dojo_events: 0
-  frontend_sdk: true
+  client_sdk: "dojo.js"
   jam_commits_pct: 95
   playability: "Video"
 ---

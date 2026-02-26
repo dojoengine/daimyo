@@ -77,14 +77,6 @@
   box-shadow: 0 0 8px var(--gold-dim);
 }
 
-.judge-sessions {
-  color: var(--gold);
-  font-size: 12px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  opacity: 0.8;
-}
-
 .judge-sessions-count {
   font-size: 20px;
   font-weight: 700;
@@ -126,9 +118,8 @@
 .judge-complete {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  height: 60vh;
+  padding-top: 5vh;
   text-align: center;
   gap: 24px;
   animation: judgePageFadeUp 0.6s ease-out;

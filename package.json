@@ -8,6 +8,7 @@
     "client"
   ],
   "scripts": {
+    "dev": "npm run dev:api -w backend & npm run dev -w client & wait",
     "prepare": "husky"
   },
   "devDependencies": {

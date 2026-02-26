@@ -434,7 +434,6 @@
   }
 
   .hub-featured-header {
-    flex-direction: column;
     gap: 16px;
   }
 

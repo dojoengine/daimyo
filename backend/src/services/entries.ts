@@ -6,7 +6,7 @@ export interface EntryMetrics {
   dojo_models: number;
   dojo_systems: number;
   dojo_events: number;
-  frontend_sdk: boolean;
+  client_sdk: string;
   jam_commits_pct: number;
   playability: 'Live' | 'Video' | 'None';
   repo_unavailable?: boolean;
@@ -62,7 +62,11 @@ function frontmatterToEntry(data: Record<string, unknown>): Entry | null {
       dojo_models: Number(metrics.dojo_models) || 0,
       dojo_systems: Number(metrics.dojo_systems) || 0,
       dojo_events: Number(metrics.dojo_events) || 0,
-      frontend_sdk: Boolean(metrics.frontend_sdk),
+      client_sdk: metrics.client_sdk
+        ? String(metrics.client_sdk)
+        : metrics.frontend_sdk
+          ? 'dojo.js'
+          : 'None',
       jam_commits_pct: Number(metrics.jam_commits_pct) || 0,
       playability:
         metrics.playability === 'Live'
