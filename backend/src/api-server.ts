@@ -7,7 +7,8 @@ import postgres from 'postgres';
 import { startApiServer } from './api/index.js';
 import { setSql } from './services/database.js';
 
-// Load environment variables
+// Load environment variables (.env.local overrides .env)
+config({ path: '.env.local' });
 config();
 
 async function main() {

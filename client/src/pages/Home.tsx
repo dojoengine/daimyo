@@ -44,7 +44,7 @@ const links = [
   { label: 'Dojo Discord', href: 'https://discord.gg/dojoengine', icon: DiscordIcon },
   { label: 'Dojo Book', href: 'https://book.dojoengine.org', icon: BookIcon },
   { label: 'Game Jams', href: 'https://github.com/dojoengine/game-jams', icon: TrophyIcon },
-  { label: 'GitHub', href: 'https://github.com/cartridge-gg/daimyo', icon: GitHubIcon },
+  { label: 'Daimyo GitHub', href: 'https://github.com/cartridge-gg/daimyo', icon: GitHubIcon },
 ];
 
 function formatDateRange(start: Date, end: Date): string {
@@ -66,9 +66,9 @@ export default function Home() {
           <h1 className="home-title">Daimyō</h1>
           <p className="home-tagline">Community bot for the <a href="https://discord.gg/dojoengine" target="_blank" rel="noopener noreferrer" className="home-tagline-link">Dojo Discord</a></p>
           <div className="home-pillars">
-            <a href="https://github.com/dojoengine/daimyo/blob/main/spec/REPUTATION.md" target="_blank" rel="noopener noreferrer" className="home-pillar">Reputation</a>
-            <a href="https://github.com/dojoengine/daimyo/blob/main/spec/CONTENT.md" target="_blank" rel="noopener noreferrer" className="home-pillar">Content</a>
-            <a href="https://github.com/dojoengine/daimyo/blob/main/spec/JUDGING.md" target="_blank" rel="noopener noreferrer" className="home-pillar">Judging</a>
+            <span className="home-pillar">Reputation</span>
+            <span className="home-pillar">Content</span>
+            <span className="home-pillar">Judging</span>
           </div>
         </div>
 

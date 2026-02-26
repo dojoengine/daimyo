@@ -69,17 +69,12 @@ export default function DevPreview() {
 
   return (
     <div className="judge-page">
-      <header className="judge-header">
-        <div className="judge-header-left">
-          <span className="judge-home-link">Daimyo</span>
-          <h1 className="judge-title">{formatJamTitle('gj7')} Judging</h1>
-        </div>
+      <div className="judge-subheader">
+        <h1 className="judge-title">{formatJamTitle('gj7')} Judging</h1>
         <div className="judge-user">
           <span>dev-preview</span>
         </div>
-      </header>
-
-      <div className="judge-divider" />
+      </div>
 
       <ProgressBar completed={3} total={JUDGING_SESSION_SIZE} />
 

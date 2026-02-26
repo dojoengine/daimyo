@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { formatJamTitle } from '../utils/jam';
 import './JamHub.css';
 
+
 interface JamSummary {
   slug: string;
   entryCount: number;
@@ -29,12 +30,7 @@ export default function JamHub() {
   return (
     <div className="hub-page">
       <div className="hub-container">
-        <header className="hub-header">
-          <Link to="/" className="hub-home-link">Daimyō</Link>
-          <h1 className="hub-title">Game Jam Judging</h1>
-        </header>
-
-        <div className="hub-divider" />
+        <h1 className="hub-title">Game Jam Judging</h1>
 
         {loading && <div className="hub-loading">Loading...</div>}
         {error && <div className="hub-error">{error}</div>}
