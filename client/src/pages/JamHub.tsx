@@ -51,15 +51,15 @@ function AnimatedCounter({ value, delay = 0 }: { value: number; delay?: number }
 
 function CoverageRing({ voted, total }: { voted: number; total: number }) {
   const pct = total > 0 ? Math.min(voted / total, 1) : 0;
-  const r = 18;
+  const r = 27;
   const circumference = 2 * Math.PI * r;
   const offset = circumference * (1 - pct);
   return (
-    <svg className="hub-ring" viewBox="0 0 44 44" width="44" height="44">
-      <circle cx="22" cy="22" r={r} fill="none" stroke="var(--ash)" strokeWidth="3" />
+    <svg className="hub-ring" viewBox="0 0 64 64" width="64" height="64">
+      <circle cx="32" cy="32" r={r} fill="none" stroke="var(--ash)" strokeWidth="3" />
       <circle
-        cx="22"
-        cy="22"
+        cx="32"
+        cy="32"
         r={r}
         fill="none"
         stroke="var(--neon-red)"
@@ -67,16 +67,16 @@ function CoverageRing({ voted, total }: { voted: number; total: number }) {
         strokeLinecap="round"
         strokeDasharray={circumference}
         strokeDashoffset={offset}
-        transform="rotate(-90 22 22)"
+        transform="rotate(-90 32 32)"
         style={{ filter: 'drop-shadow(0 0 4px var(--neon-glow))' }}
       />
       <text
-        x="22"
-        y="22"
+        x="32"
+        y="32"
         textAnchor="middle"
         dominantBaseline="central"
         fill="var(--parchment)"
-        fontSize="11"
+        fontSize="14"
         fontWeight="600"
         fontFamily="DM Sans, sans-serif"
       >
@@ -88,7 +88,8 @@ function CoverageRing({ voted, total }: { voted: number; total: number }) {
 
 function getCoverage(jam: JamSummary) {
   const totalPairs = (jam.entryCount * (jam.entryCount - 1)) / 2;
-  return { voted: jam.voteCount, total: totalPairs };
+  const judges = Math.max(jam.judgeCount, 1);
+  return { voted: jam.voteCount, total: totalPairs * judges };
 }
 
 export default function JamHub() {

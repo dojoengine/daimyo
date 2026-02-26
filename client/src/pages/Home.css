@@ -197,25 +197,41 @@
   flex-shrink: 0;
 }
 
-.home-jam-label {
+.home-jam-cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 20px;
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--neon-red);
-  padding: 8px 20px;
-  border: 1px solid var(--neon-red);
-  border-radius: 2px;
-  box-shadow: 0 0 12px var(--neon-glow);
-  flex-shrink: 0;
   text-decoration: none;
+  border-radius: 2px;
   transition: all 0.25s ease;
 }
 
-.home-jam-label:hover {
+.home-jam-cta-primary {
   background: var(--neon-red);
   color: #fff;
-  box-shadow: 0 0 20px var(--neon-glow);
+  border: 1px solid var(--neon-red);
+  box-shadow: 0 0 12px var(--neon-glow);
+}
+
+.home-jam-cta-primary:hover {
+  box-shadow: 0 0 24px var(--neon-glow);
+  transform: translateY(-1px);
+}
+
+.home-jam-cta-gold {
+  background: var(--gold);
+  color: var(--void);
+  border: 1px solid var(--gold);
+  box-shadow: 0 0 12px var(--gold-dim);
+}
+
+.home-jam-cta-gold:hover {
+  box-shadow: 0 0 24px var(--gold-dim);
+  transform: translateY(-1px);
 }
 
 .home-jam-title {
@@ -233,16 +249,6 @@
 }
 
 .home-jam-cta-secondary {
-  display: inline-flex;
-  align-items: center;
-  padding: 8px 20px;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  text-decoration: none;
-  border-radius: 2px;
-  transition: all 0.25s ease;
   background: transparent;
   color: var(--gold);
   border: 1px solid var(--gold);

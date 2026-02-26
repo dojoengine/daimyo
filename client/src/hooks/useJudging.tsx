@@ -7,7 +7,7 @@ export interface EntryMetrics {
   dojo_models: number;
   dojo_systems: number;
   dojo_events: number;
-  frontend_sdk: boolean;
+  client_sdk: string;
   jam_commits_pct: number;
   playability: 'Live' | 'Video' | 'None';
   repo_unavailable?: boolean;

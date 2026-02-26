@@ -84,19 +84,27 @@ export default function Home() {
                   </p>
                 </div>
                 <div className="home-jam-header-actions">
-                  {jam.isActive && jam.registrationUrl && (
-                    <a
-                      href={jam.registrationUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="home-jam-label"
-                    >
-                      Register Now
-                    </a>
+                  {jam.isActive ? (
+                    <>
+                      {jam.registrationUrl && (
+                        <a
+                          href={jam.registrationUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="home-jam-cta home-jam-cta-primary"
+                        >
+                          Register Now
+                        </a>
+                      )}
+                      <Link to={`/judge/${jam.slug}`} className="home-jam-cta home-jam-cta-secondary">
+                        Judge Entries
+                      </Link>
+                    </>
+                  ) : (
+                    <Link to={`/judge/${jam.slug}`} className="home-jam-cta home-jam-cta-gold">
+                      Judge Entries
+                    </Link>
                   )}
-                  <Link to="/judge" className="home-jam-cta home-jam-cta-secondary">
-                    Judge Entries
-                  </Link>
                 </div>
               </div>
             </div>

@@ -44,15 +44,10 @@ export default function Judge() {
       <div className="judge-page">
         <div className="judge-complete">
           <h1>Session Complete!</h1>
-          {sessions > 0 && (
-            <p className="judge-sessions-count">
-              {sessions} {sessions === 1 ? 'session' : 'sessions'} submitted
-            </p>
-          )}
+          <p>Submit your votes to the ranking.</p>
 
           {user ? (
             <>
-              <p>Ready to submit your votes to the ranking.</p>
               <button
                 className="judge-continue-btn"
                 onClick={submitSession}
@@ -64,19 +59,15 @@ export default function Judge() {
             </>
           ) : (
             <>
-              <p>Log in as a Sensei to submit your votes to the official ranking.</p>
               <button
                 className="judge-continue-btn"
                 onClick={() => { window.location.href = `/api/auth/discord?jam=${slug}`; }}
               >
                 Login with Discord
               </button>
+              <p className="judge-login-hint">Log in as a Sensei to submit to the official ranking.</p>
             </>
           )}
-
-          <button className="judge-secondary-btn" onClick={startNewSession}>
-            Start New Session
-          </button>
         </div>
       </div>
     );
@@ -91,7 +82,6 @@ export default function Judge() {
           <p className="judge-sessions-count">
             {sessions} {sessions === 1 ? 'session' : 'sessions'} completed
           </p>
-          <p>Thank you for your contribution to the ranking.</p>
           <button className="judge-continue-btn" onClick={startNewSession}>
             Start Another Session
           </button>
@@ -112,12 +102,9 @@ export default function Judge() {
     <div className="judge-page">
       <div className="judge-subheader">
         <h1 className="judge-title">{formatJamTitle(slug || '')} Judging</h1>
-        {sessions > 0 && (
-          <span className="judge-sessions">{sessions} {sessions === 1 ? 'session' : 'sessions'}</span>
-        )}
       </div>
 
-      <ProgressBar completed={progress.completed} total={progress.total} />
+      <ProgressBar completed={progress.completed} total={progress.total} sessions={sessions} />
 
       <ComparisonView
         entryA={pair.entryA}
