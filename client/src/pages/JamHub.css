@@ -40,41 +40,18 @@
 .hub-container {
   max-width: 940px;
   margin: 0 auto;
-  padding: 64px 32px 80px;
+  padding: 32px 32px 80px;
   position: relative;
   z-index: 1;
   animation: hubFadeIn 0.6s ease-out;
-}
-
-/* ─── Header ─── */
-
-.hub-header {
-  display: flex;
-  align-items: baseline;
-  gap: 16px;
-  margin-bottom: 12px;
-}
-
-.hub-home-link {
-  font-family: 'Noto Serif', 'Noto Serif JP', serif;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--stone);
-  text-decoration: none;
-  letter-spacing: 0.04em;
-  transition: color 0.2s ease;
-  flex-shrink: 0;
-}
-
-.hub-home-link:hover {
-  color: var(--neon-red);
 }
 
 .hub-title {
   font-family: 'Noto Serif', 'Noto Serif JP', serif;
   font-size: 32px;
   font-weight: 900;
-  margin: 0;
+  margin: 0 0 32px;
+  text-align: center;
   letter-spacing: -0.01em;
   background: linear-gradient(135deg, var(--parchment) 0%, var(--gold) 50%, var(--parchment) 100%);
   background-size: 200% 200%;
@@ -82,14 +59,6 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
   animation: hubShimmer 6s ease-in-out infinite;
-}
-
-.hub-divider {
-  width: 100%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--neon-red), transparent);
-  margin-bottom: 40px;
-  box-shadow: 0 0 12px var(--neon-glow);
 }
 
 /* ─── Jam Grid ─── */
@@ -236,7 +205,7 @@
 
 @media (max-width: 768px) {
   .hub-container {
-    padding: 40px 16px 60px;
+    padding: 24px 16px 60px;
   }
 
   .hub-title {

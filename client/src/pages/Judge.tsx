@@ -1,4 +1,4 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useJudging } from '../hooks/useJudging';
 import { formatJamTitle } from '../utils/jam';
 import ComparisonView from '../components/ComparisonView';
@@ -110,26 +110,12 @@ export default function Judge() {
 
   return (
     <div className="judge-page">
-      <header className="judge-header">
-        <div className="judge-header-left">
-          <Link to="/judge" className="judge-home-link">Daimyo</Link>
-          <h1 className="judge-title">{formatJamTitle(slug || '')} Judging</h1>
-        </div>
-        <div className="judge-user">
-          {user ? (
-            <>
-              <span>{user.username}</span>
-              {sessions > 0 && (
-                <span className="judge-sessions">{sessions} {sessions === 1 ? 'session' : 'sessions'}</span>
-              )}
-            </>
-          ) : (
-            <span className="judge-guest">Guest</span>
-          )}
-        </div>
-      </header>
-
-      <div className="judge-divider" />
+      <div className="judge-subheader">
+        <h1 className="judge-title">{formatJamTitle(slug || '')} Judging</h1>
+        {sessions > 0 && (
+          <span className="judge-sessions">{sessions} {sessions === 1 ? 'session' : 'sessions'}</span>
+        )}
+      </div>
 
       <ProgressBar completed={progress.completed} total={progress.total} />
 
