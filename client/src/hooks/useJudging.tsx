@@ -46,13 +46,12 @@ interface StoredSession {
   currentIndex: number;
   fetchedAt: number;
   sessions: number;
-  judgeId?: string;
 }
 
 const STORAGE_KEY_PREFIX = 'daimyo-session-';
 const SESSION_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
-function loadSession(slug: string, userId: string | null): StoredSession | null {
+function loadSession(slug: string): StoredSession | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_PREFIX + slug);
     if (!raw) return null;
@@ -60,12 +59,6 @@ function loadSession(slug: string, userId: string | null): StoredSession | null 
 
     // Expired?
     if (Date.now() - stored.fetchedAt > SESSION_TTL) {
-      localStorage.removeItem(STORAGE_KEY_PREFIX + slug);
-      return null;
-    }
-
-    // Discard if an authenticated user encounters a session they didn't create
-    if (userId && stored.judgeId !== userId) {
       localStorage.removeItem(STORAGE_KEY_PREFIX + slug);
       return null;
     }
@@ -203,7 +196,7 @@ export function useJudging(jamSlug: string) {
   }, []);
 
   // Fetch a new session from the server
-  const fetchSession = useCallback(async (userId: string | null) => {
+  const fetchSession = useCallback(async () => {
     try {
       const res = await fetch(`/api/jams/${jamSlug}/session`, { credentials: 'include' });
       if (!res.ok) throw new Error('Failed to load session');
@@ -220,7 +213,7 @@ export function useJudging(jamSlug: string) {
       const fetchedAt = Date.now();
 
       dispatch({ type: 'LOAD_SESSION', pairs, votes, currentIndex: 0, fetchedAt, sessions });
-      saveSession(jamSlug, { pairs, votes, currentIndex: 0, fetchedAt, sessions, judgeId: userId ?? undefined });
+      saveSession(jamSlug, { pairs, votes, currentIndex: 0, fetchedAt, sessions });
     } catch (e) {
       dispatch({ type: 'SET_ERROR', error: e instanceof Error ? e.message : 'Failed to load session' });
     }
@@ -230,7 +223,7 @@ export function useJudging(jamSlug: string) {
   useEffect(() => {
     if (!authChecked) return;
 
-    const stored = loadSession(jamSlug, user?.id ?? null);
+    const stored = loadSession(jamSlug);
     if (stored && stored.pairs.length > 0) {
       dispatch({
         type: 'LOAD_SESSION',
@@ -241,9 +234,9 @@ export function useJudging(jamSlug: string) {
         sessions: stored.sessions ?? 0,
       });
     } else {
-      fetchSession(user?.id ?? null);
+      fetchSession();
     }
-  }, [authChecked, jamSlug, user?.id, fetchSession]);
+  }, [authChecked, jamSlug, fetchSession]);
 
   // Persist to localStorage on state changes (preserve original fetchedAt)
   useEffect(() => {
@@ -254,10 +247,9 @@ export function useJudging(jamSlug: string) {
         currentIndex: state.currentIndex,
         fetchedAt: state.fetchedAt,
         sessions: state.sessions,
-        judgeId: user?.id,
       });
     }
-  }, [jamSlug, state.pairs, state.votes, state.currentIndex, state.status, state.fetchedAt, state.sessions, user?.id]);
+  }, [jamSlug, state.pairs, state.votes, state.currentIndex, state.status, state.fetchedAt, state.sessions]);
 
   // Vote on current pair
   const submitScore = useCallback((score: number) => {
@@ -304,8 +296,8 @@ export function useJudging(jamSlug: string) {
   const startNewSession = useCallback(() => {
     clearSession(jamSlug);
     dispatch({ type: 'RESET' });
-    fetchSession(user?.id ?? null);
-  }, [jamSlug, user?.id, fetchSession]);
+    fetchSession();
+  }, [jamSlug, fetchSession]);
 
   const pair = state.status === 'voting' && state.currentIndex < state.pairs.length
     ? state.pairs[state.currentIndex]
