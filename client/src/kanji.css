@@ -1,0 +1,88 @@
+/* ═══════════════════════════════════════════
+   Global Ambient Styles
+   ═══════════════════════════════════════════
+
+   Kanji watermarks and scan line effect.
+   Use .kanji-watermark on DOM elements, or
+   reference the --kanji-* variables in
+   pseudo-elements (::after / ::before).
+   ═══════════════════════════════════════════ */
+
+:root {
+  --kanji-font: 'Noto Serif JP', serif;
+  --kanji-weight: 900;
+  --kanji-color: #ffffff13;
+  --kanji-color-dim: #ffffff0c;
+}
+
+/* ─── Kanji Watermarks ─── */
+
+/* Base class for kanji watermark DOM elements */
+.kanji-watermark {
+  font-family: var(--kanji-font);
+  font-weight: var(--kanji-weight);
+  color: var(--kanji-color);
+  pointer-events: none;
+  user-select: none;
+  line-height: 1;
+}
+
+/* Page-level: fixed large character on screen edge */
+.kanji-watermark-page {
+  position: fixed;
+  font-size: 110px;
+  z-index: -1;
+}
+
+/* Card-level: absolute inside a positioned parent */
+.kanji-watermark-card {
+  position: absolute;
+  right: -10px;
+  bottom: -30px;
+  font-size: 130px;
+}
+
+.kanji-watermark-card-sm {
+  position: absolute;
+  right: -4px;
+  bottom: -16px;
+  font-size: 64px;
+}
+
+/* ─── Scan Line ─── */
+
+.scanline {
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--neon-glow) 20%,
+    var(--neon-red) 50%,
+    var(--neon-glow) 80%,
+    transparent 100%
+  );
+  opacity: 0.4;
+  z-index: 100;
+  pointer-events: none;
+  animation: scanline 8s linear infinite;
+}
+
+@keyframes scanline {
+  0% {
+    top: -2px;
+  }
+  100% {
+    top: 100vh;
+  }
+}
+
+/* ─── Responsive ─── */
+
+@media (max-width: 768px) {
+  .kanji-watermark-page {
+    display: none;
+  }
+}

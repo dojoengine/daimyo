@@ -139,7 +139,10 @@ Standard transition: `all 0.25s ease`.
 ## Decorative Elements
 
 - **Ink wash background**: Multiple low-opacity radial gradients (purple, blue, red tints) on `::before` pseudo-element
-- **Kanji watermarks**: Large characters at ~6-8% opacity using `Noto Serif JP` at 900 weight
-  - `大名` (daimyo) on page right edge, vertical writing mode
-  - `闘` (battle) in game jam section
+- **Kanji watermarks**: Global styles in `kanji.css` via `--kanji-*` CSS variables.
+  Use `.kanji-watermark` base class on DOM elements, or reference `var(--kanji-font)` / `var(--kanji-weight)` / `var(--kanji-color)` in pseudo-elements.
+  - `.kanji-watermark-page` — fixed full-screen watermark (200px, hidden on mobile)
+  - `.kanji-watermark-card` / `.kanji-watermark-card-sm` — absolute inside cards (200px / 100px)
+  - `大名` (daimyo) on Home right edge, `覧` (overview) on JamHub right edge, `審` (judge) on Judge right edge
+  - `闘` (battle) in Home jam card, `裁` (decide) on JamHub left edge
 - **Neon dividers**: `linear-gradient(90deg, transparent, var(--neon-red), transparent)` with glow

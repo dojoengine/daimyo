@@ -256,6 +256,12 @@
   cursor: default;
 }
 
+.navbar-dropdown-account {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .navbar-dropdown-user {
   font-family: 'DM Sans', sans-serif;
   font-size: 11px;

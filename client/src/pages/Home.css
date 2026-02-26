@@ -47,13 +47,13 @@
   top: 50%;
   transform: translateY(-50%);
   writing-mode: vertical-rl;
-  font-family: 'Noto Serif JP', serif;
+  font-family: var(--kanji-font);
   font-size: 120px;
-  font-weight: 900;
-  color: #ffffff08;
+  font-weight: var(--kanji-weight);
+  color: var(--kanji-color);
   letter-spacing: 0.2em;
   pointer-events: none;
-  z-index: 0;
+  z-index: -1;
   user-select: none;
 }
 
@@ -172,10 +172,10 @@
   position: absolute;
   right: -20px;
   bottom: -30px;
-  font-family: 'Noto Serif JP', serif;
+  font-family: var(--kanji-font);
   font-size: 200px;
-  font-weight: 900;
-  color: #ffffff06;
+  font-weight: var(--kanji-weight);
+  color: var(--kanji-color);
   pointer-events: none;
   user-select: none;
   line-height: 1;
