@@ -4,6 +4,7 @@ import Navbar from './Navbar';
 export default function Layout() {
   return (
     <>
+      <div className="scanline" />
       <Navbar />
       <Outlet />
     </>

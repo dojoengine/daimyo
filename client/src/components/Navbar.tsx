@@ -115,14 +115,14 @@ export default function Navbar() {
             ),
           )}
           {user ? (
-            <>
+            <div className="navbar-dropdown-account">
               <div className="navbar-dropdown-user">
                 <span>{user.username}</span>
               </div>
               <button className="navbar-dropdown-logout" onClick={handleLogout}>
                 Logout
               </button>
-            </>
+            </div>
           ) : (
             <a href="/api/auth/discord" className="navbar-dropdown-login" onClick={() => setMenuOpen(false)}>
               Login with Discord

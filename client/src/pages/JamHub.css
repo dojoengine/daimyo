@@ -21,44 +21,209 @@
   z-index: -1;
 }
 
-/* Kanji watermark — 覧 (overview) */
+/* Right kanji watermark — 覧 (overview) */
 .hub-page::after {
   content: '覧';
   position: fixed;
   right: 32px;
   top: 50%;
   transform: translateY(-50%);
-  font-family: 'Noto Serif JP', serif;
+  font-family: var(--kanji-font);
   font-size: 200px;
-  font-weight: 900;
-  color: #ffffff06;
+  font-weight: var(--kanji-weight);
+  color: var(--kanji-color);
   pointer-events: none;
   z-index: -1;
   user-select: none;
 }
 
+/* Left kanji watermark — 裁 (judge/decide) */
+.hub-kanji-left {
+  left: 32px;
+  top: 38%;
+  font-size: 160px;
+  color: var(--kanji-color-dim);
+}
+
+
+/* ─── Container ─── */
+
 .hub-container {
   max-width: 940px;
   margin: 0 auto;
-  padding: 32px 32px 80px;
+  padding: 48px 32px 80px;
   position: relative;
   z-index: 1;
+}
+
+/* ─── Hero ─── */
+
+.hub-hero {
+  text-align: center;
+  margin-bottom: 48px;
   animation: hubFadeIn 0.6s ease-out;
+}
+
+.hub-hero-kanji {
+  display: block;
+  font-family: 'Noto Serif JP', serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--stone);
+  letter-spacing: 0.5em;
+  margin-bottom: 12px;
 }
 
 .hub-title {
   font-family: 'Noto Serif', 'Noto Serif JP', serif;
-  font-size: 32px;
+  font-size: 44px;
   font-weight: 900;
-  margin: 0 0 32px;
-  text-align: center;
+  margin: 0;
   letter-spacing: -0.01em;
-  background: linear-gradient(135deg, var(--parchment) 0%, var(--gold) 50%, var(--parchment) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--parchment) 0%,
+    var(--gold) 50%,
+    var(--parchment) 100%
+  );
   background-size: 200% 200%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   animation: hubShimmer 6s ease-in-out infinite;
+}
+
+.hub-divider {
+  width: 80px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--neon-red), transparent);
+  box-shadow: 0 0 12px var(--neon-glow);
+  margin: 20px auto 0;
+}
+
+/* ─── Featured Jam ─── */
+
+.hub-featured {
+  margin-bottom: 48px;
+  animation: hubFadeUp 0.6s ease-out both;
+}
+
+.hub-featured-inner {
+  background: var(--ink);
+  border: 1px solid var(--ash);
+  border-radius: 12px;
+  padding: 40px 48px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Neon top edge — always visible */
+.hub-featured-inner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--neon-red), transparent);
+  box-shadow: 0 0 20px var(--neon-glow);
+}
+
+/* Uses .kanji-watermark .kanji-watermark-card classes from kanji.css */
+
+.hub-featured-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+.hub-featured-title {
+  font-family: 'Noto Serif', 'Noto Serif JP', serif;
+  font-size: 32px;
+  font-weight: 900;
+  margin: 0;
+  color: var(--parchment);
+}
+
+.hub-featured-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--neon-red);
+  border: 1px solid var(--neon-red);
+  border-radius: 2px;
+  padding: 3px 10px;
+  margin-bottom: 10px;
+  box-shadow: 0 0 8px var(--neon-glow);
+  animation: hubPulse 2s ease-in-out infinite;
+}
+
+.hub-featured-stats {
+  display: flex;
+  gap: 40px;
+  margin-bottom: 28px;
+}
+
+.hub-featured-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hub-featured-stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--parchment);
+  font-variant-numeric: tabular-nums;
+}
+
+.hub-featured-stat-label {
+  font-size: 11px;
+  color: var(--stone);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.hub-featured-cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 28px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: #fff;
+  background: var(--neon-red);
+  border-radius: 4px;
+  box-shadow: 0 0 24px var(--neon-glow);
+  transition: all 0.25s ease;
+}
+
+.hub-featured-cta:hover {
+  box-shadow: 0 0 36px var(--neon-glow);
+  transform: translateY(-2px);
+}
+
+/* ─── Coverage Ring ─── */
+
+.hub-ring {
+  flex-shrink: 0;
+}
+
+/* ─── Archive Section ─── */
+
+.hub-archive-title {
+  font-family: 'Noto Serif', 'Noto Serif JP', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--stone);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin: 0 0 20px;
 }
 
 /* ─── Jam Grid ─── */
@@ -73,13 +238,15 @@
   background: var(--ink);
   border: 1px solid var(--ash);
   border-radius: 12px;
-  padding: 32px 28px;
+  padding: 28px 24px;
   text-decoration: none;
   transition: all 0.3s ease;
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
+  overflow: hidden;
+  animation: hubFadeUp 0.6s ease-out both;
 }
 
 /* Neon top edge on hover */
@@ -104,9 +271,11 @@
   opacity: 1;
 }
 
+/* Uses .kanji-watermark .kanji-watermark-card-sm classes from kanji.css */
+
 .hub-card-title {
   font-family: 'Noto Serif', 'Noto Serif JP', serif;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--parchment);
   margin: 0;
@@ -124,16 +293,32 @@
 }
 
 .hub-card-stat-value {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--parchment);
 }
 
 .hub-card-stat-label {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--stone);
   text-transform: uppercase;
   letter-spacing: 0.08em;
+}
+
+/* Activity bar */
+.hub-card-bar {
+  height: 3px;
+  background: var(--ash);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.hub-card-bar-fill {
+  height: 100%;
+  background: var(--neon-red);
+  border-radius: 2px;
+  box-shadow: 0 0 6px var(--neon-glow);
+  transition: width 1.2s ease-out;
 }
 
 .hub-card-cta {
@@ -188,28 +373,77 @@
 /* ─── Animations ─── */
 
 @keyframes hubFadeIn {
-  from { opacity: 0; transform: translateY(24px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes hubFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes hubShimmer {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 @keyframes hubSpin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes hubPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
 }
 
 /* ─── Responsive ─── */
 
 @media (max-width: 768px) {
   .hub-container {
-    padding: 24px 16px 60px;
+    padding: 32px 16px 60px;
   }
 
   .hub-title {
-    font-size: 24px;
+    font-size: 32px;
+  }
+
+  .hub-featured-inner {
+    padding: 28px 20px;
+  }
+
+  .hub-featured-header {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .hub-featured-stats {
+    gap: 24px;
+  }
+
+  .hub-featured-stat-value {
+    font-size: 22px;
   }
 
   .hub-grid {

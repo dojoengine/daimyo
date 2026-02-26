@@ -30,10 +30,10 @@
   right: 32px;
   top: 50%;
   transform: translateY(-50%);
-  font-family: 'Noto Serif JP', serif;
+  font-family: var(--kanji-font);
   font-size: 200px;
-  font-weight: 900;
-  color: #ffffff06;
+  font-weight: var(--kanji-weight);
+  color: var(--kanji-color);
   pointer-events: none;
   z-index: -1;
   user-select: none;
