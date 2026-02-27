@@ -29,7 +29,7 @@ export interface SelectedPair {
 }
 
 export interface SelectOptions {
-  num: number;
+  num?: number;
   exclude?: Set<string>;
   impact?: boolean;
 }
@@ -112,10 +112,7 @@ export class PowerRanker {
     return this.applyLabels(weights);
   }
 
-  /**
-   * Generate the Beta variance per pair.
-   */
-  getVariances(): PairVariance[] {
+  private getVariances(): PairVariance[] {
     const variances: PairVariance[] = [];
 
     for (let i = 0; i < this.items.length; i++) {
@@ -129,14 +126,15 @@ export class PowerRanker {
   }
 
   /**
-   * Select pairs for a judging session via variance-weighted sampling.
+   * Select pairs via variance-weighted sampling.
    *
-   * Samples without replacement, weighted by Beta-distribution variance.
+   * With num specified, samples without replacement weighted by variance.
+   * Without num, returns all pairs with their weights (useful for diagnostics).
    * With impact: true, weights are variance * weight_a * weight_b,
    * prioritizing uncertain pairs between high-ranked items.
    * Optionally excludes pairs (e.g. already judged).
    */
-  select({ num, exclude, impact }: SelectOptions): SelectedPair[] {
+  select({ num, exclude, impact }: SelectOptions = {}): SelectedPair[] {
     const allVariances = this.getVariances();
 
     // Compute impact weights if requested
@@ -159,6 +157,12 @@ export class PowerRanker {
       candidates.push({ alpha: v.alpha, beta: v.beta, weight });
     }
 
+    // Without num, return all candidates
+    if (num === undefined) {
+      return candidates;
+    }
+
+    // Weighted sampling without replacement
     const remaining = [...candidates];
     const selected: SelectedPair[] = [];
 

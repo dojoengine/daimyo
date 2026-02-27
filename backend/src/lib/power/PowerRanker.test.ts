@@ -163,10 +163,10 @@ describe('PowerRanker', () => {
         options: { k: K },
       });
 
-      const variances = ranker.getVariances();
+      const pairs = ranker.select();
 
       // 3 items → 3 pairs
-      expect(variances).toHaveLength(3);
+      expect(pairs).toHaveLength(3);
 
       // With pseudocount k=0.15, off-diagonal cells are 0.15
       // Beta(0.15 + 1, 0.15 + 1) = Beta(1.15, 1.15)
@@ -175,8 +175,8 @@ describe('PowerRanker', () => {
       const b = 0.15 + 1;
       const expectedVar = (a * b) / ((a + b + 1) * (a + b) ** 2);
 
-      for (const v of variances) {
-        expect(v.variance).toBeCloseTo(expectedVar);
+      for (const p of pairs) {
+        expect(p.weight).toBeCloseTo(expectedVar);
       }
     });
 
@@ -186,21 +186,21 @@ describe('PowerRanker', () => {
         options: { k: K },
       });
 
-      const beforeVariances = ranker.getVariances();
+      const beforePairs = ranker.select();
 
       ranker.addPreferences([pref(ITEM_A, ITEM_B, 1)]);
 
-      const afterVariances = ranker.getVariances();
+      const afterPairs = ranker.select();
 
       // The A-B pair should have lower variance (more data)
-      const abBefore = beforeVariances.find(
-        (v) => v.alpha === String(ITEM_A) && v.beta === String(ITEM_B)
+      const abBefore = beforePairs.find(
+        (p) => p.alpha === String(ITEM_A) && p.beta === String(ITEM_B)
       )!;
-      const abAfter = afterVariances.find(
-        (v) => v.alpha === String(ITEM_A) && v.beta === String(ITEM_B)
+      const abAfter = afterPairs.find(
+        (p) => p.alpha === String(ITEM_A) && p.beta === String(ITEM_B)
       )!;
 
-      expect(abAfter.variance).toBeLessThan(abBefore.variance);
+      expect(abAfter.weight).toBeLessThan(abBefore.weight);
     });
   });
 

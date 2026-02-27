@@ -40,10 +40,10 @@ ranker.addPreferences([
 // Get rankings (Map<string, number>, values sum to 1)
 const rankings = ranker.run();
 
-// Get per-pair Beta variance
-const variances = ranker.getVariances();
+// Get all pairs with their variance weights
+const allPairs = ranker.select();
 
-// Select pairs for a judging session
+// Select pairs for a judging session (weighted sampling without replacement)
 const pairs = ranker.select({
   num: 5,
   exclude: new Set(['a:b']), // pairs already judged
