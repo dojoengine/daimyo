@@ -205,16 +205,19 @@ describe('PowerRanker', () => {
   });
 
   describe('without pseudocounts', () => {
-    test('returns uniform rankings with no preferences and no k', () => {
+    test('strong preferences converge sharply without k', () => {
       const ranker = new PowerRanker({
         items: makeItems(ITEM_A, ITEM_B, ITEM_C),
       });
 
+      ranker.addPreferences([pref(ITEM_A, ITEM_B, 1), pref(ITEM_B, ITEM_C, 1)]);
+
       const rankings = ranker.run();
 
-      expect(score(rankings, ITEM_A)).toBeCloseTo(1 / 3);
-      expect(score(rankings, ITEM_B)).toBeCloseTo(1 / 3);
-      expect(score(rankings, ITEM_C)).toBeCloseTo(1 / 3);
+      // Without pseudocounts, A absorbs nearly all weight
+      expect(score(rankings, ITEM_A)).toBeCloseTo(0.99951171875);
+      expect(score(rankings, ITEM_B)).toBeCloseTo(0.00048828125);
+      expect(score(rankings, ITEM_C)).toBeCloseTo(0);
     });
   });
 
