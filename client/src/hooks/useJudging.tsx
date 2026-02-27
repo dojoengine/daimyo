@@ -37,6 +37,7 @@ interface User {
 interface Pair {
   entryA: Entry;
   entryB: Entry;
+  impact: number;
 }
 
 // localStorage schema

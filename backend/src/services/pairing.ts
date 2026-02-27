@@ -16,7 +16,7 @@ function randomizeOrder(entryA: Entry, entryB: Entry): { entryA: Entry; entryB: 
 /**
  * Select a batch of pairs for a judging session.
  *
- * Uses PowerRanker variance + ActiveRanker for uncertainty-weighted pair selection.
+ * Uses PowerRanker for impact-weighted, uncertainty-driven pair selection.
  * Excludes pairs the judge has already voted on.
  * Randomizes left/right presentation order.
  */
@@ -25,7 +25,7 @@ export async function selectSessionPairs(
   judgeId: string | null,
   entries: Entry[],
   count: number = JUDGING_SESSION_SIZE
-): Promise<{ entryA: Entry; entryB: Entry }[]> {
+): Promise<{ entryA: Entry; entryB: Entry; impact: number }[]> {
   if (entries.length < 2) return [];
 
   const comparisons = await getComparisonsForJam(jamSlug);
@@ -57,13 +57,17 @@ export async function selectSessionPairs(
   }
 
   // Select pairs via active ranking
-  const selected = ranker.select({ num: count, exclude: exclude.size > 0 ? exclude : undefined });
+  const selected = ranker.select({ num: count, exclude, impact: true });
+
+  // Normalize weights to 0–100 relative to session max
+  const maxWeight = Math.max(...selected.map((p) => p.weight));
 
   // Map back to entries with randomized presentation order
   const entryMap = new Map(entries.map((e) => [e.id, e]));
   return selected.map((pair) => {
     const entryA = entryMap.get(pair.alpha)!;
     const entryB = entryMap.get(pair.beta)!;
-    return randomizeOrder(entryA, entryB);
+    const impact = maxWeight > 0 ? Math.round((pair.weight / maxWeight) * 100) : 50;
+    return { ...randomizeOrder(entryA, entryB), impact };
   });
 }

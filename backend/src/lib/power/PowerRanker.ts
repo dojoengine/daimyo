@@ -25,6 +25,7 @@ export interface PairVariance {
 export interface SelectedPair {
   alpha: string;
   beta: string;
+  weight: number;
 }
 
 export interface SelectOptions {
@@ -180,7 +181,7 @@ export class PowerRanker {
       }
 
       const pair = remaining[idx];
-      selected.push({ alpha: pair.alpha, beta: pair.beta });
+      selected.push({ alpha: pair.alpha, beta: pair.beta, weight: pair.weight });
       remaining.splice(idx, 1);
     }
 
@@ -220,7 +221,10 @@ export class PowerRanker {
     const rowSums = mat.sum('row');
     for (let i = 0; i < n; i++) {
       if (rowSums[i] > 0) {
-        mat.setRow(i, mat.getRow(i).map((v) => v / rowSums[i]));
+        mat.setRow(
+          i,
+          mat.getRow(i).map((v) => v / rowSums[i])
+        );
       } else {
         mat.setRow(i, Array(n).fill(1 / n));
       }

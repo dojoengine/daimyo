@@ -55,10 +55,7 @@ describe('PowerRanker', () => {
         options: { k: K },
       });
 
-      ranker.addPreferences([
-        pref(ITEM_A, ITEM_B, 1),
-        pref(ITEM_B, ITEM_C, 1),
-      ]);
+      ranker.addPreferences([pref(ITEM_A, ITEM_B, 1), pref(ITEM_B, ITEM_C, 1)]);
 
       const rankings = ranker.run();
 
@@ -74,10 +71,7 @@ describe('PowerRanker', () => {
         options: { k: K },
       });
 
-      ranker.addPreferences([
-        pref(ITEM_A, ITEM_B, 0.7),
-        pref(ITEM_B, ITEM_C, 0.7),
-      ]);
+      ranker.addPreferences([pref(ITEM_A, ITEM_B, 0.7), pref(ITEM_B, ITEM_C, 0.7)]);
 
       const rankings = ranker.run();
 
@@ -93,10 +87,7 @@ describe('PowerRanker', () => {
         options: { k: K },
       });
 
-      ranker.addPreferences([
-        pref(ITEM_A, ITEM_B, 1),
-        pref(ITEM_C, ITEM_B, 1),
-      ]);
+      ranker.addPreferences([pref(ITEM_A, ITEM_B, 1), pref(ITEM_C, ITEM_B, 1)]);
 
       const rankings = ranker.run();
 
@@ -135,10 +126,7 @@ describe('PowerRanker', () => {
         items: makeItems(ITEM_A, ITEM_B, ITEM_C),
         options: { k: K },
       });
-      ranker.addPreferences([
-        pref(ITEM_A, ITEM_B, 1),
-        pref(ITEM_B, ITEM_C, 1),
-      ]);
+      ranker.addPreferences([pref(ITEM_A, ITEM_B, 1), pref(ITEM_B, ITEM_C, 1)]);
       let rankings = ranker.run();
       expect(score(rankings, ITEM_A)).toBeCloseTo(0.6504044299518104);
       expect(score(rankings, ITEM_B)).toBeCloseTo(0.25639052368514753);
@@ -149,10 +137,7 @@ describe('PowerRanker', () => {
         items: makeItems(ITEM_A, ITEM_B, ITEM_C),
         options: { k: K },
       });
-      ranker.addPreferences([
-        pref(ITEM_A, ITEM_B, 0.7),
-        pref(ITEM_B, ITEM_C, 1),
-      ]);
+      ranker.addPreferences([pref(ITEM_A, ITEM_B, 0.7), pref(ITEM_B, ITEM_C, 1)]);
       rankings = ranker.run();
       expect(score(rankings, ITEM_A)).toBeCloseTo(0.4395874692001581);
       expect(score(rankings, ITEM_B)).toBeCloseTo(0.43882103155500896);
@@ -163,10 +148,7 @@ describe('PowerRanker', () => {
         items: makeItems(ITEM_A, ITEM_B, ITEM_C),
         options: { k: K },
       });
-      ranker.addPreferences([
-        pref(ITEM_A, ITEM_B, 0.7),
-        pref(ITEM_B, ITEM_C, 0.7),
-      ]);
+      ranker.addPreferences([pref(ITEM_A, ITEM_B, 0.7), pref(ITEM_B, ITEM_C, 0.7)]);
       rankings = ranker.run();
       expect(score(rankings, ITEM_A)).toBeCloseTo(0.5109403527338869);
       expect(score(rankings, ITEM_B)).toBeCloseTo(0.32920913470298835);
@@ -302,7 +284,7 @@ describe('PowerRanker', () => {
       const pairs = ranker.select({ num: 10, exclude: judgedPairs });
 
       expect(pairs).toHaveLength(1);
-      expect(pairs[0]).toEqual({ alpha: 'b', beta: 'c' });
+      expect(pairs[0]).toMatchObject({ alpha: 'b', beta: 'c' });
     });
 
     test('impact weighting prioritizes pairs between high-ranked items', () => {
@@ -347,4 +329,3 @@ describe('pairKey', () => {
     expect(pairKey('10', '2')).toBe('10:2');
   });
 });
-
