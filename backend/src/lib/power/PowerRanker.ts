@@ -42,10 +42,9 @@ export function pairKey(a: string, b: string): string {
  * Uses Bayesian pseudocounts (k) for regularization instead of damping.
  */
 export class PowerRanker {
-  items: string[];
-  options: PowerRankerOptions;
-  matrix: Matrix;
-
+  readonly items: string[];
+  private options: PowerRankerOptions;
+  private matrix: Matrix;
   private itemMap: Map<string, number>;
 
   constructor({ items, options = {} }: { items: Set<string>; options?: PowerRankerOptions }) {
@@ -61,7 +60,7 @@ export class PowerRanker {
     this.log('Matrix initialized');
   }
 
-  log(msg: string): void {
+  private log(msg: string): void {
     if (this.options.verbose) {
       console.log(msg);
     }
@@ -72,12 +71,11 @@ export class PowerRanker {
    * We assume max one submission per participant/pair.
    */
   addPreferences(preferences: Preference[]): void {
-    const d = this.matrix.data;
+    const d = (this.matrix as unknown as { data: Float64Array[] }).data;
 
     for (const p of preferences) {
       const targetIx = this.itemMap.get(p.target);
       const sourceIx = this.itemMap.get(p.source);
-
       if (targetIx === undefined || sourceIx === undefined) continue;
 
       // Scale so 0.5 -> 0, 0.7 -> 0.4, etc.
@@ -129,59 +127,27 @@ export class PowerRanker {
    * Optionally excludes pairs (e.g. already judged).
    */
   select({ num, exclude, impact }: SelectOptions = {}): PairWeight[] {
-    const allVariances = this.getVariances();
+    const variances = this.getVariances();
 
     // Compute impact weights if requested
-    let weights: Map<string, number> | undefined;
-    if (impact) {
-      weights = this.run();
-    }
+    const weights = impact ? this.run() : new Map<string, number>();
 
     // Build candidate pool with sampling weights
     const candidates: PairWeight[] = [];
 
-    for (const v of allVariances) {
+    for (const v of variances) {
       if (exclude && exclude.has(pairKey(v.alpha, v.beta))) continue;
 
-      let weight = v.weight;
-      if (weights) {
-        weight *= weights.get(v.alpha)! * weights.get(v.beta)!;
-      }
+      const weight = v.weight * (weights.get(v.alpha)! * weights.get(v.beta)! || 1);
       candidates.push({ alpha: v.alpha, beta: v.beta, weight });
     }
 
     // Without num, return all candidates
     if (num === undefined) {
       return candidates;
+    } else {
+      return this.selectWithoutReplacement(candidates, num);
     }
-
-    // Weighted sampling without replacement
-    const remaining = [...candidates];
-    const selected: PairWeight[] = [];
-
-    for (let pick = 0; pick < num && remaining.length > 0; pick++) {
-      const totalWeight = remaining.reduce((sum, p) => sum + p.weight, 0);
-
-      let idx: number;
-      if (totalWeight > 0) {
-        let random = Math.random() * totalWeight;
-        idx = remaining.length - 1;
-        for (let k = 0; k < remaining.length; k++) {
-          random -= remaining[k].weight;
-          if (random <= 0) {
-            idx = k;
-            break;
-          }
-        }
-      } else {
-        idx = Math.floor(Math.random() * remaining.length);
-      }
-
-      selected.push(remaining[idx]);
-      remaining.splice(idx, 1);
-    }
-
-    return selected;
   }
 
   // Internal
@@ -217,10 +183,8 @@ export class PowerRanker {
     const rowSums = mat.sum('row');
     for (let i = 0; i < n; i++) {
       if (rowSums[i] > 0) {
-        mat.setRow(
-          i,
-          mat.getRow(i).map((v) => v / rowSums[i])
-        );
+        // prettier-ignore
+        mat.setRow(i, mat.getRow(i).map((v) => v / rowSums[i]));
       } else {
         mat.setRow(i, Array(n).fill(1 / n));
       }
@@ -237,6 +201,7 @@ export class PowerRanker {
         this.log(`Eigenvector convergence after ${iter} iterations`);
         break;
       }
+
       prev = vec;
     }
 
@@ -249,5 +214,35 @@ export class PowerRanker {
     const b = this.matrix.get(j, i) + 1;
 
     return (a * b) / ((a + b + 1) * (a + b) ** 2);
+  }
+
+  private selectWithoutReplacement(candidates: PairWeight[], num: number): PairWeight[] {
+    // Weighted sampling without replacement
+    const remaining = [...candidates];
+    const selected: PairWeight[] = [];
+
+    for (let pick = 0; pick < num && remaining.length > 0; pick++) {
+      const totalWeight = remaining.reduce((sum, p) => sum + p.weight, 0);
+
+      let idx: number;
+      if (totalWeight > 0) {
+        let random = Math.random() * totalWeight;
+        idx = remaining.length - 1;
+        for (let k = 0; k < remaining.length; k++) {
+          random -= remaining[k].weight;
+          if (random <= 0) {
+            idx = k;
+            break;
+          }
+        }
+      } else {
+        idx = Math.floor(Math.random() * remaining.length);
+      }
+
+      selected.push(remaining[idx]);
+      remaining.splice(idx, 1);
+    }
+
+    return selected;
   }
 }
