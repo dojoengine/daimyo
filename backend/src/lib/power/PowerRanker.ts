@@ -30,6 +30,7 @@ export interface SelectedPair {
 export interface SelectOptions {
   num: number;
   exclude?: Set<string>;
+  impact?: boolean;
 }
 
 /**
@@ -135,27 +136,45 @@ export class PowerRanker {
    * Select pairs for a judging session via variance-weighted sampling.
    *
    * Samples without replacement, weighted by Beta-distribution variance.
+   * With impact: true, weights are variance * weight_a * weight_b,
+   * prioritizing uncertain pairs between high-ranked items.
    * Optionally excludes pairs (e.g. already judged).
    */
-  select({ num, exclude }: SelectOptions): SelectedPair[] {
+  select({ num, exclude, impact }: SelectOptions): SelectedPair[] {
     const allVariances = this.getVariances();
 
-    const candidates = exclude
-      ? allVariances.filter((v) => !exclude.has(pairKey(v.alpha, v.beta)))
-      : allVariances;
+    // Compute impact weights if requested
+    let weights: Map<string, number> | undefined;
+    if (impact) {
+      weights = this.run();
+    }
+
+    // Build candidate pool with sampling weights
+    type Candidate = { alpha: string; beta: string; weight: number };
+    const candidates: Candidate[] = [];
+
+    for (const v of allVariances) {
+      if (exclude && exclude.has(pairKey(v.alpha, v.beta))) continue;
+
+      let weight = v.variance;
+      if (weights) {
+        weight *= weights.get(v.alpha)! * weights.get(v.beta)!;
+      }
+      candidates.push({ alpha: v.alpha, beta: v.beta, weight });
+    }
 
     const remaining = [...candidates];
     const selected: SelectedPair[] = [];
 
     for (let pick = 0; pick < num && remaining.length > 0; pick++) {
-      const totalVariance = remaining.reduce((sum, p) => sum + p.variance, 0);
+      const totalWeight = remaining.reduce((sum, p) => sum + p.weight, 0);
 
       let idx: number;
-      if (totalVariance > 0) {
-        let random = Math.random() * totalVariance;
+      if (totalWeight > 0) {
+        let random = Math.random() * totalWeight;
         idx = remaining.length - 1;
         for (let k = 0; k < remaining.length; k++) {
-          random -= remaining[k].variance;
+          random -= remaining[k].weight;
           if (random <= 0) {
             idx = k;
             break;

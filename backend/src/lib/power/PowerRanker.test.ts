@@ -304,6 +304,39 @@ describe('PowerRanker', () => {
       expect(pairs).toHaveLength(1);
       expect(pairs[0]).toEqual({ alpha: 'b', beta: 'c' });
     });
+
+    test('impact weighting prioritizes pairs between high-ranked items', () => {
+      // Use pseudocounts so all items retain nonzero weight
+      const ranker = new PowerRanker({ items: new Set(['a', 'b', 'c']), options: { k: K } });
+
+      // Strong preference: a > b > c (clear hierarchy)
+      ranker.addPreferences([
+        { target: 'a', source: 'b', value: 1 },
+        { target: 'b', source: 'c', value: 1 },
+      ]);
+
+      // With impact: a:b should be favored over b:c because a and b have higher weights
+
+      const counts: Record<string, number> = { 'a:b': 0, 'a:c': 0, 'b:c': 0 };
+      for (let i = 0; i < 1000; i++) {
+        const [pair] = ranker.select({ num: 1, impact: true });
+        counts[pairKey(pair.alpha, pair.beta)]++;
+      }
+
+      // b:c involves the two lowest-ranked items, so should be selected least
+      expect(counts['b:c']).toBeLessThan(counts['a:b']);
+      expect(counts['b:c']).toBeLessThan(counts['a:c']);
+    });
+
+    test('impact weighting works with no preferences (uniform weights)', () => {
+      const ranker = new PowerRanker({ items: new Set(['a', 'b', 'c']) });
+
+      // With uniform weights, impact should behave like plain variance selection
+      const pairs = ranker.select({ num: 3, impact: true });
+      expect(pairs).toHaveLength(3);
+      const keys = pairs.map((p) => pairKey(p.alpha, p.beta));
+      expect(new Set(keys).size).toBe(3);
+    });
   });
 });
 
