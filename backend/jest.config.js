@@ -14,8 +14,8 @@ export default {
       },
     ],
   },
-  transformIgnorePatterns: ['node_modules/(?!(@electric-sql/pglite)/)'],
-  testMatch: ['**/__tests__/**/*.test.ts'],
+  transformIgnorePatterns: ['node_modules/(?!(@electric-sql/pglite|ml-matrix)/)'],
+  testMatch: ['**/__tests__/**/*.test.ts', '**/src/lib/**/*.test.ts'],
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/**/*.d.ts',

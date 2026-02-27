@@ -51,6 +51,7 @@
     "express": "^5.2.1",
     "js-yaml": "^4.1.1",
     "jsonwebtoken": "^9.0.3",
+    "ml-matrix": "^6.12.1",
     "node-cron": "^4.2.1",
     "node-pg-migrate": "^8.0.4",
     "openai": "^4.77.0",
