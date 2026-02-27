@@ -96,15 +96,10 @@ export class PowerRanker {
       }
     }
 
-    // Add the diagonals (sums of columns, representing sum preference received)
+    // Set diagonals to column sums (excluding diagonal), representing total preference received
+    const colSums = matrix.sum('column');
     for (let i = 0; i < this.items.length; i++) {
-      let colSum = 0;
-      for (let j = 0; j < this.items.length; j++) {
-        if (j !== i) {
-          colSum += matrix.get(j, i);
-        }
-      }
-      matrix.set(i, i, colSum);
+      matrix.set(i, i, colSums[i] - matrix.get(i, i));
     }
   }
 
@@ -208,21 +203,13 @@ export class PowerRanker {
 
   private prepareMatrix(): Matrix {
     const n = this.items.length;
-    let matrix = Matrix.zeros(n, n);
 
-    // Initialize off-diagonals with pseudocount k
     if (this.options.k) {
-      const k = this.options.k;
-      for (let i = 0; i < n; i++) {
-        for (let j = 0; j < n; j++) {
-          if (i !== j) {
-            matrix.set(i, j, k);
-          }
-        }
-      }
+      // Off-diagonals filled with pseudocount k, diagonal stays 0
+      return Matrix.ones(n, n).sub(Matrix.eye(n)).mul(this.options.k);
     }
 
-    return matrix;
+    return Matrix.zeros(n, n);
   }
 
   private powerMethod(epsilon: number, nIter: number): number[] {
@@ -230,49 +217,30 @@ export class PowerRanker {
     const mat = this.matrix.clone();
 
     // Row-normalize
+    const rowSums = mat.sum('row');
     for (let i = 0; i < n; i++) {
-      let rowSum = 0;
-      for (let j = 0; j < n; j++) {
-        rowSum += mat.get(i, j);
-      }
-      if (rowSum > 0) {
-        for (let j = 0; j < n; j++) {
-          mat.set(i, j, mat.get(i, j) / rowSum);
-        }
+      if (rowSums[i] > 0) {
+        mat.setRow(i, mat.getRow(i).map((v) => v / rowSums[i]));
       } else {
-        // Give zero-sum rows uniform distribution
-        for (let j = 0; j < n; j++) {
-          mat.set(i, j, 1 / n);
-        }
+        mat.setRow(i, Array(n).fill(1 / n));
       }
     }
 
     // Power iteration with L2 convergence check
-    let vec = Array(n).fill(1 / n);
+    let vec = Matrix.rowVector(Array(n).fill(1 / n));
+    let prev = vec;
 
     for (let iter = 0; iter < nIter; iter++) {
-      // Row-vector × matrix: next[j] = sum_i(vec[i] * mat[i][j])
-      const next = Array(n).fill(0);
-      for (let j = 0; j < n; j++) {
-        for (let i = 0; i < n; i++) {
-          next[j] += vec[i] * mat.get(i, j);
-        }
-      }
+      vec = prev.mmul(mat);
 
-      // Check convergence (L2 norm of difference)
-      let norm = 0;
-      for (let i = 0; i < n; i++) {
-        norm += (next[i] - vec[i]) ** 2;
-      }
-
-      vec = next;
-      if (Math.sqrt(norm) < epsilon) {
+      if (Matrix.sub(vec, prev).norm() < epsilon) {
         this.log(`Eigenvector convergence after ${iter} iterations`);
         break;
       }
+      prev = vec;
     }
 
-    return vec;
+    return vec.getRow(0);
   }
 
   private getVariance(i: number, j: number): number {
