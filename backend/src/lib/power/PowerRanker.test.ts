@@ -236,10 +236,12 @@ describe('PowerRanker', () => {
     });
 
     test('selects without replacement', () => {
-      const ranker = new PowerRanker({ items: new Set(['1', '2', '3']) });
-      const pairs = ranker.select({ num: 3 });
+      // 5 items → 10 pairs; request 5 — must be unique
+      const ranker = new PowerRanker({ items: new Set(['1', '2', '3', '4', '5']) });
+      const pairs = ranker.select({ num: 5 });
       const keys = pairs.map((p) => pairKey(p.alpha, p.beta));
-      expect(new Set(keys).size).toBe(3);
+      expect(pairs).toHaveLength(5);
+      expect(new Set(keys).size).toBe(5);
     });
 
     test('excludes specified pairs', () => {

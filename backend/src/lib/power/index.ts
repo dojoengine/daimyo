@@ -3,6 +3,6 @@ export type {
   PowerRankerOptions,
   Preference,
   RunOptions,
-  SelectedPair,
+  PairWeight,
   SelectOptions,
 } from './PowerRanker.js';

@@ -16,13 +16,7 @@ export interface RunOptions {
   nIter?: number;
 }
 
-export interface PairVariance {
-  alpha: string;
-  beta: string;
-  variance: number;
-}
-
-export interface SelectedPair {
+export interface PairWeight {
   alpha: string;
   beta: string;
   weight: number;
@@ -112,13 +106,13 @@ export class PowerRanker {
     return this.applyLabels(weights);
   }
 
-  private getVariances(): PairVariance[] {
-    const variances: PairVariance[] = [];
+  private getVariances(): PairWeight[] {
+    const variances: PairWeight[] = [];
 
     for (let i = 0; i < this.items.length; i++) {
       for (let j = i + 1; j < this.items.length; j++) {
-        const variance = this.getVariance(i, j);
-        variances.push({ alpha: this.items[i], beta: this.items[j], variance });
+        const weight = this.getVariance(i, j);
+        variances.push({ alpha: this.items[i], beta: this.items[j], weight });
       }
     }
 
@@ -134,7 +128,7 @@ export class PowerRanker {
    * prioritizing uncertain pairs between high-ranked items.
    * Optionally excludes pairs (e.g. already judged).
    */
-  select({ num, exclude, impact }: SelectOptions = {}): SelectedPair[] {
+  select({ num, exclude, impact }: SelectOptions = {}): PairWeight[] {
     const allVariances = this.getVariances();
 
     // Compute impact weights if requested
@@ -144,13 +138,12 @@ export class PowerRanker {
     }
 
     // Build candidate pool with sampling weights
-    type Candidate = { alpha: string; beta: string; weight: number };
-    const candidates: Candidate[] = [];
+    const candidates: PairWeight[] = [];
 
     for (const v of allVariances) {
       if (exclude && exclude.has(pairKey(v.alpha, v.beta))) continue;
 
-      let weight = v.variance;
+      let weight = v.weight;
       if (weights) {
         weight *= weights.get(v.alpha)! * weights.get(v.beta)!;
       }
@@ -164,7 +157,7 @@ export class PowerRanker {
 
     // Weighted sampling without replacement
     const remaining = [...candidates];
-    const selected: SelectedPair[] = [];
+    const selected: PairWeight[] = [];
 
     for (let pick = 0; pick < num && remaining.length > 0; pick++) {
       const totalWeight = remaining.reduce((sum, p) => sum + p.weight, 0);
