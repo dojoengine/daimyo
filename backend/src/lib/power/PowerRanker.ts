@@ -54,7 +54,7 @@ export class PowerRanker {
     }
 
     this.options = options;
-    this.items = Array.from(items).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+    this.items = Array.from(items).sort((a, b) => a.localeCompare(b));
     this.itemMap = new Map(this.items.map((item, ix) => [item, ix]));
     this.matrix = this.prepareMatrix();
 
@@ -72,7 +72,7 @@ export class PowerRanker {
    * We assume max one submission per participant/pair.
    */
   addPreferences(preferences: Preference[]): void {
-    const matrix = this.matrix;
+    const d = this.matrix.data;
 
     for (const p of preferences) {
       const targetIx = this.itemMap.get(p.target);
@@ -85,16 +85,16 @@ export class PowerRanker {
 
       // Rows: source, cols: target
       if (scaled > 0) {
-        matrix.set(sourceIx, targetIx, matrix.get(sourceIx, targetIx) + scaled);
+        d[sourceIx][targetIx] += scaled;
       } else {
-        matrix.set(targetIx, sourceIx, matrix.get(targetIx, sourceIx) + -scaled);
+        d[targetIx][sourceIx] -= scaled;
       }
     }
 
     // Set diagonals to column sums (excluding diagonal), representing total preference received
-    const colSums = matrix.sum('column');
+    const colSums = this.matrix.sum('column');
     for (let i = 0; i < this.items.length; i++) {
-      matrix.set(i, i, colSums[i] - matrix.get(i, i));
+      d[i][i] = colSums[i] - d[i][i];
     }
   }
 
@@ -177,8 +177,7 @@ export class PowerRanker {
         idx = Math.floor(Math.random() * remaining.length);
       }
 
-      const pair = remaining[idx];
-      selected.push({ alpha: pair.alpha, beta: pair.beta, weight: pair.weight });
+      selected.push(remaining[idx]);
       remaining.splice(idx, 1);
     }
 
