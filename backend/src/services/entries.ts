@@ -1,5 +1,10 @@
 import yaml from 'js-yaml';
 
+const GITHUB_HEADERS: Record<string, string> = {
+  Accept: 'application/vnd.github.v3+json',
+  ...(process.env.GITHUB_TOKEN ? { Authorization: `token ${process.env.GITHUB_TOKEN}` } : {}),
+};
+
 export interface EntryMetrics {
   classification: 'Whole Game' | 'Feature';
   team_size: number;
@@ -83,9 +88,7 @@ function frontmatterToEntry(data: Record<string, unknown>): Entry | null {
 // then fetch and parse each .md file's frontmatter.
 async function fetchEntriesFromGitHub(jamSlug: string): Promise<Entry[]> {
   const dirUrl = `https://api.github.com/repos/dojoengine/game-jams/contents/${jamSlug}`;
-  const dirRes = await fetch(dirUrl, {
-    headers: { Accept: 'application/vnd.github.v3+json' },
-  });
+  const dirRes = await fetch(dirUrl, { headers: GITHUB_HEADERS });
   if (!dirRes.ok) return [];
 
   const files = (await dirRes.json()) as Array<{
@@ -98,7 +101,7 @@ async function fetchEntriesFromGitHub(jamSlug: string): Promise<Entry[]> {
   await Promise.all(
     mdFiles.map(async (file) => {
       try {
-        const res = await fetch(file.download_url);
+        const res = await fetch(file.download_url, { headers: GITHUB_HEADERS });
         if (!res.ok) return;
         const content = await res.text();
         const data = parseFrontmatter(content);
@@ -150,7 +153,7 @@ export async function getJamSlugs(): Promise<string[]> {
   }
 
   const res = await fetch('https://api.github.com/repos/dojoengine/game-jams/contents', {
-    headers: { Accept: 'application/vnd.github.v3+json' },
+    headers: GITHUB_HEADERS,
   });
   if (!res.ok) return jamSlugsCache?.slugs ?? [];
 
