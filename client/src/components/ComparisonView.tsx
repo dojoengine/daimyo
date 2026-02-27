@@ -8,6 +8,7 @@ import './ComparisonView.css';
 interface ComparisonViewProps {
   entryA: Entry;
   entryB: Entry;
+  impact: number;
   canGoBack: boolean;
   onScore: (score: number) => void;
   onInvalidPair?: () => void;
@@ -19,6 +20,7 @@ const SPARKLE_COUNT = 8;
 export default function ComparisonView({
   entryA,
   entryB,
+  impact,
   canGoBack,
   onScore,
   onInvalidPair,
@@ -61,6 +63,7 @@ export default function ComparisonView({
         <p className="comparison-prompt">
           Which is the stronger game jam entry?
         </p>
+        <p className="comparison-impact">Impact: {impact}</p>
         <LikertScale
           labelA={`${entryA.emoji} ${entryA.title}`}
           labelB={`${entryB.emoji} ${entryB.title}`}

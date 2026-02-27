@@ -109,6 +109,7 @@ export default function Judge() {
       <ComparisonView
         entryA={pair.entryA}
         entryB={pair.entryB}
+        impact={pair.impact}
         canGoBack={canGoBack}
         onScore={submitScore}
         onBack={goBack}

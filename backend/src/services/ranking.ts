@@ -1,5 +1,6 @@
 import { Comparison } from './database.js';
 import { Entry } from './entries.js';
+import { PowerRanker, pairKey } from '../lib/power/index.js';
 
 export interface RankedEntry {
   entry: Entry;
@@ -21,117 +22,42 @@ export interface RankingStats {
 export function calculateRankings(entries: Entry[], comparisons: Comparison[]): RankedEntry[] {
   const n = entries.length;
 
-  if (n === 0) {
-    return [];
-  }
+  if (n === 0) return [];
 
   if (n === 1) {
     return [{ entry: entries[0], score: 100, rank: 1 }];
   }
 
-  // Create entry ID to index mapping
-  const idToIndex = new Map<string, number>();
-  entries.forEach((entry, i) => {
-    idToIndex.set(entry.id, i);
-  });
+  const items = new Set(entries.map((e) => e.id));
+  const ranker = new PowerRanker({ items });
 
-  // Build transition matrix
-  // matrix[i][j] = number of times entry i beat entry j
-  const matrix: number[][] = Array(n)
-    .fill(null)
-    .map(() => Array(n).fill(0));
-
-  // Accumulate score-weighted preferences from comparisons
-  // Score 1.0 (Strong A) adds full weight to A; 0.0 (Strong B) adds full weight to B
-  // Score 0.5 (Indifferent) splits equally between both sides
-  for (const comp of comparisons) {
-    if (comp.score === null) continue; // Skip invalid pairs
-
-    const iA = idToIndex.get(comp.entry_a_id);
-    const iB = idToIndex.get(comp.entry_b_id);
-
-    if (iA === undefined || iB === undefined) continue;
-
-    matrix[iA][iB] += comp.score;
-    matrix[iB][iA] += 1.0 - comp.score;
-  }
-
-  // Check if we have any comparisons
-  const hasComparisons = matrix.some((row) => row.some((val) => val > 0));
-  if (!hasComparisons) {
-    // No comparisons yet - all entries get neutral score
-    return entries.map((entry, i) => ({
-      entry,
-      score: 50,
-      rank: i + 1,
+  const prefs = comparisons
+    .filter((c) => c.score !== null)
+    .map((c) => ({
+      target: c.entry_a_id,
+      source: c.entry_b_id,
+      value: c.score!,
     }));
+
+  if (prefs.length === 0) {
+    return entries.map((entry, i) => ({ entry, score: 50, rank: i + 1 }));
   }
 
-  // Normalize columns to sum to 1 (with epsilon to avoid division by zero)
-  const epsilon = 1e-10;
-  const normalizedMatrix: number[][] = Array(n)
-    .fill(null)
-    .map(() => Array(n).fill(0));
-
-  for (let j = 0; j < n; j++) {
-    let colSum = 0;
-    for (let i = 0; i < n; i++) {
-      colSum += matrix[i][j];
-    }
-
-    if (colSum > epsilon) {
-      for (let i = 0; i < n; i++) {
-        normalizedMatrix[i][j] = matrix[i][j] / colSum;
-      }
-    } else {
-      // No wins against this entry - distribute evenly (teleportation)
-      for (let i = 0; i < n; i++) {
-        normalizedMatrix[i][j] = 1 / n;
-      }
-    }
-  }
-
-  // Power iteration to find principal eigenvector
-  let vector = Array(n).fill(1 / n);
-  const iterations = 100;
-
-  for (let iter = 0; iter < iterations; iter++) {
-    const newVector = Array(n).fill(0);
-
-    // Matrix multiplication: newVector = matrix * vector
-    for (let i = 0; i < n; i++) {
-      for (let j = 0; j < n; j++) {
-        newVector[i] += normalizedMatrix[i][j] * vector[j];
-      }
-    }
-
-    // Normalize to sum to 1
-    const sum = newVector.reduce((a, b) => a + b, 0);
-    if (sum > epsilon) {
-      for (let i = 0; i < n; i++) {
-        newVector[i] /= sum;
-      }
-    }
-
-    vector = newVector;
-  }
+  ranker.addPreferences(prefs);
+  const rankings = ranker.run();
 
   // Normalize scores to 0-100 range
-  const maxScore = Math.max(...vector);
-  const minScore = Math.min(...vector);
+  const scores = entries.map((e) => rankings.get(e.id)!);
+  const maxScore = Math.max(...scores);
+  const minScore = Math.min(...scores);
   const range = maxScore - minScore;
+  const epsilon = 1e-10;
 
   const rankedEntries: RankedEntry[] = entries.map((entry, i) => {
-    let score: number;
-    if (range > epsilon) {
-      score = ((vector[i] - minScore) / range) * 100;
-    } else {
-      score = 50; // All equal
-    }
+    const score = range > epsilon ? ((scores[i] - minScore) / range) * 100 : 50;
     return { entry, score, rank: 0 };
   });
 
-  // Sort by score descending and assign ranks
   rankedEntries.sort((a, b) => b.score - a.score);
   rankedEntries.forEach((entry, i) => {
     entry.rank = i + 1;
@@ -145,22 +71,13 @@ export function calculateRankings(entries: Entry[], comparisons: Comparison[]): 
  */
 export function calculateStats(entries: Entry[], comparisons: Comparison[]): RankingStats {
   const totalPairs = (entries.length * (entries.length - 1)) / 2;
-
-  // Count unique judges
   const judges = new Set(comparisons.map((c) => c.judge_id));
-
-  // Count skipped
   const skippedCount = comparisons.filter((c) => c.score === null).length;
 
-  // Count pairs with at least one comparison
   const comparedPairs = new Set<string>();
   for (const comp of comparisons) {
     if (comp.score !== null) {
-      const key =
-        comp.entry_a_id < comp.entry_b_id
-          ? `${comp.entry_a_id}:${comp.entry_b_id}`
-          : `${comp.entry_b_id}:${comp.entry_a_id}`;
-      comparedPairs.add(key);
+      comparedPairs.add(pairKey(comp.entry_a_id, comp.entry_b_id));
     }
   }
 
