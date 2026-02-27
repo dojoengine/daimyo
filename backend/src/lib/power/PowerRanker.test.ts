@@ -1,10 +1,10 @@
 import { describe, test, expect } from '@jest/globals';
 import { PowerRanker, pairKey } from './PowerRanker.js';
 
-// Pseudocount constant from choreWheel: k = PSEUDOCOUNT_C * numResidents
+// Pseudocount constant: k = PSEUDOCOUNT_C * numParticipants
 const PSEUDOCOUNT_C = 0.05;
-const NUM_RESIDENTS = 3;
-const K = PSEUDOCOUNT_C * NUM_RESIDENTS; // 0.15
+const NUM_PARTICIPANTS = 3;
+const K = PSEUDOCOUNT_C * NUM_PARTICIPANTS; // 0.15
 
 // Items sorted numerically (PowerRanker sorts on construction)
 const ITEM_A = 1;
