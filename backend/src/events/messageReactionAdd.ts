@@ -9,7 +9,6 @@ import {
 import { config } from '../utils/config.js';
 import { insertReaction } from '../services/database.js';
 import { getUserRole } from '../services/roleManager.js';
-import { checkPromotion } from '../services/reputation.js';
 
 /**
  * Check if reaction is the :dojo: emoji
@@ -99,14 +98,8 @@ export function registerMessageReactionAddHandler(client: Client): void {
           // React with sparkles to confirm the reaction was recorded
           await message.react('✨');
 
-          // Check if this reaction triggers a promotion
-          const promotionResult = await checkPromotion(guild, messageAuthorId);
-
-          if (promotionResult.promoted) {
-            console.log(
-              `🎉 Promotion triggered: ${messageAuthorId} ${promotionResult.oldRole} -> ${promotionResult.newRole}`
-            );
-          }
+          // Auto-promotion disabled — reactions are still recorded for scoring
+          // const promotionResult = await checkPromotion(guild, messageAuthorId);
         }
       } catch (error) {
         console.error('Error handling reaction add:', error);
