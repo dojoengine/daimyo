@@ -11,7 +11,6 @@ import { initializeDatabase, closeDatabase } from './services/database.js';
 import { registerReadyHandler } from './events/ready.js';
 import { registerGuildMemberAddHandler } from './events/guildMemberAdd.js';
 import { registerMessageReactionAddHandler } from './events/messageReactionAdd.js';
-import { startDecayCheckJob } from './jobs/decayCheck.js';
 import { startOhayoJob } from './jobs/ohayo.js';
 import { startContentPipelineJob } from './jobs/contentPipeline.js';
 import { startApiServer } from './api/index.js';
@@ -98,7 +97,7 @@ async function main() {
   });
 
   // Start cron jobs
-  startDecayCheckJob(client);
+  // startDecayCheckJob(client); // Auto-role updates disabled
   startOhayoJob(client);
   startContentPipelineJob(client);
 
