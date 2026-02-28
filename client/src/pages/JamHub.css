@@ -208,10 +208,22 @@
   transform: translateY(-2px);
 }
 
-/* ─── Coverage Ring ─── */
+.hub-featured-cta--secondary {
+  background: transparent;
+  color: var(--neon-red);
+  border: 1px solid var(--neon-red);
+  box-shadow: none;
+}
 
-.hub-ring {
-  flex-shrink: 0;
+.hub-featured-cta--secondary:hover {
+  background: var(--neon-red);
+  color: #fff;
+  box-shadow: 0 0 24px var(--neon-glow);
+}
+
+.hub-featured-actions {
+  display: flex;
+  gap: 12px;
 }
 
 /* ─── Archive Section ─── */
@@ -305,34 +317,32 @@
   letter-spacing: 0.08em;
 }
 
-/* Activity bar */
-.hub-card-bar {
-  height: 3px;
-  background: var(--ash);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.hub-card-bar-fill {
-  height: 100%;
-  background: var(--neon-red);
-  border-radius: 2px;
-  box-shadow: 0 0 6px var(--neon-glow);
-  transition: width 1.2s ease-out;
-}
-
 .hub-card-cta {
   font-size: 13px;
   font-weight: 600;
   color: var(--neon-red);
   letter-spacing: 0.04em;
-  margin-top: auto;
+  text-decoration: none;
   transition: transform 0.2s ease;
   display: inline-block;
 }
 
 .hub-card:hover .hub-card-cta {
   transform: translateX(4px);
+}
+
+.hub-card-cta--secondary {
+  color: var(--stone);
+}
+
+.hub-card-cta--secondary:hover {
+  color: var(--neon-red);
+}
+
+.hub-card-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: auto;
 }
 
 /* ─── States ─── */

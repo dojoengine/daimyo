@@ -81,7 +81,6 @@ export default function DevPreview() {
       <ComparisonView
         entryA={DUMMY_ENTRIES[a]}
         entryB={DUMMY_ENTRIES[b]}
-        impact={75}
         canGoBack={pairIndex > 0}
         onScore={() => setPairIndex((i) => i + 1)}
         onInvalidPair={() => setPairIndex((i) => i + 1)}

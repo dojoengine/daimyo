@@ -1,18 +1,17 @@
 import { Comparison } from './database.js';
 import { Entry } from './entries.js';
-import { PowerRanker, pairKey } from '../lib/power/index.js';
+import { PowerRanker } from '../lib/power/index.js';
 
 export interface RankedEntry {
   entry: Entry;
   score: number;
-  rank: number;
+  weight: number;
 }
 
 export interface RankingStats {
   totalJudges: number;
   totalComparisons: number;
   skippedCount: number;
-  coveragePercent: number;
 }
 
 /**
@@ -25,11 +24,12 @@ export function calculateRankings(entries: Entry[], comparisons: Comparison[]): 
   if (n === 0) return [];
 
   if (n === 1) {
-    return [{ entry: entries[0], score: 100, rank: 1 }];
+    return [{ entry: entries[0], score: 100, weight: 100 }];
   }
 
   const items = new Set(entries.map((e) => e.id));
-  const ranker = new PowerRanker({ items });
+  const uniqueJudges = new Set(comparisons.map((c) => c.judge_id)).size;
+  const ranker = new PowerRanker({ items, options: { k: 0.1 * uniqueJudges } });
 
   const prefs = comparisons
     .filter((c) => c.score !== null)
@@ -40,7 +40,8 @@ export function calculateRankings(entries: Entry[], comparisons: Comparison[]): 
     }));
 
   if (prefs.length === 0) {
-    return entries.map((entry, i) => ({ entry, score: 50, rank: i + 1 }));
+    const w = 100 / n;
+    return entries.map((entry) => ({ entry, score: 50, weight: w }));
   }
 
   ranker.addPreferences(prefs);
@@ -55,13 +56,11 @@ export function calculateRankings(entries: Entry[], comparisons: Comparison[]): 
 
   const rankedEntries: RankedEntry[] = entries.map((entry, i) => {
     const score = range > epsilon ? ((scores[i] - minScore) / range) * 100 : 50;
-    return { entry, score, rank: 0 };
+    const weight = scores[i] * 100;
+    return { entry, score, weight };
   });
 
   rankedEntries.sort((a, b) => b.score - a.score);
-  rankedEntries.forEach((entry, i) => {
-    entry.rank = i + 1;
-  });
 
   return rankedEntries;
 }
@@ -69,24 +68,13 @@ export function calculateRankings(entries: Entry[], comparisons: Comparison[]): 
 /**
  * Calculate statistics for a set of comparisons
  */
-export function calculateStats(entries: Entry[], comparisons: Comparison[]): RankingStats {
-  const totalPairs = (entries.length * (entries.length - 1)) / 2;
+export function calculateStats(comparisons: Comparison[]): RankingStats {
   const judges = new Set(comparisons.map((c) => c.judge_id));
   const skippedCount = comparisons.filter((c) => c.score === null).length;
-
-  const comparedPairs = new Set<string>();
-  for (const comp of comparisons) {
-    if (comp.score !== null) {
-      comparedPairs.add(pairKey(comp.entry_a_id, comp.entry_b_id));
-    }
-  }
-
-  const coveragePercent = totalPairs > 0 ? (comparedPairs.size / totalPairs) * 100 : 0;
 
   return {
     totalJudges: judges.size,
     totalComparisons: comparisons.length,
     skippedCount,
-    coveragePercent,
   };
 }
