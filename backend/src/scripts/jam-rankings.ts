@@ -80,7 +80,7 @@ async function main() {
 
     // Calculate rankings and stats
     const rankings = calculateRankings(entries, comparisons);
-    const stats = calculateStats(entries, comparisons);
+    const stats = calculateStats(comparisons);
 
     // Print header
     console.log('');
@@ -98,8 +98,9 @@ async function main() {
     console.log(' Rank  Score  PR#   Title                          Team');
     console.log(' ----  -----  ---   -----                          ----');
 
-    for (const { entry, score, rank } of rankings) {
-      const rankStr = rank.toString().padStart(4);
+    for (let i = 0; i < rankings.length; i++) {
+      const { entry, score } = rankings[i];
+      const rankStr = (i + 1).toString().padStart(4);
       const scoreStr = score.toFixed(1).padStart(5);
       const prStr = entry.id.padStart(3);
       const title =
@@ -115,7 +116,6 @@ async function main() {
     console.log(`  Total judges: ${stats.totalJudges}`);
     console.log(`  Total comparisons: ${stats.totalComparisons}`);
     console.log(`  Skipped: ${stats.skippedCount}`);
-    console.log(`  Coverage: ${stats.coveragePercent.toFixed(0)}% of pairs have ≥1 comparison`);
     console.log('');
   } finally {
     await sql.end();

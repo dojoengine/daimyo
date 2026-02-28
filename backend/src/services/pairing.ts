@@ -57,17 +57,13 @@ export async function selectSessionPairs(
   }
 
   // Select pairs via active ranking
-  const selected = ranker.select({ num: count, exclude, impact: true });
-
-  // Normalize weights to 0–100 relative to session max
-  const maxWeight = Math.max(...selected.map((p) => p.weight));
+  const selected = ranker.select({ num: count, exclude, impact: false });
 
   // Map back to entries with randomized presentation order
   const entryMap = new Map(entries.map((e) => [e.id, e]));
   return selected.map((pair) => {
     const entryA = entryMap.get(pair.alpha)!;
     const entryB = entryMap.get(pair.beta)!;
-    const impact = maxWeight > 0 ? Math.round((pair.weight / maxWeight) * 100) : 50;
-    return { ...randomizeOrder(entryA, entryB), impact };
+    return { ...randomizeOrder(entryA, entryB), impact: pair.weight };
   });
 }

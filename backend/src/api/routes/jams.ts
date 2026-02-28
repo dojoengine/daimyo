@@ -2,7 +2,12 @@ import express, { Request, Response } from 'express';
 import { authMiddleware, optionalAuthMiddleware } from '../middleware/auth.js';
 import { getEntries, getEntryById } from '../../services/entries.js';
 import { selectSessionPairs } from '../../services/pairing.js';
-import { insertComparison, getComparisonCountForJudge } from '../../services/database.js';
+import {
+  insertComparison,
+  getComparisonCountForJudge,
+  getComparisonsForJam,
+} from '../../services/database.js';
+import { calculateRankings, calculateStats } from '../../services/ranking.js';
 import { JUDGING_SESSION_SIZE } from '../../constants/judging.js';
 
 const router: express.Router = express.Router();
@@ -101,5 +106,30 @@ router.post(
     }
   }
 );
+
+// GET /api/jams/:slug/results - Public: get ranked results for a jam
+router.get('/:slug/results', async (req: Request, res: Response): Promise<void> => {
+  const slug = getSlug(req.params);
+
+  try {
+    const [entries, comparisons] = await Promise.all([
+      getEntries(slug),
+      getComparisonsForJam(slug),
+    ]);
+
+    if (entries.length === 0) {
+      res.status(404).json({ error: 'No entries found for this jam' });
+      return;
+    }
+
+    const rankings = calculateRankings(entries, comparisons);
+    const stats = calculateStats(comparisons);
+
+    res.json({ rankings, stats });
+  } catch (err) {
+    console.error('Error generating results:', err);
+    res.status(500).json({ error: 'Failed to generate results' });
+  }
+});
 
 export default router;

@@ -45,7 +45,14 @@ npm run dev:api -w backend     # watch API only
 npm run dev -w client          # vite dev server (port 5173, proxies /api to :3000)
 ```
 
-Set `DEV_AUTH_BYPASS=true` in backend `.env` to skip Discord OAuth and use dummy data.
+Create a `backend/.env.local` file if it doesn't exist, with at minimum:
+
+```
+DATABASE_URL=postgres://localhost:5432/daimyo
+DEV_AUTH_BYPASS=true
+```
+
+`DEV_AUTH_BYPASS=true` skips Discord OAuth and uses dummy data.
 
 ## Database
 

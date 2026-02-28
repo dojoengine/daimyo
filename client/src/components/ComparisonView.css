@@ -53,17 +53,6 @@
   box-shadow: 0 0 20px var(--neon-glow);
 }
 
-/* Impact score */
-.comparison-impact {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--stone);
-  text-align: center;
-  margin: 0;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
 /* Controls area */
 .comparison-controls {
   display: flex;

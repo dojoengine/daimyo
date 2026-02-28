@@ -49,49 +49,6 @@ function AnimatedCounter({ value, delay = 0 }: { value: number; delay?: number }
   return <>{display}</>;
 }
 
-function CoverageRing({ voted, total }: { voted: number; total: number }) {
-  const pct = total > 0 ? Math.min(voted / total, 1) : 0;
-  const r = 27;
-  const circumference = 2 * Math.PI * r;
-  const offset = circumference * (1 - pct);
-  return (
-    <svg className="hub-ring" viewBox="0 0 64 64" width="64" height="64">
-      <circle cx="32" cy="32" r={r} fill="none" stroke="var(--ash)" strokeWidth="3" />
-      <circle
-        cx="32"
-        cy="32"
-        r={r}
-        fill="none"
-        stroke="var(--neon-red)"
-        strokeWidth="3"
-        strokeLinecap="round"
-        strokeDasharray={circumference}
-        strokeDashoffset={offset}
-        transform="rotate(-90 32 32)"
-        style={{ filter: 'drop-shadow(0 0 4px var(--neon-glow))' }}
-      />
-      <text
-        x="32"
-        y="32"
-        textAnchor="middle"
-        dominantBaseline="central"
-        fill="var(--parchment)"
-        fontSize="14"
-        fontWeight="600"
-        fontFamily="DM Sans, sans-serif"
-      >
-        {Math.round(pct * 100)}%
-      </text>
-    </svg>
-  );
-}
-
-function getCoverage(jam: JamSummary) {
-  const totalPairs = (jam.entryCount * (jam.entryCount - 1)) / 2;
-  const judges = Math.max(jam.judgeCount, 1);
-  return { voted: jam.voteCount, total: totalPairs * judges };
-}
-
 export default function JamHub() {
   const [jams, setJams] = useState<JamSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -141,31 +98,35 @@ export default function JamHub() {
                   <span className="hub-featured-badge">Latest</span>
                   <h2 className="hub-featured-title">{formatJamTitle(featured.slug)}</h2>
                 </div>
-                <CoverageRing {...getCoverage(featured)} />
               </div>
               <div className="hub-featured-stats">
                 <div className="hub-featured-stat">
                   <span className="hub-featured-stat-value">
                     <AnimatedCounter value={featured.entryCount} delay={400} />
                   </span>
-                  <span className="hub-featured-stat-label">entries</span>
+                  <span className="hub-featured-stat-label">{featured.entryCount === 1 ? 'entry' : 'entries'}</span>
                 </div>
                 <div className="hub-featured-stat">
                   <span className="hub-featured-stat-value">
                     <AnimatedCounter value={featured.judgeCount} delay={600} />
                   </span>
-                  <span className="hub-featured-stat-label">judges</span>
+                  <span className="hub-featured-stat-label">{featured.judgeCount === 1 ? 'judge' : 'judges'}</span>
                 </div>
                 <div className="hub-featured-stat">
                   <span className="hub-featured-stat-value">
                     <AnimatedCounter value={featured.voteCount} delay={800} />
                   </span>
-                  <span className="hub-featured-stat-label">votes</span>
+                  <span className="hub-featured-stat-label">{featured.voteCount === 1 ? 'vote' : 'votes'}</span>
                 </div>
               </div>
-              <Link to={`/judge/${featured.slug}`} className="hub-featured-cta">
-                Begin Judging
-              </Link>
+              <div className="hub-featured-actions">
+                <Link to={`/judge/${featured.slug}`} className="hub-featured-cta">
+                  Begin Judging
+                </Link>
+                <Link to={`/judge/${featured.slug}/results`} className="hub-featured-cta hub-featured-cta--secondary">
+                  See Results
+                </Link>
+              </div>
             </div>
           </div>
         )}
@@ -175,16 +136,9 @@ export default function JamHub() {
           <div className="hub-archive">
             <h3 className="hub-archive-title">Past Jams</h3>
             <div className="hub-grid">
-              {archive.map((jam, i) => {
-                const coverage = getCoverage(jam);
-                const pct =
-                  coverage.total > 0
-                    ? Math.min(coverage.voted / coverage.total, 1) * 100
-                    : 0;
-                return (
-                  <Link
+              {archive.map((jam, i) => (
+                  <div
                     key={jam.slug}
-                    to={`/judge/${jam.slug}`}
                     className="hub-card"
                     style={{ animationDelay: `${0.4 + i * 0.1}s` }}
                   >
@@ -193,24 +147,23 @@ export default function JamHub() {
                     <div className="hub-card-stats">
                       <div className="hub-card-stat">
                         <span className="hub-card-stat-value">{jam.entryCount}</span>
-                        <span className="hub-card-stat-label">entries</span>
+                        <span className="hub-card-stat-label">{jam.entryCount === 1 ? 'entry' : 'entries'}</span>
                       </div>
                       <div className="hub-card-stat">
                         <span className="hub-card-stat-value">{jam.judgeCount}</span>
-                        <span className="hub-card-stat-label">judges</span>
+                        <span className="hub-card-stat-label">{jam.judgeCount === 1 ? 'judge' : 'judges'}</span>
                       </div>
                       <div className="hub-card-stat">
                         <span className="hub-card-stat-value">{jam.voteCount}</span>
-                        <span className="hub-card-stat-label">votes</span>
+                        <span className="hub-card-stat-label">{jam.voteCount === 1 ? 'vote' : 'votes'}</span>
                       </div>
                     </div>
-                    <div className="hub-card-bar">
-                      <div className="hub-card-bar-fill" style={{ width: `${pct}%` }} />
+                    <div className="hub-card-actions">
+                      <Link to={`/judge/${jam.slug}`} className="hub-card-cta">Judge →</Link>
+                      <Link to={`/judge/${jam.slug}/results`} className="hub-card-cta hub-card-cta--secondary">Results →</Link>
                     </div>
-                    <span className="hub-card-cta">Judge →</span>
-                  </Link>
-                );
-              })}
+                  </div>
+              ))}
             </div>
           </div>
         )}

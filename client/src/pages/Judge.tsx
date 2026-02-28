@@ -1,4 +1,5 @@
-import { useParams } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import { useJudging } from '../hooks/useJudging';
 import { formatJamTitle } from '../utils/jam';
 import ComparisonView from '../components/ComparisonView';
@@ -21,6 +22,12 @@ export default function Judge() {
     submitSession,
     startNewSession,
   } = useJudging(slug || '');
+
+  useEffect(() => {
+    if (pair) {
+      console.log(`[Variance] ${pair.entryA.title} vs ${pair.entryB.title}: ${pair.impact}`);
+    }
+  }, [pair?.entryA.id, pair?.entryB.id]);
 
   if (loading) {
     return (
@@ -85,6 +92,7 @@ export default function Judge() {
           <button className="judge-continue-btn" onClick={startNewSession}>
             Start Another Session
           </button>
+          <Link to="/judge" className="judge-back-btn">Back to Jams</Link>
         </div>
       </div>
     );
@@ -109,7 +117,6 @@ export default function Judge() {
       <ComparisonView
         entryA={pair.entryA}
         entryB={pair.entryB}
-        impact={pair.impact}
         canGoBack={canGoBack}
         onScore={submitScore}
         onBack={goBack}
