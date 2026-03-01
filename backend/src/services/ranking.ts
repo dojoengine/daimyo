@@ -29,7 +29,7 @@ export function calculateRankings(entries: Entry[], comparisons: Comparison[]): 
 
   const items = new Set(entries.map((e) => e.id));
   const uniqueJudges = new Set(comparisons.map((c) => c.judge_id)).size;
-  const ranker = new PowerRanker({ items, options: { k: 0.1 * uniqueJudges } });
+  const ranker = new PowerRanker({ items, options: { k: 0.05 * uniqueJudges } });
 
   const prefs = comparisons
     .filter((c) => c.score !== null)
