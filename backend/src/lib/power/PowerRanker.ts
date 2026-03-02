@@ -131,7 +131,7 @@ export class PowerRanker {
    * With num specified, samples without replacement weighted by variance.
    * Without num, returns all pairs with their weights (useful for diagnostics).
    * impact is an optional array of transforms applied multiplicatively:
-   *   - 'weight': multiply by posterior rank weights (upsamples high-ranked pairs)
+   *   - 'weight': multiply by geometric mean of posterior rank weights (upsamples high-ranked pairs)
    *   - 'coverage': multiply by 1/(1+n/N) per item (upsamples under-observed items)
    * Optionally excludes pairs (e.g. already judged).
    */
@@ -152,7 +152,7 @@ export class PowerRanker {
       let weight = v.weight;
 
       if (transforms.includes('weight')) {
-        weight *= weights.get(v.alpha)! * weights.get(v.beta)!;
+        weight *= Math.sqrt(weights.get(v.alpha)! * weights.get(v.beta)!);
       }
 
       if (transforms.includes('coverage')) {
