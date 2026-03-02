@@ -41,6 +41,8 @@ export async function insertComparison(
   await sql`
     INSERT INTO jam_comparisons (id, jam_slug, judge_id, entry_a_id, entry_b_id, score, timestamp)
     VALUES (${id}, ${jamSlug}, ${judgeId}, ${canonA}, ${canonB}, ${canonScore}, ${timestamp})
+    ON CONFLICT (jam_slug, judge_id, entry_a_id, entry_b_id)
+    DO UPDATE SET score = ${canonScore}, timestamp = ${timestamp}
   `;
 }
 
