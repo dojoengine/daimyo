@@ -22,10 +22,12 @@ export interface PairWeight {
   weight: number;
 }
 
+export type ImpactTransform = 'weight' | 'coverage';
+
 export interface SelectOptions {
   num?: number;
   exclude?: Set<string>;
-  impact?: boolean;
+  impact?: ImpactTransform[];
 }
 
 /**
@@ -45,7 +47,8 @@ export class PowerRanker {
   readonly items: string[];
   private options: PowerRankerOptions;
   private matrix: Matrix;
-  private itemMap: Map<string, number>;
+  private itemIndices: Record<string, number>;
+  private itemObservations: Record<string, number>;
 
   constructor({ items, options = {} }: { items: Set<string>; options?: PowerRankerOptions }) {
     if (items.size < 2) {
@@ -54,7 +57,8 @@ export class PowerRanker {
 
     this.options = options;
     this.items = Array.from(items).sort((a, b) => a.localeCompare(b));
-    this.itemMap = new Map(this.items.map((item, ix) => [item, ix]));
+    this.itemIndices = Object.fromEntries(this.items.map((item, ix) => [item, ix]));
+    this.itemObservations = Object.fromEntries(this.items.map((item) => [item, 0]));
     this.matrix = this.prepareMatrix();
 
     this.log('Matrix initialized');
@@ -74,9 +78,13 @@ export class PowerRanker {
     const d = (this.matrix as unknown as { data: Float64Array[] }).data;
 
     for (const p of preferences) {
-      const targetIx = this.itemMap.get(p.target);
-      const sourceIx = this.itemMap.get(p.source);
+      const targetIx = this.itemIndices[p.target];
+      const sourceIx = this.itemIndices[p.source];
       if (targetIx === undefined || sourceIx === undefined) continue;
+
+      // Track observations for both items (regardless of score)
+      this.itemObservations[p.target]++;
+      this.itemObservations[p.source]++;
 
       // Scale so 0.5 -> 0, 0.7 -> 0.4, etc.
       const scaled = (p.value - 0.5) * 2;
@@ -122,23 +130,38 @@ export class PowerRanker {
    *
    * With num specified, samples without replacement weighted by variance.
    * Without num, returns all pairs with their weights (useful for diagnostics).
-   * With impact: true, weights are variance * weight_a * weight_b,
-   * prioritizing uncertain pairs between high-ranked items.
+   * impact is an optional array of transforms applied multiplicatively:
+   *   - 'weight': multiply by posterior rank weights (upsamples high-ranked pairs)
+   *   - 'coverage': multiply by 1/(1+n/N) per item (upsamples under-observed items)
    * Optionally excludes pairs (e.g. already judged).
    */
   select({ num, exclude, impact }: SelectOptions = {}): PairWeight[] {
     const variances = this.getVariances();
+    const transforms = impact ?? [];
 
-    // Compute impact weights if requested
-    const weights = impact ? this.run() : new Map<string, number>();
+    const n = this.items.length;
+    const weights = transforms.includes('weight') ? this.run() : new Map<string, number>();
 
     // Build candidate pool with sampling weights
     const candidates: PairWeight[] = [];
 
     for (const v of variances) {
-      if (exclude && exclude.has(pairKey(v.alpha, v.beta))) continue;
+      if (exclude && exclude.has(pairKey(v.alpha, v.beta))) {
+        continue;
+      }
 
-      const weight = v.weight * (weights.get(v.alpha)! * weights.get(v.beta)! || 1);
+      let weight = v.weight;
+
+      if (transforms.includes('weight')) {
+        weight *= weights.get(v.alpha)! * weights.get(v.beta)!;
+      }
+
+      if (transforms.includes('coverage')) {
+        const nAlpha = this.itemObservations[v.alpha] ?? 0;
+        const nBeta = this.itemObservations[v.beta] ?? 0;
+        weight *= (1 / (1 + nAlpha / n)) * (1 / (1 + nBeta / n));
+      }
+
       candidates.push({ alpha: v.alpha, beta: v.beta, weight });
     }
 
@@ -153,13 +176,13 @@ export class PowerRanker {
   // Internal
 
   private applyLabels(eigenvector: number[]): Map<string, number> {
-    if (this.itemMap.size !== eigenvector.length) {
+    if (this.items.length !== eigenvector.length) {
       throw new Error('Mismatched arguments!');
     }
 
     const result = new Map<string, number>();
-    for (const [item, ix] of this.itemMap) {
-      result.set(item, eigenvector[ix]);
+    for (let ix = 0; ix < this.items.length; ix++) {
+      result.set(this.items[ix], eigenvector[ix]);
     }
     return result;
   }
