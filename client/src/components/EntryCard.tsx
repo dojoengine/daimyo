@@ -33,6 +33,11 @@ function CodeIcon() {
   );
 }
 
+function renderBold(text: string) {
+  const parts = text.split(/\*\*(.+?)\*\*/g);
+  return parts.map((part, i) => (i % 2 === 1 ? <strong key={i}>{part}</strong> : part));
+}
+
 interface EntryCardProps {
   entry: Entry;
 }
@@ -67,16 +72,16 @@ export default function EntryCard({ entry }: EntryCardProps) {
         <button className="entry-section-label" onClick={() => setSummaryExpanded(!summaryExpanded)}>
           <span>{summaryExpanded ? '\u25BE' : '\u25B8'}</span> Game Summary
         </button>
-        <p className="entry-summary">{entry.summary_short}</p>
-        {summaryExpanded && <p className="entry-summary entry-expanded-text">{entry.summary_long}</p>}
+        <p className="entry-summary">{renderBold(entry.summary_short)}</p>
+        {summaryExpanded && <p className="entry-summary entry-expanded-text">{renderBold(entry.summary_long)}</p>}
       </div>
 
       <div className="entry-section">
         <button className="entry-section-label" onClick={() => setWorkExpanded(!workExpanded)}>
           <span>{workExpanded ? '\u25BE' : '\u25B8'}</span> Work Done
         </button>
-        <p className="entry-summary">{entry.work_done_short}</p>
-        {workExpanded && <p className="entry-summary entry-expanded-text">{entry.work_done_long}</p>}
+        <p className="entry-summary">{renderBold(entry.work_done_short)}</p>
+        {workExpanded && <p className="entry-summary entry-expanded-text">{renderBold(entry.work_done_long)}</p>}
       </div>
 
       <div className="entry-metrics">

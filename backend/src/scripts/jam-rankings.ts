@@ -95,19 +95,19 @@ async function main() {
     console.log('');
 
     // Print rankings table
-    console.log(' Rank  Score  PR#   Title                          Team');
-    console.log(' ----  -----  ---   -----                          ----');
+    console.log(' Rank  Weight  PR#   Title                          Team');
+    console.log(' ----  ------  ---   -----                          ----');
 
     for (let i = 0; i < rankings.length; i++) {
-      const { entry, score } = rankings[i];
+      const { entry, weight } = rankings[i];
       const rankStr = (i + 1).toString().padStart(4);
-      const scoreStr = score.toFixed(1).padStart(5);
+      const weightStr = (weight.toFixed(1) + '%').padStart(6);
       const prStr = entry.id.padStart(3);
       const title =
         entry.title.length > 30 ? entry.title.slice(0, 27) + '...' : entry.title.padEnd(30);
       const team = entry.team.join(', ');
 
-      console.log(`${rankStr}  ${scoreStr}  ${prStr}   ${title} ${team}`);
+      console.log(`${rankStr}  ${weightStr}  ${prStr}   ${title} ${team}`);
     }
 
     // Print statistics

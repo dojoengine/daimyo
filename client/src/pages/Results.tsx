@@ -19,7 +19,6 @@ function PlayIcon() {
 
 interface RankedEntry {
   entry: Entry;
-  score: number;
   weight: number;
 }
 

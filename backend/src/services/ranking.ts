@@ -4,7 +4,6 @@ import { PowerRanker } from '../lib/power/index.js';
 
 export interface RankedEntry {
   entry: Entry;
-  score: number;
   weight: number;
 }
 
@@ -24,7 +23,7 @@ export function calculateRankings(entries: Entry[], comparisons: Comparison[]): 
   if (n === 0) return [];
 
   if (n === 1) {
-    return [{ entry: entries[0], score: 100, weight: 100 }];
+    return [{ entry: entries[0], weight: 100 }];
   }
 
   const items = new Set(entries.map((e) => e.id));
@@ -41,26 +40,18 @@ export function calculateRankings(entries: Entry[], comparisons: Comparison[]): 
 
   if (prefs.length === 0) {
     const w = 100 / n;
-    return entries.map((entry) => ({ entry, score: 50, weight: w }));
+    return entries.map((entry) => ({ entry, weight: w }));
   }
 
   ranker.addPreferences(prefs);
   const rankings = ranker.run();
 
-  // Normalize scores to 0-100 range
-  const scores = entries.map((e) => rankings.get(e.id)!);
-  const maxScore = Math.max(...scores);
-  const minScore = Math.min(...scores);
-  const range = maxScore - minScore;
-  const epsilon = 1e-10;
-
-  const rankedEntries: RankedEntry[] = entries.map((entry, i) => {
-    const score = range > epsilon ? ((scores[i] - minScore) / range) * 100 : 50;
-    const weight = scores[i] * 100;
-    return { entry, score, weight };
+  const rankedEntries: RankedEntry[] = entries.map((entry) => {
+    const weight = rankings.get(entry.id)! * 100;
+    return { entry, weight };
   });
 
-  rankedEntries.sort((a, b) => b.score - a.score);
+  rankedEntries.sort((a, b) => b.weight - a.weight);
 
   return rankedEntries;
 }
