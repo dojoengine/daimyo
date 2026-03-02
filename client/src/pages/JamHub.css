@@ -226,6 +226,14 @@
   gap: 12px;
 }
 
+.hub-featured-pending {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--stone);
+  letter-spacing: 0.04em;
+  font-style: italic;
+}
+
 /* ─── Archive Section ─── */
 
 .hub-archive-title {

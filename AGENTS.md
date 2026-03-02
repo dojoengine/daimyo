@@ -45,16 +45,7 @@ npm run dev:api -w backend     # watch API only
 npm run dev -w client          # vite dev server (port 5173, proxies /api to :3000)
 ```
 
-**CRITICAL — DO THIS FIRST, BEFORE ANY OTHER WORK:**
-Create `backend/.env.local` if it doesn't exist. Run `cat backend/.env.local` to check.
-If missing, create it with:
-
-```
-DATABASE_URL=postgres://localhost:5432/daimyo
-DEV_AUTH_BYPASS=true
-```
-
-`DEV_AUTH_BYPASS=true` skips Discord OAuth and uses dummy data.
+`backend/.env.local` is checked in with dev defaults (`DEV_AUTH_BYPASS=true` skips Discord OAuth).
 
 ## Database
 

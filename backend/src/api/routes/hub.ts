@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import { getJamSlugs, getEntries } from '../../services/entries.js';
+import { getJamSlugs, getEntries, getJamEndDate } from '../../services/entries.js';
 import { getAllJamStats } from '../../services/database.js';
 
 interface JamSummary {
@@ -7,6 +7,7 @@ interface JamSummary {
   entryCount: number;
   judgeCount: number;
   voteCount: number;
+  endDate?: string | null;
 }
 
 const router: express.Router = express.Router();
@@ -38,6 +39,11 @@ router.get('/', async (_req: Request, res: Response): Promise<void> => {
         const n = (s: string) => parseInt(s.replace('gj', ''), 10);
         return n(b.slug) - n(a.slug);
       });
+
+    // Include endDate for the latest jam so the client can hide judging buttons
+    if (results.length > 0) {
+      results[0].endDate = await getJamEndDate(results[0].slug);
+    }
 
     res.json(results);
   } catch (err) {

@@ -164,5 +164,34 @@ export async function getJamSlugs(): Promise<string[]> {
   return slugs;
 }
 
+// In-memory cache for jam end dates
+const endDateCache: Map<string, { endDate: string | null; fetchedAt: number }> = new Map();
+
+/**
+ * Fetch the end_date from a jam's README.md frontmatter.
+ */
+export async function getJamEndDate(jamSlug: string): Promise<string | null> {
+  const cached = endDateCache.get(jamSlug);
+  if (cached && Date.now() - cached.fetchedAt < CACHE_TTL) {
+    return cached.endDate;
+  }
+
+  let endDate: string | null = null;
+  try {
+    const url = `https://raw.githubusercontent.com/dojoengine/game-jams/main/${jamSlug}/README.md`;
+    const res = await fetch(url, { headers: GITHUB_HEADERS });
+    if (res.ok) {
+      const raw = await res.text();
+      const data = parseFrontmatter(raw);
+      if (data?.end_date) endDate = String(data.end_date);
+    }
+  } catch {
+    // Fall through with null
+  }
+
+  endDateCache.set(jamSlug, { endDate, fetchedAt: Date.now() });
+  return endDate;
+}
+
 // Exported for testing
 export { parseFrontmatter, frontmatterToEntry };

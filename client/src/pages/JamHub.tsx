@@ -8,6 +8,7 @@ interface JamSummary {
   entryCount: number;
   judgeCount: number;
   voteCount: number;
+  endDate?: string | null;
 }
 
 function getJamRoman(slug: string): string {
@@ -66,6 +67,9 @@ export default function JamHub() {
   }, []);
 
   const featured = jams[0] ?? null;
+  const featuredIsActive = featured?.endDate
+    ? new Date() <= new Date(featured.endDate + 'T23:59:59-12:00')
+    : false;
   const archive = jams.slice(1);
 
   return (
@@ -120,12 +124,18 @@ export default function JamHub() {
                 </div>
               </div>
               <div className="hub-featured-actions">
-                <Link to={`/judge/${featured.slug}`} className="hub-featured-cta">
-                  Begin Judging
-                </Link>
-                <Link to={`/judge/${featured.slug}/results`} className="hub-featured-cta hub-featured-cta--secondary">
-                  See Results
-                </Link>
+                {featuredIsActive ? (
+                  <span className="hub-featured-pending">Judging opens after the jam ends</span>
+                ) : (
+                  <>
+                    <Link to={`/judge/${featured.slug}`} className="hub-featured-cta">
+                      Begin Judging
+                    </Link>
+                    <Link to={`/judge/${featured.slug}/results`} className="hub-featured-cta hub-featured-cta--secondary">
+                      See Results
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>
