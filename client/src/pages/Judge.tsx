@@ -90,9 +90,9 @@ export default function Judge() {
             {sessions} {sessions === 1 ? 'session' : 'sessions'} completed
           </p>
           <button className="judge-continue-btn" onClick={startNewSession}>
-            Start Another Session
+            Submit More Votes
           </button>
-          <Link to="/judge" className="judge-back-btn">Back to Jams</Link>
+          <Link to={`/judge/${slug}/results`} className="judge-back-btn">See Results</Link>
         </div>
       </div>
     );
