@@ -2,9 +2,9 @@ import { describe, test, expect } from '@jest/globals';
 import { PowerRanker, pairKey } from './PowerRanker.js';
 
 // Pseudocount constant: k = PSEUDOCOUNT_C * numParticipants
-const PSEUDOCOUNT_C = 0.05;
+const PSEUDOCOUNT_C = 0.1;
 const NUM_PARTICIPANTS = 3;
-const K = PSEUDOCOUNT_C * NUM_PARTICIPANTS; // 0.15
+const K = PSEUDOCOUNT_C * NUM_PARTICIPANTS; // 0.3
 
 // Items sorted numerically (PowerRanker sorts on construction)
 const ITEM_A = 1;
@@ -168,11 +168,11 @@ describe('PowerRanker', () => {
       // 3 items → 3 pairs
       expect(pairs).toHaveLength(3);
 
-      // With pseudocount k=0.15, off-diagonal cells are 0.15
-      // Beta(0.15 + 1, 0.15 + 1) = Beta(1.15, 1.15)
+      // With pseudocount k=0.3, off-diagonal cells are 0.3
+      // Beta(0.3 + 1, 0.3 + 1) = Beta(1.3, 1.3)
       // Variance = (a * b) / ((a + b + 1) * (a + b)^2)
-      const a = 0.15 + 1;
-      const b = 0.15 + 1;
+      const a = 0.3 + 1;
+      const b = 0.3 + 1;
       const expectedVar = (a * b) / ((a + b + 1) * (a + b) ** 2);
 
       for (const p of pairs) {
