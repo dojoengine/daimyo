@@ -5,4 +5,5 @@ export type {
   RunOptions,
   PairWeight,
   SelectOptions,
+  ImpactTransform,
 } from './PowerRanker.js';

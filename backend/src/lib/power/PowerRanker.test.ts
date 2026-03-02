@@ -306,7 +306,7 @@ describe('PowerRanker', () => {
 
       const counts: Record<string, number> = { 'a:b': 0, 'a:c': 0, 'b:c': 0 };
       for (let i = 0; i < 1000; i++) {
-        const [pair] = ranker.select({ num: 1, impact: true });
+        const [pair] = ranker.select({ num: 1, impact: ['weight'] });
         counts[pairKey(pair.alpha, pair.beta)]++;
       }
 
@@ -319,10 +319,87 @@ describe('PowerRanker', () => {
       const ranker = new PowerRanker({ items: new Set(['a', 'b', 'c']) });
 
       // With uniform weights, impact should behave like plain variance selection
-      const pairs = ranker.select({ num: 3, impact: true });
+      const pairs = ranker.select({ num: 3, impact: ['weight'] });
       expect(pairs).toHaveLength(3);
       const keys = pairs.map((p) => pairKey(p.alpha, p.beta));
       expect(new Set(keys).size).toBe(3);
+    });
+
+    test('coverage transform prioritizes under-observed items', () => {
+      const ranker = new PowerRanker({ items: new Set(['a', 'b', 'c', 'd']) });
+
+      // Heavily observe a and b (many preferences between them)
+      for (let i = 0; i < 10; i++) {
+        ranker.addPreferences([{ target: 'a', source: 'b', value: 1 }]);
+      }
+
+      const pairs = ranker.select({ impact: ['coverage'] });
+
+      // Find pairs involving c:d (both unobserved) vs a:b (both heavily observed)
+      const cd = pairs.find((p) => p.alpha === 'c' && p.beta === 'd')!;
+      const ab = pairs.find((p) => p.alpha === 'a' && p.beta === 'b')!;
+
+      // c:d should have higher weight — both items are unobserved
+      expect(cd.weight).toBeGreaterThan(ab.weight);
+    });
+
+    test('even votes (0.5) reduce coverage weight without changing beta variance', () => {
+      const ranker = new PowerRanker({ items: new Set(['a', 'b', 'c']) });
+
+      // Get baseline weights with coverage
+      const before = ranker.select({ impact: ['coverage'] });
+      const abBefore = before.find((p) => p.alpha === 'a' && p.beta === 'b')!;
+
+      // Add an "even" vote — score 0.5 contributes nothing to matrix but counts as observation
+      ranker.addPreferences([{ target: 'a', source: 'b', value: 0.5 }]);
+
+      const after = ranker.select({ impact: ['coverage'] });
+      const abAfter = after.find((p) => p.alpha === 'a' && p.beta === 'b')!;
+
+      // With coverage, weight should decrease (items now have observations)
+      expect(abAfter.weight).toBeLessThan(abBefore.weight);
+
+      // Without coverage, weight should be unchanged (0.5 adds nothing to beta)
+      const afterPlain = ranker.select();
+      const abPlain = afterPlain.find((p) => p.alpha === 'a' && p.beta === 'b')!;
+      const beforePlain = before.find((p) => p.alpha === 'a' && p.beta === 'b')!;
+      // Plain weights use only beta variance — account for the coverage factor in before
+      // Just check the beta variance directly via getVariances (plain select)
+      expect(abPlain.weight).toBeCloseTo(beforePlain.weight);
+    });
+
+    test('composable transforms apply multiplicatively', () => {
+      const ranker = new PowerRanker({
+        items: new Set(['a', 'b', 'c']),
+        options: { k: K },
+      });
+
+      ranker.addPreferences([
+        { target: 'a', source: 'b', value: 1 },
+        { target: 'b', source: 'c', value: 1 },
+      ]);
+
+      const plain = ranker.select();
+      const withWeight = ranker.select({ impact: ['weight'] });
+      const withCoverage = ranker.select({ impact: ['coverage'] });
+      const withBoth = ranker.select({ impact: ['weight', 'coverage'] });
+
+      // All should return 3 pairs
+      expect(plain).toHaveLength(3);
+      expect(withWeight).toHaveLength(3);
+      expect(withCoverage).toHaveLength(3);
+      expect(withBoth).toHaveLength(3);
+
+      // Combined weights should be strictly less than either single transform
+      const abBoth = withBoth.find((p) => p.alpha === 'a' && p.beta === 'b')!;
+      const abWeight = withWeight.find((p) => p.alpha === 'a' && p.beta === 'b')!;
+      const abCoverage = withCoverage.find((p) => p.alpha === 'a' && p.beta === 'b')!;
+      const abPlain = plain.find((p) => p.alpha === 'a' && p.beta === 'b')!;
+
+      // Both transforms applied should produce smaller weight than either alone
+      expect(abBoth.weight).toBeLessThan(abPlain.weight);
+      expect(abBoth.weight).toBeLessThan(abWeight.weight);
+      expect(abBoth.weight).toBeLessThan(abCoverage.weight);
     });
   });
 });

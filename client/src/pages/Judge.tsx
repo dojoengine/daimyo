@@ -25,7 +25,7 @@ export default function Judge() {
 
   useEffect(() => {
     if (pair) {
-      console.log(`[Variance] ${pair.entryA.title} vs ${pair.entryB.title}: ${pair.impact}`);
+      console.log(`[Impact] ${pair.entryA.title} vs ${pair.entryB.title}: ${pair.impact.toPrecision(5)}`);
     }
   }, [pair?.entryA.id, pair?.entryB.id]);
 
