@@ -259,6 +259,14 @@
   color: var(--void);
 }
 
+.home-jam-cta-disabled {
+  background: transparent;
+  color: var(--stone);
+  border: 1px solid var(--ash);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 /* ─── Divider ─── */
 .home-divider {
   width: 60px;

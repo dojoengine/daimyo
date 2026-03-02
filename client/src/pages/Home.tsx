@@ -96,9 +96,12 @@ export default function Home() {
                           Register Now
                         </a>
                       )}
-                      <Link to={`/judge/${jam.slug}`} className="home-jam-cta home-jam-cta-secondary">
+                      <span
+                        className="home-jam-cta home-jam-cta-disabled"
+                        title={`Judging opens after the jam ends (${jam.endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})`}
+                      >
                         Judge Entries
-                      </Link>
+                      </span>
                     </>
                   ) : (
                     <Link to={`/judge/${jam.slug}`} className="home-jam-cta home-jam-cta-gold">
