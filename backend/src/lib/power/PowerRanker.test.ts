@@ -2,9 +2,9 @@ import { describe, test, expect } from '@jest/globals';
 import { PowerRanker, pairKey } from './PowerRanker.js';
 
 // Pseudocount constant: k = PSEUDOCOUNT_C * numParticipants
-const PSEUDOCOUNT_C = 0.1;
+const PSEUDOCOUNT_C = 0.05;
 const NUM_PARTICIPANTS = 3;
-const K = PSEUDOCOUNT_C * NUM_PARTICIPANTS; // 0.3
+const K = PSEUDOCOUNT_C * NUM_PARTICIPANTS; // 0.15
 
 // Items sorted numerically (PowerRanker sorts on construction)
 const ITEM_A = 1;
@@ -59,9 +59,9 @@ describe('PowerRanker', () => {
 
       const rankings = ranker.run();
 
-      expect(score(rankings, ITEM_A)).toBeCloseTo(0.5417130162456522);
-      expect(score(rankings, ITEM_B)).toBeCloseTo(0.3160101777482733);
-      expect(score(rankings, ITEM_C)).toBeCloseTo(0.14227680600607476);
+      expect(score(rankings, ITEM_A)).toBeCloseTo(0.6504044299518104);
+      expect(score(rankings, ITEM_B)).toBeCloseTo(0.25639052368514753);
+      expect(score(rankings, ITEM_C)).toBeCloseTo(0.093205046363043);
     });
 
     test('ranks by mild preferences', () => {
@@ -75,9 +75,9 @@ describe('PowerRanker', () => {
 
       const rankings = ranker.run();
 
-      expect(score(rankings, ITEM_A)).toBeCloseTo(0.43457632017135617);
-      expect(score(rankings, ITEM_B)).toBeCloseTo(0.3508773584365845);
-      expect(score(rankings, ITEM_C)).toBeCloseTo(0.21454632139205937);
+      expect(score(rankings, ITEM_A)).toBeCloseTo(0.5109403527338869);
+      expect(score(rankings, ITEM_B)).toBeCloseTo(0.32920913470298835);
+      expect(score(rankings, ITEM_C)).toBeCloseTo(0.15985051256312477);
     });
 
     test('ranks with complex preferences', () => {
@@ -91,9 +91,9 @@ describe('PowerRanker', () => {
 
       const rankings = ranker.run();
 
-      expect(score(rankings, ITEM_A)).toBeCloseTo(0.4281310347307006);
-      expect(score(rankings, ITEM_B)).toBeCloseTo(0.14373793053859882);
-      expect(score(rankings, ITEM_C)).toBeCloseTo(0.4281310347307006);
+      expect(score(rankings, ITEM_A)).toBeCloseTo(0.45208724954750107);
+      expect(score(rankings, ITEM_B)).toBeCloseTo(0.09582550090499836);
+      expect(score(rankings, ITEM_C)).toBeCloseTo(0.45208724954750096);
     });
 
     test('handles circular preferences', () => {
@@ -128,9 +128,9 @@ describe('PowerRanker', () => {
       });
       ranker.addPreferences([pref(ITEM_A, ITEM_B, 1), pref(ITEM_B, ITEM_C, 1)]);
       let rankings = ranker.run();
-      expect(score(rankings, ITEM_A)).toBeCloseTo(0.5417130162456522);
-      expect(score(rankings, ITEM_B)).toBeCloseTo(0.3160101777482733);
-      expect(score(rankings, ITEM_C)).toBeCloseTo(0.14227680600607476);
+      expect(score(rankings, ITEM_A)).toBeCloseTo(0.6504044299518104);
+      expect(score(rankings, ITEM_B)).toBeCloseTo(0.25639052368514753);
+      expect(score(rankings, ITEM_C)).toBeCloseTo(0.093205046363043);
 
       // Scenario 2: soften A>B to 0.7, keep strong B>C
       ranker = new PowerRanker({
@@ -139,9 +139,9 @@ describe('PowerRanker', () => {
       });
       ranker.addPreferences([pref(ITEM_A, ITEM_B, 0.7), pref(ITEM_B, ITEM_C, 1)]);
       rankings = ranker.run();
-      expect(score(rankings, ITEM_A)).toBeCloseTo(0.3827162527478675);
-      expect(score(rankings, ITEM_B)).toBeCloseTo(0.44766879088358025);
-      expect(score(rankings, ITEM_C)).toBeCloseTo(0.1696149563685529);
+      expect(score(rankings, ITEM_A)).toBeCloseTo(0.4395874692001581);
+      expect(score(rankings, ITEM_B)).toBeCloseTo(0.43882103155500896);
+      expect(score(rankings, ITEM_C)).toBeCloseTo(0.12159149924483303);
 
       // Scenario 3: soften both to 0.7
       ranker = new PowerRanker({
@@ -150,9 +150,9 @@ describe('PowerRanker', () => {
       });
       ranker.addPreferences([pref(ITEM_A, ITEM_B, 0.7), pref(ITEM_B, ITEM_C, 0.7)]);
       rankings = ranker.run();
-      expect(score(rankings, ITEM_A)).toBeCloseTo(0.43457632017135617);
-      expect(score(rankings, ITEM_B)).toBeCloseTo(0.3508773584365845);
-      expect(score(rankings, ITEM_C)).toBeCloseTo(0.21454632139205937);
+      expect(score(rankings, ITEM_A)).toBeCloseTo(0.5109403527338869);
+      expect(score(rankings, ITEM_B)).toBeCloseTo(0.32920913470298835);
+      expect(score(rankings, ITEM_C)).toBeCloseTo(0.15985051256312477);
     });
   });
 
@@ -168,11 +168,11 @@ describe('PowerRanker', () => {
       // 3 items → 3 pairs
       expect(pairs).toHaveLength(3);
 
-      // With pseudocount k=0.3, off-diagonal cells are 0.3
-      // Beta(0.3 + 1, 0.3 + 1) = Beta(1.3, 1.3)
+      // With pseudocount k=0.15, off-diagonal cells are 0.15
+      // Beta(0.15 + 1, 0.15 + 1) = Beta(1.15, 1.15)
       // Variance = (a * b) / ((a + b + 1) * (a + b)^2)
-      const a = 0.3 + 1;
-      const b = 0.3 + 1;
+      const a = 0.15 + 1;
+      const b = 0.15 + 1;
       const expectedVar = (a * b) / ((a + b + 1) * (a + b) ** 2);
 
       for (const p of pairs) {
