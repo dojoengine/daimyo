@@ -107,7 +107,8 @@ export default function Results() {
                     <MetricChip label="Type" value={r.entry.metrics.classification} />
                     {r.entry.demo_url && (
                       <a href={r.entry.demo_url} target="_blank" rel="noopener noreferrer" className="results-play-link">
-                        Play <PlayIcon />
+                        <PlayIcon />
+                        <span>Play Now</span>
                       </a>
                     )}
                   </div>
