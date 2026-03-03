@@ -7,7 +7,7 @@ import {
   getComparisonCountForJudge,
   getComparisonsForJam,
 } from '../../services/database.js';
-import { calculateRankings, calculateStats } from '../../services/ranking.js';
+import { calculateRankings, calculateGraphData, calculateStats } from '../../services/ranking.js';
 import { JUDGING_SESSION_SIZE } from '../../constants/judging.js';
 
 const router: express.Router = express.Router();
@@ -122,43 +122,14 @@ router.get('/:slug/graph', async (req: Request, res: Response): Promise<void> =>
       return;
     }
 
-    const rankings = calculateRankings(entries, comparisons);
+    const { rankings, edges } = calculateGraphData(entries, comparisons);
 
-    // Build nodes from rankings
     const nodes = rankings.map((r) => ({
       id: r.entry.id,
       emoji: r.entry.emoji,
       title: r.entry.title,
       weight: r.weight,
     }));
-
-    // Aggregate comparisons into directed edges.
-    // For each pair (a, b), average the scores across judges.
-    // Score > 0.5 means A preferred → edge from B to A (B loses to A).
-    // Score < 0.5 means B preferred → edge from A to B (A loses to B).
-    const pairMap = new Map<string, { sum: number; count: number }>();
-    for (const c of comparisons) {
-      if (c.score === null) continue;
-      // entry_a_id < entry_b_id by convention; score favors A
-      const key = `${c.entry_a_id}|${c.entry_b_id}`;
-      const agg = pairMap.get(key) ?? { sum: 0, count: 0 };
-      agg.sum += c.score;
-      agg.count += 1;
-      pairMap.set(key, agg);
-    }
-
-    const edges: { source: string; target: string; weight: number; count: number }[] = [];
-    for (const [key, agg] of pairMap) {
-      const [aId, bId] = key.split('|');
-      const avg = agg.sum / agg.count;
-      // Directed edge: winner ← loser. Weight = strength of preference.
-      if (avg > 0.5) {
-        edges.push({ source: bId, target: aId, weight: avg - 0.5, count: agg.count });
-      } else if (avg < 0.5) {
-        edges.push({ source: aId, target: bId, weight: 0.5 - avg, count: agg.count });
-      }
-      // avg === 0.5 is a perfect tie, omit edge
-    }
 
     res.json({ nodes, edges });
   } catch (err) {

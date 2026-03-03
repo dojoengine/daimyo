@@ -25,7 +25,6 @@ interface GraphNode extends SimulationNodeDatum {
 
 interface GraphEdge extends SimulationLinkDatum<GraphNode> {
   weight: number;
-  count: number;
 }
 
 interface ApiNode {
@@ -39,7 +38,6 @@ interface ApiEdge {
   source: string;
   target: string;
   weight: number;
-  count: number;
 }
 
 function radius(weight: number, maxWeight: number): number {
@@ -96,7 +94,6 @@ export default function Graph() {
           source: e.source,
           target: e.target,
           weight: e.weight,
-          count: e.count,
         }));
 
         setMaxWeight(Math.max(...graphNodes.map((n) => n.weight), 1));
