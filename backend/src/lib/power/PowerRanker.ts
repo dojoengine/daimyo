@@ -16,6 +16,12 @@ export interface RunOptions {
   nIter?: number;
 }
 
+export interface DirectedEdge {
+  source: string;
+  target: string;
+  weight: number;
+}
+
 export interface PairWeight {
   alpha: string;
   beta: string;
@@ -110,6 +116,28 @@ export class PowerRanker {
   run({ epsilon = 0.001, nIter = 1000 }: RunOptions = {}): Map<string, number> {
     const weights = this.powerMethod(epsilon, nIter);
     return this.applyLabels(weights);
+  }
+
+  /**
+   * Extract net directed edges from the matrix.
+   * Returns one edge per pair, pointing loser → winner, with weight = net preference strength.
+   */
+  getEdges(): DirectedEdge[] {
+    const d = (this.matrix as unknown as { data: Float64Array[] }).data;
+    const edges: DirectedEdge[] = [];
+
+    for (let i = 0; i < this.items.length; i++) {
+      for (let j = i + 1; j < this.items.length; j++) {
+        const net = d[i][j] - d[j][i];
+        if (net > 0) {
+          edges.push({ source: this.items[i], target: this.items[j], weight: net });
+        } else if (net < 0) {
+          edges.push({ source: this.items[j], target: this.items[i], weight: -net });
+        }
+      }
+    }
+
+    return edges;
   }
 
   private getVariances(): PairWeight[] {
