@@ -310,17 +310,24 @@
 }
 
 .results-back,
-.results-graph-link {
+.results-graph-link,
+.results-export-btn {
   display: inline-block;
   font-size: 14px;
   font-weight: 600;
   color: var(--stone);
   text-decoration: none;
   transition: color 0.2s ease;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
 }
 
 .results-back:hover,
-.results-graph-link:hover {
+.results-graph-link:hover,
+.results-export-btn:hover {
   color: var(--parchment);
 }
 
