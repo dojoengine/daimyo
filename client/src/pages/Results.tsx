@@ -123,6 +123,22 @@ export default function Results() {
 
         <div className="results-nav">
           <Link to="/judge" className="results-back">← Back to Jams</Link>
+          {rankings.length > 0 && (
+            <button
+              className="results-export-btn"
+              onClick={() => {
+                const csv = ['project,weight', ...rankings.map((r) => `"${r.entry.title.replace(/"/g, '""')}",${r.weight.toFixed(1)}`)].join('\n');
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `${slug}-results-${Date.now()}.csv`;
+                a.click();
+                URL.revokeObjectURL(a.href);
+              }}
+            >
+              Export CSV
+            </button>
+          )}
           <Link to={`/judge/${slug}/graph`} className="results-graph-link">View Graph →</Link>
         </div>
       </div>
