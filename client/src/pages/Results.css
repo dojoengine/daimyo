@@ -301,9 +301,16 @@
   box-shadow: 0 0 6px var(--gold-dim);
 }
 
-/* ─── Back Link ─── */
+/* ─── Nav ─── */
 
-.results-back {
+.results-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.results-back,
+.results-graph-link {
   display: inline-block;
   font-size: 14px;
   font-weight: 600;
@@ -312,7 +319,8 @@
   transition: color 0.2s ease;
 }
 
-.results-back:hover {
+.results-back:hover,
+.results-graph-link:hover {
   color: var(--parchment);
 }
 
