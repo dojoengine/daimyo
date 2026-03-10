@@ -152,10 +152,19 @@ export async function getJamSlugs(): Promise<string[]> {
     return jamSlugsCache.slugs;
   }
 
-  const res = await fetch('https://api.github.com/repos/dojoengine/game-jams/contents', {
-    headers: GITHUB_HEADERS,
-  });
-  if (!res.ok) return jamSlugsCache?.slugs ?? [];
+  let res: Response;
+  try {
+    res = await fetch('https://api.github.com/repos/dojoengine/game-jams/contents', {
+      headers: GITHUB_HEADERS,
+    });
+  } catch {
+    return jamSlugsCache?.slugs ?? [];
+  }
+  if (!res.ok) {
+    // Cache the failure briefly (30s) to avoid hammering a rate-limited API
+    if (!jamSlugsCache) jamSlugsCache = { slugs: [], fetchedAt: Date.now() - CACHE_TTL + 30_000 };
+    return jamSlugsCache.slugs;
+  }
 
   const items = (await res.json()) as Array<{ name: string; type: string }>;
   const slugs = items.filter((i) => i.type === 'dir' && /^gj\d+$/.test(i.name)).map((i) => i.name);
