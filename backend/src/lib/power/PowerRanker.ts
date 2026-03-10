@@ -186,7 +186,7 @@ export class PowerRanker {
       if (transforms.includes('coverage')) {
         const nAlpha = this.itemObservations[v.alpha] ?? 0;
         const nBeta = this.itemObservations[v.beta] ?? 0;
-        weight *= (1 / Math.sqrt(1 + nAlpha)) * (1 / Math.sqrt(1 + nBeta));
+        weight *= (1 / (1 + nAlpha)) * (1 / (1 + nBeta));
       }
 
       candidates.push({ alpha: v.alpha, beta: v.beta, weight });
