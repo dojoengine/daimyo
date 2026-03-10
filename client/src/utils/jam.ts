@@ -12,7 +12,7 @@ function toRoman(num: number): string {
 }
 
 /** Comparisons per entry required before results are revealed */
-export const CONFIDENCE_N = 5;
+export const CONFIDENCE_N = 10;
 
 export function formatJamTitle(slug: string): string {
   const match = slug.match(/^gj(\d+)$/);
