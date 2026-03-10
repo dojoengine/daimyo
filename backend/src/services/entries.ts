@@ -93,7 +93,7 @@ async function fetchEntriesFromGitHub(jamSlug: string): Promise<Entry[]> {
 
   const files = (await dirRes.json()) as Array<{
     name: string;
-    download_url: string;
+    url: string;
   }>;
   const mdFiles = files.filter((f) => f.name.endsWith('.md') && f.name !== 'README.md');
 
@@ -101,9 +101,13 @@ async function fetchEntriesFromGitHub(jamSlug: string): Promise<Entry[]> {
   await Promise.all(
     mdFiles.map(async (file) => {
       try {
-        const res = await fetch(file.download_url, { headers: GITHUB_HEADERS });
+        // Use the contents API (file.url) instead of raw download_url
+        // so the GITHUB_TOKEN auth header is respected for rate limiting
+        const res = await fetch(file.url, { headers: GITHUB_HEADERS });
         if (!res.ok) return;
-        const content = await res.text();
+        const json = (await res.json()) as { content?: string; encoding?: string };
+        if (!json.content || json.encoding !== 'base64') return;
+        const content = Buffer.from(json.content, 'base64').toString('utf-8');
         const data = parseFrontmatter(content);
         if (!data) return;
         const entry = frontmatterToEntry(data);
@@ -187,12 +191,15 @@ export async function getJamEndDate(jamSlug: string): Promise<string | null> {
 
   let endDate: string | null = null;
   try {
-    const url = `https://raw.githubusercontent.com/dojoengine/game-jams/main/${jamSlug}/README.md`;
+    const url = `https://api.github.com/repos/dojoengine/game-jams/contents/${jamSlug}/README.md`;
     const res = await fetch(url, { headers: GITHUB_HEADERS });
     if (res.ok) {
-      const raw = await res.text();
-      const data = parseFrontmatter(raw);
-      if (data?.end_date) endDate = String(data.end_date);
+      const json = (await res.json()) as { content?: string; encoding?: string };
+      if (json.content && json.encoding === 'base64') {
+        const raw = Buffer.from(json.content, 'base64').toString('utf-8');
+        const data = parseFrontmatter(raw);
+        if (data?.end_date) endDate = String(data.end_date);
+      }
     }
   } catch {
     // Fall through with null
