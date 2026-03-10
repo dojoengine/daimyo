@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { formatJamTitle } from '../utils/jam';
+import { useParams, Link, Navigate } from 'react-router-dom';
+import { formatJamTitle, CONFIDENCE_N } from '../utils/jam';
 import {
   forceSimulation,
   forceLink,
@@ -61,6 +61,7 @@ export default function Graph() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [locked, setLocked] = useState(false);
   const [nodes, setNodes] = useState<GraphNode[]>([]);
   const [edges, setEdges] = useState<GraphEdge[]>([]);
   const [maxWeight, setMaxWeight] = useState(1);
@@ -68,9 +69,24 @@ export default function Graph() {
   const [, setTick] = useState(0); // force re-renders on simulation tick
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
 
-  // Fetch data
+  // Check confidence gate
   useEffect(() => {
     if (!slug) return;
+    fetch('/api/jams')
+      .then((r) => r.json())
+      .then((jams: { slug: string; entryCount: number; voteCount: number }[]) => {
+        const jam = jams.find((j) => j.slug === slug);
+        if (jam && jam.entryCount > 0 && jam.voteCount < jam.entryCount * CONFIDENCE_N) {
+          setLocked(true);
+          setLoading(false);
+        }
+      })
+      .catch(() => {});
+  }, [slug]);
+
+  // Fetch data
+  useEffect(() => {
+    if (!slug || locked) return;
     fetch(`/api/jams/${slug}/graph`)
       .then((r) => {
         if (!r.ok) throw new Error('Failed to load graph data');
@@ -163,6 +179,10 @@ export default function Graph() {
 
   const width = wrapRef.current?.clientWidth ?? 900;
   const height = width;
+
+  if (!loading && locked) {
+    return <Navigate to="/judge" replace />;
+  }
 
   return (
     <div className="graph-page">
