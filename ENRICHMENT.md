@@ -37,7 +37,17 @@ Allow a 1-day buffer on each side for setup and polish.
 Clone the submitted repository and gather:
 
 #### Codebase Structure
-- Count Dojo models (`#[dojo::model]`), systems/contracts (`#[dojo::contract]`), and events (`#[dojo::event]`)
+- Count Dojo models (`#[dojo::model]`), systems/contracts (`#[dojo::contract]`), and events (`#[dojo::event]`) — but **only those that are genuinely load-bearing in the production experience**.
+- Apply the same diagnostic used in screening: **"if you removed this contract, would the game break?"**
+Only count contracts where the answer is yes.
+- Red flags that a contract is NOT load-bearing (exclude from counts):
+  - **Optimistic client updates** — The client modifies state locally after transactions without reading results back from-chain, meaning it doesn't depend on contract computation.
+  - **Off-chain authority** — A WebSocket or REST server manages actual game state while contracts receive fire-and-forget calls as side effects.
+  - **State-logic mismatch** — On-chain models address one game concept while the actual gameplay differs.
+  - **Placeholder deployment** — World addresses contain dummy values like `0xYOUR_DOJO_WORLD_ADDRESS` rather than real hex values.
+  - **Dead code** — Trace integration from client entry points (`main.ts`, `index.html`). Packages in manifests without actual imports in reachable code don't count. Setup functions never called by the application don't establish real integration.
+- Contracts must contain actual game rules — validation, state transitions, computed outcomes — not merely store caller-provided values.
+Used models matter; dead definitions don't count.
 - Identify which Dojo client SDK is used (if any): `dojo.js`, `dojo.unity`, `dojo.unreal`, `dojo.c`, `dojo.godot`, or `None`
 
 #### Classification
