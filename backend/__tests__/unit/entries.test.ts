@@ -35,6 +35,18 @@ id: [invalid: yaml: {
     expect(parseFrontmatter(content)).toBeNull();
   });
 
+  test('parses frontmatter with CRLF line endings', () => {
+    const content =
+      '---\r\nid: "42"\r\ntitle: "StarkChess"\r\nrepo_url: "https://github.com/example/stark-chess"\r\n---\r\n\r\n# StarkChess';
+
+    const result = parseFrontmatter(content);
+    expect(result).toEqual({
+      id: '42',
+      title: 'StarkChess',
+      repo_url: 'https://github.com/example/stark-chess',
+    });
+  });
+
   test('parses multiline folded scalars', () => {
     const content = `---
 id: "42"

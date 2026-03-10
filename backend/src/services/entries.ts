@@ -35,7 +35,7 @@ export interface Entry {
 // Parse YAML frontmatter from a markdown string.
 // Returns null if no frontmatter is present.
 function parseFrontmatter(content: string): Record<string, unknown> | null {
-  const match = content.match(/^---\n([\s\S]*?)\n---/);
+  const match = content.replace(/\r\n/g, '\n').match(/^---\n([\s\S]*?)\n---/);
   if (!match) return null;
   try {
     return yaml.load(match[1]) as Record<string, unknown>;
