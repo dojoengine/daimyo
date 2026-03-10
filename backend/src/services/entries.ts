@@ -13,7 +13,7 @@ export interface EntryMetrics {
   dojo_events: number;
   client_sdk: string;
   jam_commits_pct: number;
-  playability: 'Live' | 'Video' | 'None';
+  gameplay: 'Onchain' | 'Offchain';
   repo_unavailable?: boolean;
 }
 
@@ -73,12 +73,7 @@ function frontmatterToEntry(data: Record<string, unknown>): Entry | null {
           ? 'dojo.js'
           : 'None',
       jam_commits_pct: Number(metrics.jam_commits_pct) || 0,
-      playability:
-        metrics.playability === 'Live'
-          ? 'Live'
-          : metrics.playability === 'Video'
-            ? 'Video'
-            : 'None',
+      gameplay: metrics.gameplay === 'Onchain' ? 'Onchain' : 'Offchain',
       ...(metrics.repo_unavailable ? { repo_unavailable: true } : {}),
     },
   };

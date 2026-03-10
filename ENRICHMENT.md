@@ -67,11 +67,10 @@ Exclude lockfiles, generated bindings, and vendored assets from line counts — 
 - Count total commits and jam-window commits
 - Calculate `jam_commits_pct` (percentage of commits within the jam window, with 1-day buffer on each side)
 
-#### Playability
-Based on the submission's play instructions and URLs:
-- `Live` — a deployed URL is provided (common patterns: vercel.app, netlify.app, custom domains)
-- `Video` — a video demo link is provided but no live deployment (common patterns: youtube.com, drive.google.com, loom.com)
-- `None` — only local setup instructions or nothing
+#### Gameplay
+Based on your analysis of the codebase and contract integration:
+- `Onchain` — core game logic (state transitions, rules, outcomes) runs in on-chain Dojo contracts
+- `Offchain` — gameplay runs off-chain (e.g. WebSocket/REST server manages game state, contracts are fire-and-forget or unused)
 
 #### Deleted / Inaccessible Repos
 
@@ -156,7 +155,7 @@ metrics:
   dojo_events: <number>
   client_sdk: "<dojo.js, dojo.unity, dojo.unreal, dojo.c, dojo.godot, or None>"
   jam_commits_pct: <number 0-100>
-  playability: "<Live, Video, or None>"
+  gameplay: "<Onchain or Offchain>"
   repo_unavailable: <true, only if repo could not be cloned>
 ---
 ```
@@ -234,7 +233,7 @@ metrics:
   dojo_events: 0
   client_sdk: "dojo.js"
   jam_commits_pct: 95
-  playability: "Video"
+  gameplay: "Onchain"
 ---
 
 # StarkChess
