@@ -154,7 +154,7 @@ router.get('/:slug/results', async (req: Request, res: Response): Promise<void> 
     }
 
     const rankings = calculateRankings(entries, comparisons);
-    const stats = calculateStats(comparisons);
+    const stats = { ...calculateStats(comparisons), entryCount: entries.length };
 
     res.json({ rankings, stats });
   } catch (err) {

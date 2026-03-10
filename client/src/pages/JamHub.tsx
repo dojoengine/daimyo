@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { formatJamTitle } from '../utils/jam';
+import { formatJamTitle, CONFIDENCE_N } from '../utils/jam';
 import './JamHub.css';
 
 interface JamSummary {
@@ -25,6 +25,71 @@ function getJamRoman(slug: string): string {
     }
   }
   return result;
+}
+
+function getConfidence(jam: JamSummary): number {
+  if (jam.entryCount === 0) return 0;
+  return Math.min(jam.voteCount / (jam.entryCount * CONFIDENCE_N), 1);
+}
+
+function ConfidenceRing({ confidence }: { confidence: number }) {
+  const size = 48;
+  const stroke = 3;
+  const r = (size - stroke) / 2;
+  const circ = 2 * Math.PI * r;
+  const pct = Math.round(confidence * 100);
+
+  return (
+    <div className="hub-confidence" title={`${pct}% results confidence`}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--ash)" strokeWidth={stroke} />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          stroke={confidence >= 1 ? 'var(--gold)' : 'var(--neon-red)'}
+          strokeWidth={stroke}
+          strokeDasharray={circ}
+          strokeDashoffset={circ * (1 - confidence)}
+          strokeLinecap="round"
+          transform={`rotate(-90 ${size / 2} ${size / 2})`}
+          style={{ transition: 'stroke-dashoffset 1s ease-out, stroke 0.3s ease' }}
+        />
+      </svg>
+      <span className="hub-confidence-label">{pct}%</span>
+    </div>
+  );
+}
+
+function ConfidenceRingSmall({ confidence }: { confidence: number }) {
+  const size = 36;
+  const stroke = 2.5;
+  const r = (size - stroke) / 2;
+  const circ = 2 * Math.PI * r;
+  const pct = Math.round(confidence * 100);
+
+  return (
+    <div className="hub-confidence hub-confidence--sm" title={`${pct}% results confidence`}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--ash)" strokeWidth={stroke} />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          stroke={confidence >= 1 ? 'var(--gold)' : 'var(--neon-red)'}
+          strokeWidth={stroke}
+          strokeDasharray={circ}
+          strokeDashoffset={circ * (1 - confidence)}
+          strokeLinecap="round"
+          transform={`rotate(-90 ${size / 2} ${size / 2})`}
+          style={{ transition: 'stroke-dashoffset 1s ease-out, stroke 0.3s ease' }}
+        />
+      </svg>
+      <span className="hub-confidence-label">{pct}%</span>
+    </div>
+  );
 }
 
 function AnimatedCounter({ value, delay = 0 }: { value: number; delay?: number }) {
@@ -122,6 +187,10 @@ export default function JamHub() {
                   </span>
                   <span className="hub-featured-stat-label">{featured.voteCount === 1 ? 'vote' : 'votes'}</span>
                 </div>
+                <div className="hub-featured-stat hub-featured-stat--confidence">
+                  <ConfidenceRing confidence={getConfidence(featured)} />
+                  <span className="hub-featured-stat-label">confidence</span>
+                </div>
               </div>
               <div className="hub-featured-actions">
                 {featuredIsActive ? (
@@ -131,9 +200,15 @@ export default function JamHub() {
                     <Link to={`/judge/${featured.slug}`} className="hub-featured-cta">
                       Begin Judging
                     </Link>
-                    <Link to={`/judge/${featured.slug}/results`} className="hub-featured-cta hub-featured-cta--secondary">
-                      See Results
-                    </Link>
+                    {getConfidence(featured) >= 1 ? (
+                      <Link to={`/judge/${featured.slug}/results`} className="hub-featured-cta hub-featured-cta--secondary">
+                        See Results
+                      </Link>
+                    ) : (
+                      <span className="hub-featured-cta hub-featured-cta--locked">
+                        Results Locked
+                      </span>
+                    )}
                   </>
                 )}
               </div>
@@ -167,10 +242,17 @@ export default function JamHub() {
                         <span className="hub-card-stat-value">{jam.voteCount}</span>
                         <span className="hub-card-stat-label">{jam.voteCount === 1 ? 'vote' : 'votes'}</span>
                       </div>
+                      <div className="hub-card-stat hub-card-stat--confidence">
+                        <ConfidenceRingSmall confidence={getConfidence(jam)} />
+                      </div>
                     </div>
                     <div className="hub-card-actions">
                       <Link to={`/judge/${jam.slug}`} className="hub-card-cta">Judge →</Link>
-                      <Link to={`/judge/${jam.slug}/results`} className="hub-card-cta hub-card-cta--secondary">Results →</Link>
+                      {getConfidence(jam) >= 1 ? (
+                        <Link to={`/judge/${jam.slug}/results`} className="hub-card-cta hub-card-cta--secondary">Results →</Link>
+                      ) : (
+                        <span className="hub-card-cta hub-card-cta--locked">Locked</span>
+                      )}
                     </div>
                   </div>
               ))}

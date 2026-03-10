@@ -353,6 +353,62 @@
   margin-top: auto;
 }
 
+/* ─── Confidence Ring ─── */
+
+.hub-confidence {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hub-confidence-label {
+  position: absolute;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--parchment);
+}
+
+.hub-confidence--sm .hub-confidence-label {
+  font-size: 9px;
+}
+
+.hub-featured-stat--confidence {
+  align-items: center;
+  margin-left: auto;
+}
+
+.hub-card-stat--confidence {
+  margin-left: auto;
+}
+
+/* ─── Locked State ─── */
+
+.hub-featured-cta--locked {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 28px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--stone);
+  background: transparent;
+  border: 1px solid var(--ash);
+  border-radius: 4px;
+  cursor: default;
+  opacity: 0.5;
+}
+
+.hub-card-cta--locked {
+  color: var(--ash);
+  cursor: default;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
 /* ─── States ─── */
 
 .hub-loading {

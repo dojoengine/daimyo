@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { formatJamTitle } from '../utils/jam';
+import { useParams, Link, Navigate } from 'react-router-dom';
+import { formatJamTitle, CONFIDENCE_N } from '../utils/jam';
 import { Entry } from '../hooks/useJudging';
 import MetricChip from '../components/MetricChip';
 import './Results.css';
+
 
 function PlayIcon() {
   return (
@@ -26,6 +27,7 @@ interface RankingStats {
   totalJudges: number;
   totalComparisons: number;
   skippedCount: number;
+  entryCount: number;
 }
 
 export default function Results() {
@@ -34,6 +36,7 @@ export default function Results() {
   const [stats, setStats] = useState<RankingStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [locked, setLocked] = useState(false);
 
   useEffect(() => {
     if (!slug) return;
@@ -43,12 +46,22 @@ export default function Results() {
         return r.json();
       })
       .then((data) => {
-        setRankings(data.rankings);
-        setStats(data.stats);
+        const entryCount = data.stats.entryCount ?? data.rankings.length;
+        const threshold = entryCount * CONFIDENCE_N;
+        if (threshold > 0 && data.stats.totalComparisons < threshold) {
+          setLocked(true);
+        } else {
+          setRankings(data.rankings);
+          setStats(data.stats);
+        }
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, [slug]);
+
+  if (!loading && locked) {
+    return <Navigate to="/judge" replace />;
+  }
 
   return (
     <div className="results-page">
