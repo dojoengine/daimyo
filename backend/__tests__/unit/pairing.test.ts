@@ -27,7 +27,7 @@ function makeEntry(id: string) {
       dojo_events: 0,
       frontend_sdk: false,
       jam_commits_pct: 0,
-      playability: 'None',
+      gameplay: 'Offchain',
     },
   };
 }

@@ -92,7 +92,7 @@ entries:
       dojo_events: 0
       frontend_sdk: true
       jam_commits_pct: 95
-      playability: "Live"
+      gameplay: "Onchain"
 ```
 
 **Required Fields**: `id` (filename-based), `emoji`, `title`, `summary_short`, `summary_long`, `work_done_short`, `work_done_long`, `repo_url`, `team`, `metrics`
@@ -116,7 +116,7 @@ entries:
 | `dojo_events` | Number of Dojo events |
 | `frontend_sdk` | Whether the project uses @dojoengine frontend SDK |
 | `jam_commits_pct` | Percentage of commits within jam window |
-| `playability` | "Live", "Video", or "None" |
+| `gameplay` | "Onchain" or "Offchain" |
 | `repo_unavailable` | true if repo could not be cloned (optional) |
 
 ### Fetching Entries

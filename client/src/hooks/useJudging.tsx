@@ -9,7 +9,7 @@ export interface EntryMetrics {
   dojo_events: number;
   client_sdk: string;
   jam_commits_pct: number;
-  playability: 'Live' | 'Video' | 'None';
+  gameplay: 'Onchain' | 'Offchain';
   repo_unavailable?: boolean;
 }
 

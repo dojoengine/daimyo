@@ -72,7 +72,7 @@ describe('frontmatterToEntry', () => {
       dojo_events: 0,
       frontend_sdk: true,
       jam_commits_pct: 95,
-      playability: 'Live',
+      gameplay: 'Onchain',
     },
   };
 
@@ -85,7 +85,7 @@ describe('frontmatterToEntry', () => {
     expect(entry!.team).toEqual(['@alice', '@bob']);
     expect(entry!.metrics.classification).toBe('Whole Game');
     expect(entry!.metrics.team_size).toBe(2);
-    expect(entry!.metrics.playability).toBe('Live');
+    expect(entry!.metrics.gameplay).toBe('Onchain');
     expect(entry!.demo_url).toBe('https://chess.example.com');
     expect(entry!.video_url).toBe('https://youtube.com/watch?v=abc123');
   });
@@ -110,7 +110,7 @@ describe('frontmatterToEntry', () => {
         dojo_events: 0,
         frontend_sdk: false,
         jam_commits_pct: 100,
-        playability: 'None',
+        gameplay: 'Offchain',
       },
     };
 
@@ -147,13 +147,13 @@ describe('frontmatterToEntry', () => {
     expect(entry!.metrics.classification).toBe('Feature');
   });
 
-  test('handles Video playability', () => {
+  test('handles Offchain gameplay', () => {
     const data = {
       ...validData,
-      metrics: { ...validData.metrics, playability: 'Video' },
+      metrics: { ...validData.metrics, gameplay: 'Offchain' },
     };
     const entry = frontmatterToEntry(data as Record<string, unknown>);
-    expect(entry!.metrics.playability).toBe('Video');
+    expect(entry!.metrics.gameplay).toBe('Offchain');
   });
 
   test('handles null demo_url and video_url', () => {

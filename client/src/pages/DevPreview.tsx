@@ -31,7 +31,7 @@ const DUMMY_ENTRIES: Entry[] = [
       dojo_events: 0,
       client_sdk: 'dojo.js',
       jam_commits_pct: 95,
-      playability: 'Live',
+      gameplay: 'Onchain',
     },
   },
   {
@@ -57,7 +57,7 @@ const DUMMY_ENTRIES: Entry[] = [
       dojo_events: 0,
       client_sdk: 'dojo.js',
       jam_commits_pct: 78,
-      playability: 'Live',
+      gameplay: 'Onchain',
     },
   },
 ];

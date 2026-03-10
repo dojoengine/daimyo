@@ -26,7 +26,7 @@ export const DUMMY_ENTRIES: Record<string, Entry[]> = {
         dojo_events: 0,
         client_sdk: 'dojo.js',
         jam_commits_pct: 95,
-        playability: 'Live',
+        gameplay: 'Onchain',
       },
     },
     {
@@ -52,7 +52,7 @@ export const DUMMY_ENTRIES: Record<string, Entry[]> = {
         dojo_events: 0,
         client_sdk: 'dojo.js',
         jam_commits_pct: 78,
-        playability: 'Live',
+        gameplay: 'Onchain',
       },
     },
     {
@@ -79,7 +79,7 @@ export const DUMMY_ENTRIES: Record<string, Entry[]> = {
         dojo_events: 0,
         client_sdk: 'dojo.js',
         jam_commits_pct: 92,
-        playability: 'Live',
+        gameplay: 'Onchain',
       },
     },
     {
@@ -105,7 +105,7 @@ export const DUMMY_ENTRIES: Record<string, Entry[]> = {
         dojo_events: 0,
         client_sdk: 'dojo.js',
         jam_commits_pct: 88,
-        playability: 'Live',
+        gameplay: 'Onchain',
       },
     },
     {
@@ -131,7 +131,7 @@ export const DUMMY_ENTRIES: Record<string, Entry[]> = {
         dojo_events: 0,
         client_sdk: 'None',
         jam_commits_pct: 97,
-        playability: 'Video',
+        gameplay: 'Onchain',
       },
     },
     {
@@ -156,7 +156,7 @@ export const DUMMY_ENTRIES: Record<string, Entry[]> = {
         dojo_events: 0,
         client_sdk: 'dojo.js',
         jam_commits_pct: 85,
-        playability: 'None',
+        gameplay: 'Offchain',
       },
     },
   ],
