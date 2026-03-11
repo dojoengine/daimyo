@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
-import { formatJamTitle, CONFIDENCE_N } from '../utils/jam';
+import { formatJamTitle } from '../utils/jam';
 import {
   forceSimulation,
   forceLink,
@@ -68,30 +68,17 @@ export default function Graph() {
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [selectedNodes, setSelectedNodes] = useState<Set<string>>(new Set());
 
-  // Check confidence gate
-  useEffect(() => {
-    if (!slug) return;
-    fetch('/api/jams')
-      .then((r) => r.json())
-      .then((jams: { slug: string; entryCount: number; voteCount: number }[]) => {
-        const jam = jams.find((j) => j.slug === slug);
-        if (jam && jam.entryCount > 0 && jam.voteCount < jam.entryCount * CONFIDENCE_N && !import.meta.env.DEV) {
-          setLocked(true);
-          setLoading(false);
-        }
-      })
-      .catch(() => {});
-  }, [slug]);
-
   // Fetch data
   useEffect(() => {
-    if (!slug || locked) return;
+    if (!slug) return;
     fetch(`/api/jams/${slug}/graph`)
       .then((r) => {
+        if (r.status === 423) { setLocked(true); return null; }
         if (!r.ok) throw new Error('Failed to load graph data');
         return r.json();
       })
-      .then((data: { nodes: ApiNode[]; edges: ApiEdge[] }) => {
+      .then((data: { nodes: ApiNode[]; edges: ApiEdge[] } | null) => {
+        if (!data) return;
         const inW = new Map<string, number>();
         const outW = new Map<string, number>();
         for (const e of data.edges) {

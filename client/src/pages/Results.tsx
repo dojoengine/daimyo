@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
-import { formatJamTitle, CONFIDENCE_N } from '../utils/jam';
+import { formatJamTitle } from '../utils/jam';
 import { Entry } from '../hooks/useJudging';
 import MetricChip from '../components/MetricChip';
 import './Results.css';
@@ -42,18 +42,14 @@ export default function Results() {
     if (!slug) return;
     fetch(`/api/jams/${slug}/results`)
       .then((r) => {
+        if (r.status === 423) { setLocked(true); return null; }
         if (!r.ok) throw new Error('Failed to load results');
         return r.json();
       })
       .then((data) => {
-        const entryCount = data.stats.entryCount ?? data.rankings.length;
-        const threshold = entryCount * CONFIDENCE_N;
-        if (threshold > 0 && data.stats.totalComparisons < threshold && !import.meta.env.DEV) {
-          setLocked(true);
-        } else {
-          setRankings(data.rankings);
-          setStats(data.stats);
-        }
+        if (!data) return;
+        setRankings(data.rankings);
+        setStats(data.stats);
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));

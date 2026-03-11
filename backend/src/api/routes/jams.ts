@@ -9,7 +9,7 @@ import {
   getComparisonsForJam,
 } from '../../services/database.js';
 import { calculateRankings, calculateGraphData, calculateStats } from '../../services/ranking.js';
-import { JUDGING_SESSION_SIZE } from '../../constants/judging.js';
+import { JUDGING_SESSION_SIZE, CONFIDENCE_N } from '../../constants/judging.js';
 
 const router: express.Router = express.Router();
 
@@ -132,6 +132,12 @@ router.get('/:slug/graph', async (req: Request, res: Response): Promise<void> =>
       return;
     }
 
+    const threshold = entries.length * CONFIDENCE_N;
+    if (comparisons.length < threshold) {
+      res.status(423).json({ error: 'Results are locked until enough votes are collected' });
+      return;
+    }
+
     const { rankings, edges } = calculateGraphData(entries, comparisons);
 
     const nodes = rankings.map((r) => ({
@@ -163,8 +169,15 @@ router.get('/:slug/results', async (req: Request, res: Response): Promise<void> 
       return;
     }
 
+    const entryCount = entries.length;
+    const threshold = entryCount * CONFIDENCE_N;
+    if (comparisons.length < threshold) {
+      res.status(423).json({ error: 'Results are locked until enough votes are collected' });
+      return;
+    }
+
     const rankings = calculateRankings(entries, comparisons);
-    const stats = { ...calculateStats(comparisons), entryCount: entries.length };
+    const stats = { ...calculateStats(comparisons), entryCount };
 
     res.json({ rankings, stats });
   } catch (err) {
