@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
-import { getJamSlugs, getEntries, getJamEndDate } from '../../services/entries.js';
+import { getJamSlugs, getEntries, getJamFrontmatter } from '../../services/entries.js';
+import type { JamFrontmatter } from '../../services/entries.js';
 import { getAllJamStats } from '../../services/database.js';
 
 interface JamSummary {
@@ -7,7 +8,10 @@ interface JamSummary {
   entryCount: number;
   judgeCount: number;
   voteCount: number;
+  startDate?: string | null;
   endDate?: string | null;
+  prizePool?: string | null;
+  registrationUrl?: string | null;
 }
 
 const router: express.Router = express.Router();
@@ -40,9 +44,13 @@ router.get('/', async (_req: Request, res: Response): Promise<void> => {
         return n(b.slug) - n(a.slug);
       });
 
-    // Include endDate for the latest jam so the client can hide judging buttons
+    // Include frontmatter for the latest jam so the homepage can render it
     if (results.length > 0) {
-      results[0].endDate = await getJamEndDate(results[0].slug);
+      const fm: JamFrontmatter = await getJamFrontmatter(results[0].slug);
+      results[0].startDate = fm.startDate;
+      results[0].endDate = fm.endDate;
+      results[0].prizePool = fm.prizePool;
+      results[0].registrationUrl = fm.registrationUrl;
     }
 
     res.json(results);
