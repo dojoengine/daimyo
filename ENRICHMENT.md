@@ -37,8 +37,12 @@ Allow a 1-day buffer on each side for setup and polish.
 Clone the submitted repository and gather:
 
 #### Codebase Structure
-- Count Dojo models (`#[dojo::model]`), systems/contracts (`#[dojo::contract]`), and events (`#[dojo::event]`) — but **only those that are genuinely load-bearing in the production experience**.
-- Apply the same diagnostic used in screening: **"if you removed this contract, would the game break?"**
+- Count Dojo models, systems/contracts, and events by searching for the **literal decorator macros** in Cairo source files: `#[dojo::model]`, `#[dojo::contract]`, `#[dojo::event]`.
+Only items annotated with these exact decorators count.
+Do not count components, structs, or events from other frameworks (e.g. EGS `MinigameComponent`, standard Starknet `#[starknet::contract]`, OpenZeppelin components) — even if they serve a similar role.
+If no Dojo decorators are found, set `dojo_models`, `dojo_systems`, and `dojo_events` to 0.
+- Of those decorated items, count only the ones that are **genuinely load-bearing in the production experience**.
+Apply the same diagnostic used in screening: **"if you removed this contract, would the game break?"**
 Only count contracts where the answer is yes.
 - Red flags that a contract is NOT load-bearing (exclude from counts):
   - **Optimistic client updates** — The client modifies state locally after transactions without reading results back from-chain, meaning it doesn't depend on contract computation.
