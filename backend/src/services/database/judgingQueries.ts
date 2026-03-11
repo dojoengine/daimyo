@@ -106,6 +106,21 @@ export async function getComparisonCountForJudge(
 }
 
 /**
+ * Get total comparison count for a jam.
+ */
+export async function getComparisonCountForJam(jamSlug: string): Promise<number> {
+  const sql = getSql();
+
+  const results = await sql<{ count: string }[]>`
+    SELECT COUNT(*) as count
+    FROM jam_comparisons
+    WHERE jam_slug = ${jamSlug}
+  `;
+
+  return parseCount(results[0]?.count);
+}
+
+/**
  * Get unique judge count for a jam.
  */
 export async function getUniqueJudgeCount(jamSlug: string): Promise<number> {
