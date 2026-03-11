@@ -1,9 +1,11 @@
 import yaml from 'js-yaml';
 
-const GITHUB_HEADERS: Record<string, string> = {
-  Accept: 'application/vnd.github.v3+json',
-  ...(process.env.GITHUB_TOKEN ? { Authorization: `token ${process.env.GITHUB_TOKEN}` } : {}),
-};
+function githubHeaders(): Record<string, string> {
+  return {
+    Accept: 'application/vnd.github.v3+json',
+    ...(process.env.GITHUB_TOKEN ? { Authorization: `token ${process.env.GITHUB_TOKEN}` } : {}),
+  };
+}
 
 export interface EntryMetrics {
   classification: 'Whole Game' | 'Feature';
@@ -83,7 +85,7 @@ function frontmatterToEntry(data: Record<string, unknown>): Entry | null {
 // then fetch and parse each .md file's frontmatter.
 async function fetchEntriesFromGitHub(jamSlug: string): Promise<Entry[]> {
   const dirUrl = `https://api.github.com/repos/dojoengine/game-jams/contents/${jamSlug}`;
-  const dirRes = await fetch(dirUrl, { headers: GITHUB_HEADERS });
+  const dirRes = await fetch(dirUrl, { headers: githubHeaders() });
   if (!dirRes.ok) return [];
 
   const files = (await dirRes.json()) as Array<{
@@ -98,7 +100,7 @@ async function fetchEntriesFromGitHub(jamSlug: string): Promise<Entry[]> {
       try {
         // Use the contents API (file.url) instead of raw download_url
         // so the GITHUB_TOKEN auth header is respected for rate limiting
-        const res = await fetch(file.url, { headers: GITHUB_HEADERS });
+        const res = await fetch(file.url, { headers: githubHeaders() });
         if (!res.ok) return;
         const json = (await res.json()) as { content?: string; encoding?: string };
         if (!json.content || json.encoding !== 'base64') return;
@@ -154,7 +156,7 @@ export async function getJamSlugs(): Promise<string[]> {
   let res: Response;
   try {
     res = await fetch('https://api.github.com/repos/dojoengine/game-jams/contents', {
-      headers: GITHUB_HEADERS,
+      headers: githubHeaders(),
     });
   } catch {
     return jamSlugsCache?.slugs ?? [];
@@ -187,7 +189,7 @@ export async function getJamEndDate(jamSlug: string): Promise<string | null> {
   let endDate: string | null = null;
   try {
     const url = `https://api.github.com/repos/dojoengine/game-jams/contents/${jamSlug}/README.md`;
-    const res = await fetch(url, { headers: GITHUB_HEADERS });
+    const res = await fetch(url, { headers: githubHeaders() });
     if (res.ok) {
       const json = (await res.json()) as { content?: string; encoding?: string };
       if (json.content && json.encoding === 'base64') {

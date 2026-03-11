@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { formatJamTitle, CONFIDENCE_N } from '../utils/jam';
 import {
@@ -10,8 +10,6 @@ import {
   SimulationNodeDatum,
   SimulationLinkDatum,
 } from 'd3-force';
-import { drag } from 'd3-drag';
-import { select } from 'd3-selection';
 import './Graph.css';
 
 interface GraphNode extends SimulationNodeDatum {
@@ -68,6 +66,7 @@ export default function Graph() {
   const [maxEdgeWeight, setMaxEdgeWeight] = useState(0.01);
   const [, setTick] = useState(0); // force re-renders on simulation tick
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
+  const [selectedNodes, setSelectedNodes] = useState<Set<string>>(new Set());
 
   // Check confidence gate
   useEffect(() => {
@@ -76,7 +75,7 @@ export default function Graph() {
       .then((r) => r.json())
       .then((jams: { slug: string; entryCount: number; voteCount: number }[]) => {
         const jam = jams.find((j) => j.slug === slug);
-        if (jam && jam.entryCount > 0 && jam.voteCount < jam.entryCount * CONFIDENCE_N) {
+        if (jam && jam.entryCount > 0 && jam.voteCount < jam.entryCount * CONFIDENCE_N && !import.meta.env.DEV) {
           setLocked(true);
           setLoading(false);
         }
@@ -151,31 +150,14 @@ export default function Graph() {
     };
   }, [nodes, edges]);
 
-  // Drag behavior — attach via d3-drag on node groups
-  const nodeRef = useCallback(
-    (g: SVGGElement | null) => {
-      if (!g || !simRef.current) return;
-      const sim = simRef.current;
-      select<SVGGElement, GraphNode>(g).call(
-        drag<SVGGElement, GraphNode>()
-          .on('start', (event, d) => {
-            if (!event.active) sim.alphaTarget(0.3).restart();
-            d.fx = d.x;
-            d.fy = d.y;
-          })
-          .on('drag', (event, d) => {
-            d.fx = event.x;
-            d.fy = event.y;
-          })
-          .on('end', (event, d) => {
-            if (!event.active) sim.alphaTarget(0);
-            d.fx = null;
-            d.fy = null;
-          })
-      );
-    },
-    [nodes] // eslint-disable-line react-hooks/exhaustive-deps
-  );
+  const toggleSelected = (id: string) => {
+    setSelectedNodes((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const width = wrapRef.current?.clientWidth ?? 900;
   const height = width;
@@ -234,7 +216,11 @@ export default function Graph() {
                 const dist = Math.sqrt(dx * dx + dy * dy) || 1;
                 const sr = radius(s.weight, maxWeight);
                 const tr = radius(t.weight, maxWeight);
-                const connected = !hoveredNode || s.id === hoveredNode || t.id === hoveredNode;
+                const connected = hoveredNode
+                  ? s.id === hoveredNode || t.id === hoveredNode
+                  : selectedNodes.size > 0
+                    ? selectedNodes.has(s.id) && selectedNodes.has(t.id)
+                    : true;
                 const opacity = connected
                   ? edgeOpacity(e.weight, maxEdgeWeight)
                   : 0.03;
@@ -260,30 +246,48 @@ export default function Graph() {
               {nodes.map((n) => {
                 if (n.x == null) return null;
                 const r = radius(n.weight, maxWeight);
-                let inW = n.inWeight;
-                let outW = n.outWeight;
-                if (hoveredNode) {
-                  inW = 0;
-                  outW = 0;
-                  for (const e of edges) {
-                    const s = e.source as GraphNode;
-                    const t = e.target as GraphNode;
-                    if (s.id !== hoveredNode && t.id !== hoveredNode) continue;
-                    if (t.id === n.id) inW += e.weight;
-                    if (s.id === n.id) outW += e.weight;
+                const showStats = hoveredNode
+                  ? n.id === hoveredNode || selectedNodes.has(n.id)
+                  : selectedNodes.has(n.id);
+                let inW = 0;
+                let outW = 0;
+                if (showStats) {
+                  if (hoveredNode) {
+                    for (const e of edges) {
+                      const s = e.source as GraphNode;
+                      const t = e.target as GraphNode;
+                      if (s.id !== hoveredNode && t.id !== hoveredNode) continue;
+                      if (t.id === n.id) inW += e.weight;
+                      if (s.id === n.id) outW += e.weight;
+                    }
+                  } else if (selectedNodes.size > 0) {
+                    for (const e of edges) {
+                      const s = e.source as GraphNode;
+                      const t = e.target as GraphNode;
+                      if (!selectedNodes.has(s.id) || !selectedNodes.has(t.id)) continue;
+                      if (t.id === n.id) inW += e.weight;
+                      if (s.id === n.id) outW += e.weight;
+                    }
+                  } else {
+                    inW = n.inWeight;
+                    outW = n.outWeight;
                   }
                 }
                 return (
                   <g
                     key={n.id}
-                    ref={nodeRef}
                     transform={`translate(${n.x},${n.y})`}
-                    style={{ cursor: 'grab' }}
-                    data-id={n.id}
+                    style={{ cursor: 'pointer' }}
                     onMouseEnter={() => setHoveredNode(n.id)}
                     onMouseLeave={() => setHoveredNode(null)}
+                    onClick={() => toggleSelected(n.id)}
                   >
-                    <circle r={r} fill="#141420" stroke="#c9a84c" strokeWidth={1.5} />
+                    <circle
+                      r={r}
+                      fill="#141420"
+                      stroke={selectedNodes.has(n.id) ? '#4ade80' : '#c9a84c'}
+                      strokeWidth={selectedNodes.has(n.id) ? 2.5 : 1.5}
+                    />
                     <text
                       className="graph-node-emoji"
                       textAnchor="middle"
