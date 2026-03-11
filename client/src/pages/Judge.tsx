@@ -120,6 +120,7 @@ export default function Judge() {
         canGoBack={canGoBack}
         onScore={submitScore}
         onBack={goBack}
+        onReset={startNewSession}
       />
     </div>
   );

@@ -85,6 +85,7 @@ export default function DevPreview() {
         onScore={() => setPairIndex((i) => i + 1)}
         onInvalidPair={() => setPairIndex((i) => i + 1)}
         onBack={() => setPairIndex((i) => Math.max(0, i - 1))}
+        onReset={() => setPairIndex(0)}
       />
     </div>
   );
