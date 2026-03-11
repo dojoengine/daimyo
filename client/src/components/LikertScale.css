@@ -27,6 +27,32 @@
 .likert-buttons {
   display: flex;
   gap: 6px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Shimmer sweep across entire button row */
+.likert-buttons::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -30%;
+  width: 30%;
+  height: 100%;
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.12) 50%,
+    transparent 70%
+  );
+  animation: shimmerSweep 4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes shimmerSweep {
+  0%, 100% { left: -30%; }
+  40%, 60% { left: 100%; }
 }
 
 .likert-btn {
