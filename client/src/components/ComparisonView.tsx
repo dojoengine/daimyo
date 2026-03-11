@@ -12,6 +12,7 @@ interface ComparisonViewProps {
   onScore: (score: number) => void;
   onInvalidPair?: () => void;
   onBack: () => void;
+  onReset: () => void;
 }
 
 const SPARKLE_COUNT = 8;
@@ -23,6 +24,7 @@ export default function ComparisonView({
   onScore,
   onInvalidPair,
   onBack,
+  onReset,
 }: ComparisonViewProps) {
   const [burstPositions, setBurstPositions] = useState<{ top: string; left: string; wave: number; emoji: string }[] | null>(null);
 
@@ -75,6 +77,13 @@ export default function ComparisonView({
             disabled={!canGoBack || celebrating}
           >
             Back
+          </button>
+          <button
+            className="comparison-btn comparison-reset"
+            onClick={onReset}
+            disabled={celebrating}
+          >
+            Reset
           </button>
           {onInvalidPair && (
             <button
