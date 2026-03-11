@@ -1,4 +1,5 @@
 import type { Entry } from './entries.js';
+import type { Comparison } from './database/judgingQueries.js';
 
 export const DUMMY_ENTRIES: Record<string, Entry[]> = {
   gj7: [
@@ -160,4 +161,42 @@ export const DUMMY_ENTRIES: Record<string, Entry[]> = {
       },
     },
   ],
+};
+
+// Dummy comparisons: 3 judges scoring all 15 pairs of 6 entries.
+// Score 0.0 = A strongly preferred, 1.0 = B strongly preferred, 0.5 = tie.
+// Entry IDs are canonicalized (smaller first), matching insertComparison behavior.
+const judges = ['judge-a', 'judge-b', 'judge-c'];
+const scores: Record<string, number[]> = {
+  // [judge-a, judge-b, judge-c] scores for each canonical pair
+  '42-57': [0.75, 0.75, 1.0], // 42 > 57
+  '42-63': [0.25, 0.5, 0.25], // 63 > 42
+  '42-71': [0.75, 0.5, 0.75], // 42 > 71
+  '42-85': [0.5, 0.75, 0.5], // slight 42 > 85
+  '42-92': [0.25, 0.25, 0.5], // 92 > 42
+  '57-63': [0.25, 0.25, 0.0], // 63 > 57
+  '57-71': [0.5, 0.75, 0.5], // slight 57 > 71
+  '57-85': [0.25, 0.5, 0.25], // 85 > 57
+  '57-92': [0.0, 0.25, 0.25], // 92 > 57
+  '63-71': [0.75, 1.0, 0.75], // 63 > 71
+  '63-85': [0.75, 0.5, 0.75], // 63 > 85
+  '63-92': [0.5, 0.5, 0.75], // slight 63 > 92
+  '71-85': [0.25, 0.25, 0.5], // 85 > 71
+  '71-92': [0.25, 0.0, 0.25], // 92 > 71
+  '85-92': [0.25, 0.5, 0.25], // 92 > 85
+};
+
+export const DUMMY_COMPARISONS: Record<string, Comparison[]> = {
+  gj7: Object.entries(scores).flatMap(([pair, vals]) => {
+    const [a, b] = pair.split('-');
+    return vals.map((score, i) => ({
+      id: `dummy-${pair}-${i}`,
+      jam_slug: 'gj7',
+      judge_id: judges[i],
+      entry_a_id: a,
+      entry_b_id: b,
+      score,
+      timestamp: Date.now(),
+    }));
+  }),
 };

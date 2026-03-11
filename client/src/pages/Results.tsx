@@ -48,7 +48,7 @@ export default function Results() {
       .then((data) => {
         const entryCount = data.stats.entryCount ?? data.rankings.length;
         const threshold = entryCount * CONFIDENCE_N;
-        if (threshold > 0 && data.stats.totalComparisons < threshold) {
+        if (threshold > 0 && data.stats.totalComparisons < threshold && !import.meta.env.DEV) {
           setLocked(true);
         } else {
           setRankings(data.rankings);
