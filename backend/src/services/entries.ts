@@ -172,19 +172,31 @@ export async function getJamSlugs(): Promise<string[]> {
   return slugs;
 }
 
-// In-memory cache for jam end dates
-const endDateCache: Map<string, { endDate: string | null; fetchedAt: number }> = new Map();
+export interface JamFrontmatter {
+  startDate: string | null;
+  endDate: string | null;
+  prizePool: string | null;
+  registrationUrl: string | null;
+}
+
+// In-memory cache for jam frontmatter
+const frontmatterCache: Map<string, { data: JamFrontmatter; fetchedAt: number }> = new Map();
 
 /**
- * Fetch the end_date from a jam's README.md frontmatter.
+ * Fetch key frontmatter fields from a jam's README.md.
  */
-export async function getJamEndDate(jamSlug: string): Promise<string | null> {
-  const cached = endDateCache.get(jamSlug);
+export async function getJamFrontmatter(jamSlug: string): Promise<JamFrontmatter> {
+  const cached = frontmatterCache.get(jamSlug);
   if (cached && Date.now() - cached.fetchedAt < CACHE_TTL) {
-    return cached.endDate;
+    return cached.data;
   }
 
-  let endDate: string | null = null;
+  const empty: JamFrontmatter = {
+    startDate: null,
+    endDate: null,
+    prizePool: null,
+    registrationUrl: null,
+  };
   try {
     const url = `https://api.github.com/repos/dojoengine/game-jams/contents/${jamSlug}/README.md`;
     const res = await fetch(url, { headers: GITHUB_HEADERS });
@@ -193,15 +205,22 @@ export async function getJamEndDate(jamSlug: string): Promise<string | null> {
       if (json.content && json.encoding === 'base64') {
         const raw = Buffer.from(json.content, 'base64').toString('utf-8');
         const data = parseFrontmatter(raw);
-        if (data?.end_date) endDate = String(data.end_date);
+        const result: JamFrontmatter = {
+          startDate: data?.start_date ? String(data.start_date) : null,
+          endDate: data?.end_date ? String(data.end_date) : null,
+          prizePool: data?.prize_pool ? String(data.prize_pool) : null,
+          registrationUrl: data?.registration_url ? String(data.registration_url) : null,
+        };
+        frontmatterCache.set(jamSlug, { data: result, fetchedAt: Date.now() });
+        return result;
       }
     }
   } catch {
-    // Fall through with null
+    // Fall through with empty
   }
 
-  endDateCache.set(jamSlug, { endDate, fetchedAt: Date.now() });
-  return endDate;
+  frontmatterCache.set(jamSlug, { data: empty, fetchedAt: Date.now() });
+  return empty;
 }
 
 // Exported for testing
