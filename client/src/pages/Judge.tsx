@@ -15,6 +15,7 @@ export default function Judge() {
     loading,
     status,
     sessions,
+    resultsUnlocked,
     error,
     canGoBack,
     submitScore,
@@ -92,7 +93,11 @@ export default function Judge() {
           <button className="judge-continue-btn" onClick={startNewSession}>
             Submit More Votes
           </button>
-          <Link to={`/judge/${slug}/results`} className="judge-back-btn">See Results</Link>
+          {resultsUnlocked ? (
+            <Link to={`/judge/${slug}/results`} className="judge-back-btn">See Results</Link>
+          ) : (
+            <Link to="/judge" className="judge-back-btn">Back to Jams</Link>
+          )}
         </div>
       </div>
     );

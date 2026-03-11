@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useReducer } from 'react';
 import { JUDGING_SESSION_SIZE } from '../constants/judging';
+import { CONFIDENCE_N } from '../utils/jam';
 
 export interface EntryMetrics {
   classification: 'Whole Game' | 'Feature';
@@ -93,6 +94,8 @@ interface SessionState {
   fetchedAt: number;
   status: Status;
   sessions: number;
+  entryCount: number;
+  voteCount: number;
   error: string | null;
 }
 
@@ -103,6 +106,8 @@ const initialState: SessionState = {
   fetchedAt: 0,
   status: 'loading',
   sessions: 0,
+  entryCount: 0,
+  voteCount: 0,
   error: null,
 };
 
@@ -112,7 +117,7 @@ type SessionAction =
   | { type: 'GO_BACK' }
   | { type: 'RESET' }
   | { type: 'SUBMIT_START' }
-  | { type: 'SUBMIT_SUCCESS'; sessions: number }
+  | { type: 'SUBMIT_SUCCESS'; sessions: number; entryCount: number; voteCount: number }
   | { type: 'SUBMIT_ERROR'; error: string }
   | { type: 'SET_ERROR'; error: string };
 
@@ -161,7 +166,7 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
       return { ...state, status: 'submitting' };
 
     case 'SUBMIT_SUCCESS':
-      return { ...state, status: 'submitted', sessions: action.sessions };
+      return { ...state, status: 'submitted', sessions: action.sessions, entryCount: action.entryCount, voteCount: action.voteCount };
 
     case 'SUBMIT_ERROR':
       return { ...state, status: 'review', error: action.error };
@@ -287,7 +292,7 @@ export function useJudging(jamSlug: string) {
 
       const data = await res.json();
       clearSession(jamSlug);
-      dispatch({ type: 'SUBMIT_SUCCESS', sessions: data.sessions ?? 0 });
+      dispatch({ type: 'SUBMIT_SUCCESS', sessions: data.sessions ?? 0, entryCount: data.entryCount ?? 0, voteCount: data.voteCount ?? 0 });
     } catch (e) {
       dispatch({ type: 'SUBMIT_ERROR', error: e instanceof Error ? e.message : 'Failed to submit session' });
     }
@@ -309,6 +314,8 @@ export function useJudging(jamSlug: string) {
     total: state.pairs.length || JUDGING_SESSION_SIZE,
   };
 
+  const resultsUnlocked = state.entryCount > 0 && state.voteCount >= state.entryCount * CONFIDENCE_N;
+
   return {
     user,
     pair,
@@ -316,6 +323,7 @@ export function useJudging(jamSlug: string) {
     loading: state.status === 'loading',
     status: state.status,
     sessions: state.sessions,
+    resultsUnlocked,
     error: state.error,
     votes: state.votes,
     pairs: state.pairs,

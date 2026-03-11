@@ -4,6 +4,7 @@ import { getEntries, getEntryById } from '../../services/entries.js';
 import { selectSessionPairs } from '../../services/pairing.js';
 import {
   insertComparison,
+  getComparisonCountForJam,
   getComparisonCountForJudge,
   getComparisonsForJam,
 } from '../../services/database.js';
@@ -96,10 +97,19 @@ router.post(
         await insertComparison(slug, judgeId, vote.entryAId, vote.entryBId, vote.score);
       }
 
-      const count = await getComparisonCountForJudge(slug, judgeId);
-      const sessions = Math.floor(count / JUDGING_SESSION_SIZE);
+      const [judgeCount, totalVotes] = await Promise.all([
+        getComparisonCountForJudge(slug, judgeId),
+        getComparisonCountForJam(slug),
+      ]);
+      const sessions = Math.floor(judgeCount / JUDGING_SESSION_SIZE);
 
-      res.json({ recorded: true, count: votes.length, sessions });
+      res.json({
+        recorded: true,
+        count: votes.length,
+        sessions,
+        entryCount: entries.length,
+        voteCount: totalVotes,
+      });
     } catch (err) {
       console.error('Error recording session:', err);
       res.status(500).json({ error: 'Failed to record session' });
