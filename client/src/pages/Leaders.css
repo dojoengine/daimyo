@@ -1,0 +1,380 @@
+/* ─── Leaders Page ─── */
+
+.leaders-page {
+  min-height: 100vh;
+  background: var(--void);
+  color: var(--parchment);
+  position: relative;
+  overflow: hidden;
+}
+
+.leaders-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 10%, #2a0a2a33 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 80%, #0a1a3a33 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 50% 50%, #2a0a0a22 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.leaders-page::after {
+  content: '誉';
+  position: fixed;
+  right: 32px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--kanji-font);
+  font-size: 200px;
+  font-weight: var(--kanji-weight);
+  color: var(--kanji-color);
+  pointer-events: none;
+  z-index: -1;
+  user-select: none;
+}
+
+.leaders-kanji-left {
+  left: 32px;
+  top: 38%;
+  font-size: 160px;
+  color: var(--kanji-color-dim);
+}
+
+/* ─── Container ─── */
+
+.leaders-container {
+  max-width: 940px;
+  margin: 0 auto;
+  padding: 48px 32px 80px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── Hero ─── */
+
+.leaders-hero {
+  text-align: center;
+  margin-bottom: 48px;
+  animation: leadersFadeIn 0.6s ease-out;
+}
+
+.leaders-hero-kanji {
+  display: block;
+  font-family: 'Noto Serif JP', serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--stone);
+  letter-spacing: 0.5em;
+  margin-bottom: 12px;
+}
+
+.leaders-title {
+  font-family: 'Noto Serif', 'Noto Serif JP', serif;
+  font-size: 44px;
+  font-weight: 900;
+  margin: 0;
+  letter-spacing: -0.01em;
+  background: linear-gradient(135deg, var(--parchment) 0%, var(--gold) 50%, var(--parchment) 100%);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: leadersShimmer 6s ease-in-out infinite;
+}
+
+.leaders-divider {
+  width: 80px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--neon-red), transparent);
+  box-shadow: 0 0 12px var(--neon-glow);
+  margin: 20px auto 0;
+}
+
+/* ─── Stats Bar ─── */
+
+.leaders-stats {
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  margin-bottom: 40px;
+  animation: leadersFadeUp 0.6s ease-out both;
+  animation-delay: 0.1s;
+}
+
+.leaders-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.leaders-stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--parchment);
+  font-variant-numeric: tabular-nums;
+}
+
+.leaders-stat-label {
+  font-size: 11px;
+  color: var(--stone);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ─── Entry List ─── */
+
+.leaders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 40px;
+}
+
+.leaders-entry {
+  display: flex;
+  align-items: stretch;
+  gap: 20px;
+  background: var(--ink);
+  border: 1px solid var(--ash);
+  border-radius: 12px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+  animation: leadersFadeUp 0.6s ease-out both;
+  transition: background 0.2s ease;
+}
+
+.leaders-entry:hover {
+  background: var(--scroll);
+}
+
+.leaders-entry--top1::before,
+.leaders-entry--top2::before,
+.leaders-entry--top3::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  box-shadow: 0 0 20px var(--gold-dim);
+}
+
+/* ─── Rank Number ─── */
+
+.leaders-rank {
+  font-family: 'Noto Serif', 'Noto Serif JP', serif;
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--stone);
+  min-width: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.leaders-entry--top1 .leaders-rank {
+  color: var(--gold);
+}
+
+.leaders-entry--top2 .leaders-rank {
+  color: var(--parchment);
+}
+
+.leaders-entry--top3 .leaders-rank {
+  color: #cd7f32;
+}
+
+/* ─── Entry Main ─── */
+
+.leaders-entry-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.leaders-entry-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.leaders-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.leaders-avatar--fallback {
+  background: var(--ash);
+}
+
+.leaders-username {
+  font-family: 'Noto Serif', 'Noto Serif JP', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--parchment);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaders-sessions {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--mist);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.leaders-entry--top1 .leaders-sessions {
+  color: var(--gold);
+}
+
+/* ─── Score Bar ─── */
+
+.leaders-bar {
+  height: 3px;
+  background: var(--ash);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.leaders-bar-fill {
+  height: 100%;
+  background: var(--neon-red);
+  border-radius: 2px;
+  box-shadow: 0 0 6px var(--neon-glow);
+  transition: width 1.2s ease-out;
+}
+
+.leaders-entry--top1 .leaders-bar-fill {
+  background: var(--gold);
+  box-shadow: 0 0 6px var(--gold-dim);
+}
+
+/* ─── Nav ─── */
+
+.leaders-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.leaders-back {
+  display: inline-block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--stone);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.leaders-back:hover {
+  color: var(--parchment);
+}
+
+/* ─── States ─── */
+
+.leaders-loading {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 80px 0;
+  font-size: 18px;
+  color: var(--stone);
+  gap: 16px;
+}
+
+.leaders-loading::after {
+  content: '';
+  width: 32px;
+  height: 32px;
+  border: 2px solid var(--ash);
+  border-top-color: var(--neon-red);
+  border-radius: 50%;
+  animation: leadersSpin 0.8s linear infinite;
+}
+
+.leaders-error,
+.leaders-empty {
+  text-align: center;
+  padding: 80px 0;
+  font-size: 16px;
+  color: var(--stone);
+}
+
+.leaders-error {
+  color: var(--neon-red);
+}
+
+/* ─── Animations ─── */
+
+@keyframes leadersFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes leadersFadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes leadersShimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes leadersSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── Responsive ─── */
+
+@media (max-width: 768px) {
+  .leaders-container {
+    padding: 32px 16px 60px;
+  }
+
+  .leaders-title {
+    font-size: 32px;
+  }
+
+  .leaders-stats {
+    gap: 24px;
+  }
+
+  .leaders-stat-value {
+    font-size: 22px;
+  }
+
+  .leaders-entry {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .leaders-rank {
+    font-size: 18px;
+    min-width: 40px;
+  }
+
+  .leaders-username {
+    font-size: 15px;
+  }
+
+  .leaders-page::after {
+    display: none;
+  }
+}

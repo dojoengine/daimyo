@@ -6,6 +6,7 @@ import Judge from './pages/Judge';
 import Entries from './pages/Entries';
 import Results from './pages/Results';
 import Graph from './pages/Graph';
+import Leaders from './pages/Leaders';
 import DevPreview from './pages/DevPreview';
 import AuthCallback from './pages/AuthCallback';
 import ErrorPage from './pages/Error';
@@ -20,6 +21,7 @@ export default function App() {
         <Route path="/jam/:slug/judge" element={<Judge />} />
         <Route path="/jam/:slug/results" element={<Results />} />
         <Route path="/jam/:slug/graph" element={<Graph />} />
+        <Route path="/jam/leaders" element={<Leaders />} />
         <Route path="/dev" element={<DevPreview />} />
         <Route path="/error" element={<ErrorPage />} />
         {/* Legacy redirects */}

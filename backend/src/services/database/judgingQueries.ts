@@ -144,6 +144,34 @@ export interface JamStats {
   judge_count: number;
 }
 
+export interface JudgeLeaderboardRow {
+  judge_id: string;
+  total_comparisons: number;
+  jam_count: number;
+}
+
+/**
+ * Get judge leaderboard aggregated across all jams.
+ */
+export async function getJudgeLeaderboard(): Promise<JudgeLeaderboardRow[]> {
+  const sql = getSql();
+
+  const results = await sql<{ judge_id: string; total_comparisons: string; jam_count: string }[]>`
+    SELECT judge_id,
+           COUNT(*) as total_comparisons,
+           COUNT(DISTINCT jam_slug) as jam_count
+    FROM jam_comparisons
+    GROUP BY judge_id
+    ORDER BY total_comparisons DESC
+  `;
+
+  return results.map((r) => ({
+    judge_id: r.judge_id,
+    total_comparisons: parseCount(r.total_comparisons),
+    jam_count: parseCount(r.jam_count),
+  }));
+}
+
 export async function getAllJamStats(): Promise<JamStats[]> {
   const sql = getSql();
 
