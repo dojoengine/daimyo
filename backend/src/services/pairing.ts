@@ -1,7 +1,8 @@
 import { Entry } from './entries.js';
 import { getComparisonsForJam } from './database.js';
 import { JUDGING_SESSION_SIZE } from '../constants/judging.js';
-import { PowerRanker, pairKey } from '../lib/power/index.js';
+import { pairKey } from '../lib/power/index.js';
+import { buildRanker } from './rankerFactory.js';
 
 /**
  * Randomize left/right presentation order to prevent position bias
@@ -31,20 +32,11 @@ export async function selectSessionPairs(
   const comparisons = await getComparisonsForJam(jamSlug);
 
   // Build PowerRanker with all entries and existing comparisons
-  const items = new Set(entries.map((e) => e.id));
-  const ranker = new PowerRanker({ items });
-
-  const prefs = comparisons
-    .filter((c) => c.score !== null)
-    .map((c) => ({
-      target: c.entry_a_id,
-      source: c.entry_b_id,
-      value: c.score!,
-    }));
-
-  if (prefs.length > 0) {
-    ranker.addPreferences(prefs);
-  }
+  const ranker = buildRanker(
+    entries.map((e) => e.id),
+    comparisons
+  );
+  if (!ranker) return [];
 
   // Build exclusion set for this judge
   const exclude = new Set<string>();
