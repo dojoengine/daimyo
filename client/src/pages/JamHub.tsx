@@ -266,7 +266,7 @@ export default function JamHub() {
 
         {!loading && !error && jams.length > 0 && (
           <div className="hub-leaders-link">
-            <Link to="/judge/leaders">View Judge Leaderboard →</Link>
+            <Link to="/jam/leaders">View Judge Leaderboard →</Link>
           </div>
         )}
       </div>
