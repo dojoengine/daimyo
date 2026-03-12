@@ -56,8 +56,10 @@ export function loadConfig(): Config {
     senpaiRoleId: getRequiredEnv('SENPAI_ROLE_ID'),
     senseiRoleId: getRequiredEnv('SENSEI_ROLE_ID'),
     meijinRoleId: getRequiredEnv('MEIJIN_ROLE_ID'),
-    feltRoleId: getRequiredEnv('FELT_ROLE_ID'),
-    teamRoleId: getRequiredEnv('TEAM_ROLE_ID'),
+    autoSenseiRoleIds: (getOptionalEnv('AUTO_SENSEI_ROLE_IDS') || '')
+      .split(',')
+      .map((id) => id.trim())
+      .filter(Boolean),
 
     // Channel IDs
     ohayoChannelId: getRequiredEnv('OHAYO_CHANNEL_ID'),
@@ -68,8 +70,8 @@ export function loadConfig(): Config {
     // Database
     databaseUrl: getRequiredEnv('DATABASE_URL'),
 
-    // Decay
-    decayCheckCron: process.env.DECAY_CHECK_CRON || '0 0 1 * *', // 1st of each month at midnight UTC
+    // Role sync
+    roleSyncCron: process.env.ROLE_SYNC_CRON || '0 0 1 * *', // 1st of each month at midnight UTC
     decayWindowDays: getNumberEnv('DECAY_WINDOW_DAYS', 360),
     senpaiReactionThreshold: getNumberEnv('SENPAI_REACTION_THRESHOLD', 50),
     senpaiUniquePercent: getNumberEnv('SENPAI_UNIQUE_PERCENT', 0.1),

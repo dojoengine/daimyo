@@ -28,8 +28,7 @@ jest.unstable_mockModule('../../src/utils/config.js', () => ({
   config: {
     decayWindowDays: 360,
     senseiReactionThreshold: 30,
-    feltRoleId: 'felt-role-id',
-    teamRoleId: 'team-role-id',
+    autoSenseiRoleIds: ['felt-role-id', 'team-role-id'],
   },
 }));
 

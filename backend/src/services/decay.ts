@@ -7,7 +7,7 @@ import { getUserRole, assignRole, sendDM, formatDemotionMessage } from './roleMa
 /**
  * Check if a Sensei should be demoted due to insufficient recent reactions
  * Sensei must maintain 30+ Sensei reactions within the last 360 days
- * Sensei with Felt or Team role are exempt from decay (core group)
+ * Users with auto-Sensei roles (Felt, Team, Incubator, Starknet, etc.) are exempt from decay
  */
 export async function checkSenseiDecay(guild: Guild, userId: string): Promise<DemotionResult> {
   try {
@@ -18,14 +18,10 @@ export async function checkSenseiDecay(guild: Guild, userId: string): Promise<De
       return { demoted: false };
     }
 
-    // Sensei with Felt or Team role are exempt from decay (core group)
+    // Users with auto-Sensei roles are exempt from decay
     const member = guild.members.cache.get(userId);
-    if (member && config.feltRoleId && member.roles.cache.has(config.feltRoleId)) {
-      console.debug(`Skipping decay check for ${userId}: has Felt role (core group)`);
-      return { demoted: false };
-    }
-    if (member && config.teamRoleId && member.roles.cache.has(config.teamRoleId)) {
-      console.debug(`Skipping decay check for ${userId}: has Team role (core group)`);
+    if (member && config.autoSenseiRoleIds.some((roleId) => member.roles.cache.has(roleId))) {
+      console.debug(`Skipping decay check for ${userId}: has auto-Sensei role`);
       return { demoted: false };
     }
 
