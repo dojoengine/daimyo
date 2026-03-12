@@ -197,11 +197,11 @@ export default function JamHub() {
                   <span className="hub-featured-pending">Judging opens after the jam ends</span>
                 ) : (
                   <>
-                    <Link to={`/jam/${featured.slug}`} className="hub-featured-cta">
-                      View Entries
-                    </Link>
                     <Link to={`/jam/${featured.slug}/judge`} className="hub-featured-cta">
-                      Start Judging
+                      Judge Entries
+                    </Link>
+                    <Link to={`/jam/${featured.slug}`} className="hub-featured-cta hub-featured-cta--secondary">
+                      View Entries
                     </Link>
                     {getConfidence(featured) >= 1 ? (
                       <Link to={`/jam/${featured.slug}/results`} className="hub-featured-cta hub-featured-cta--secondary">
