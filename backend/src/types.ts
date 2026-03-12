@@ -42,8 +42,7 @@ export interface Config {
   senpaiRoleId: string;
   senseiRoleId: string;
   meijinRoleId: string;
-  feltRoleId: string;
-  teamRoleId: string;
+  autoSenseiRoleIds: string[];
 
   // Channel IDs
   ohayoChannelId: string;
@@ -55,7 +54,7 @@ export interface Config {
   databaseUrl: string;
 
   // Decay
-  decayCheckCron: string;
+  roleSyncCron: string;
   decayWindowDays: number;
   senpaiReactionThreshold: number;
   senpaiUniquePercent: number;

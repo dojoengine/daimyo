@@ -97,7 +97,7 @@ async function main() {
   });
 
   // Start cron jobs
-  // startDecayCheckJob(client); // Auto-role updates disabled
+  // startRoleSyncJob(client); // Auto-role updates disabled
   startOhayoJob(client);
   startContentPipelineJob(client);
 

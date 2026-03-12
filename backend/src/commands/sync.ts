@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
-import { getUserRole } from '../services/roleManager.js';
+import { getUserRole, ensureAutoSenseiRoles } from '../services/roleManager.js';
 import { checkPromotion } from '../services/reputation.js';
 import { checkSenseiDecay } from '../services/decay.js';
 
@@ -30,14 +30,21 @@ export async function execute(interaction: ChatInputCommandInteraction): Promise
     let demotionCount = 0;
     const changes: string[] = [];
 
-    // Check all members for promotions and demotions
+    // Ensure auto-Sensei role holders have Sensei
+    const autoPromoted = await ensureAutoSenseiRoles(guild);
+    for (const userId of autoPromoted) {
+      promotionCount++;
+      const member = guild.members.cache.get(userId);
+      changes.push(`✅ Auto-promoted ${member?.user.tag ?? userId} to Sensei (auto-Sensei role)`);
+    }
+
+    // Check all members for promotions
     for (const [userId, member] of guild.members.cache) {
       if (member.user.bot) continue;
 
       const currentRole = getUserRole(guild, userId);
       if (!currentRole) continue;
 
-      // Check for promotion
       const promotionResult = await checkPromotion(guild, userId);
       if (promotionResult.promoted) {
         promotionCount++;
@@ -46,8 +53,12 @@ export async function execute(interaction: ChatInputCommandInteraction): Promise
         );
         console.log(`Sync: Promoted ${userId} to ${promotionResult.newRole}`);
       }
+    }
 
-      // Check for Sensei decay
+    // Check all members for Sensei decay
+    for (const [userId, member] of guild.members.cache) {
+      if (member.user.bot) continue;
+
       const demotionResult = await checkSenseiDecay(guild, userId);
       if (demotionResult.demoted) {
         demotionCount++;

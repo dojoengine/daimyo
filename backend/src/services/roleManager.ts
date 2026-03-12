@@ -133,6 +133,31 @@ export function getUsersWithRole(guild: Guild, role: Role): GuildMember[] {
 }
 
 /**
+ * Ensure all members with auto-Sensei roles have the Sensei Discord role.
+ * Returns the list of user IDs that were promoted.
+ */
+export async function ensureAutoSenseiRoles(guild: Guild): Promise<string[]> {
+  const promoted: string[] = [];
+  if (config.autoSenseiRoleIds.length === 0) return promoted;
+
+  const senseiRoleId = config.senseiRoleId;
+
+  for (const [userId, member] of guild.members.cache) {
+    if (member.user.bot) continue;
+    if (member.roles.cache.has(senseiRoleId)) continue;
+
+    const hasAutoRole = config.autoSenseiRoleIds.some((roleId) => member.roles.cache.has(roleId));
+    if (hasAutoRole) {
+      await assignRole(guild, userId, Role.Sensei);
+      promoted.push(userId);
+      console.log(`Auto-promoted ${member.user.tag} to Sensei (has auto-Sensei role)`);
+    }
+  }
+
+  return promoted;
+}
+
+/**
  * Send a direct message to a user
  */
 export async function sendDM(user: User, message: string): Promise<boolean> {
