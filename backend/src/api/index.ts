@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser';
 import authRoutes from './routes/auth.js';
 import hubRoutes from './routes/hub.js';
 import jamsRoutes from './routes/jams.js';
+import judgesRoutes from './routes/judges.js';
 import { getApiPort, getCorsOrigin } from './serverConfig.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -33,6 +34,7 @@ export function createApiServer(): Express {
   app.use('/api/auth', authRoutes);
   app.use('/api/jams', hubRoutes); // public — GET /api/jams
   app.use('/api/jams', jamsRoutes); // /:slug/session (GET public, POST auth)
+  app.use('/api/judges', judgesRoutes); // /leaders
 
   // Serve React SPA static files in production
   const clientDist = path.resolve(__dirname, '../../../client/dist');

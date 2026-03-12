@@ -527,3 +527,24 @@
     display: none;
   }
 }
+
+/* ─── Leaders Link ─── */
+
+.hub-leaders-link {
+  text-align: center;
+  margin-top: 40px;
+  animation: hubFadeUp 0.6s ease-out both;
+  animation-delay: 0.6s;
+}
+
+.hub-leaders-link a {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--stone);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.hub-leaders-link a:hover {
+  color: var(--parchment);
+}
