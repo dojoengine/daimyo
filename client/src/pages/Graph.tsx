@@ -150,7 +150,7 @@ export default function Graph() {
   const height = width;
 
   if (!loading && locked) {
-    return <Navigate to="/judge" replace />;
+    return <Navigate to="/jam" replace />;
   }
 
   return (
@@ -313,7 +313,7 @@ export default function Graph() {
           </span>
         </div>
 
-        <Link to={`/judge/${slug}/results`} className="graph-back">← Results</Link>
+        <Link to={`/jam/${slug}/results`} className="graph-back">← Results</Link>
       </div>
     </div>
   );

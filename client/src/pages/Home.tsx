@@ -104,7 +104,7 @@ export default function Home() {
                       </span>
                     </>
                   ) : (
-                    <Link to={`/judge/${jam.slug}`} className="home-jam-cta home-jam-cta-gold">
+                    <Link to={`/jam/${jam.slug}/judge`} className="home-jam-cta home-jam-cta-gold">
                       Judge Entries
                     </Link>
                   )}

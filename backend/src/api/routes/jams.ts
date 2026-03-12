@@ -117,6 +117,29 @@ router.post(
   }
 );
 
+// GET /api/jams/:slug/entries - Public: get entries sorted by ranking (no weights)
+router.get('/:slug/entries', async (req: Request, res: Response): Promise<void> => {
+  const slug = getSlug(req.params);
+
+  try {
+    const [entries, comparisons] = await Promise.all([
+      getEntries(slug),
+      getComparisonsForJam(slug),
+    ]);
+
+    if (entries.length === 0) {
+      res.status(404).json({ error: 'No entries found for this jam' });
+      return;
+    }
+
+    const rankings = calculateRankings(entries, comparisons);
+    res.json({ entries: rankings.map((r) => r.entry) });
+  } catch (err) {
+    console.error('Error fetching entries:', err);
+    res.status(500).json({ error: 'Failed to fetch entries' });
+  }
+});
+
 // GET /api/jams/:slug/graph - Public: get graph data (nodes + aggregated edges)
 router.get('/:slug/graph', async (req: Request, res: Response): Promise<void> => {
   const slug = getSlug(req.params);

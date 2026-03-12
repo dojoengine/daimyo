@@ -56,7 +56,7 @@ export default function Results() {
   }, [slug]);
 
   if (!loading && locked) {
-    return <Navigate to="/judge" replace />;
+    return <Navigate to="/jam" replace />;
   }
 
   return (
@@ -131,7 +131,7 @@ export default function Results() {
         )}
 
         <div className="results-nav">
-          <Link to="/judge" className="results-back">← Back to Jams</Link>
+          <Link to="/jam" className="results-back">← Back to Jams</Link>
           {rankings.length > 0 && (
             <button
               className="results-export-btn"
@@ -148,7 +148,7 @@ export default function Results() {
               Export CSV
             </button>
           )}
-          <Link to={`/judge/${slug}/graph`} className="results-graph-link">View Graph →</Link>
+          <Link to={`/jam/${slug}/graph`} className="results-graph-link">View Graph →</Link>
         </div>
       </div>
     </div>
