@@ -26,7 +26,7 @@ export default function AuthCallback() {
     // and redirects here after setting the session cookie.
     // Extract jam slug from state and redirect to judge page.
     const jamSlug = extractJamSlug(state);
-    navigate(jamSlug ? `/judge/${jamSlug}` : '/judge', { replace: true });
+    navigate(jamSlug ? `/jam/${jamSlug}/judge` : '/jam', { replace: true });
   }, [searchParams, navigate]);
 
   if (error) {

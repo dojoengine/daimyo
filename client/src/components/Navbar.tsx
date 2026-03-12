@@ -4,7 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import './Navbar.css';
 
 const navItems = [
-  { label: 'Game Jam Judging', to: '/judge' },
+  { label: 'Game Jams', to: '/jam' },
   { label: 'Wallet Connect', to: '#', disabled: true, tooltip: 'Coming Soon' },
 ];
 

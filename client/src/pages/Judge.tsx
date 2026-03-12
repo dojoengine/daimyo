@@ -94,9 +94,9 @@ export default function Judge() {
             Submit More Votes
           </button>
           {resultsUnlocked ? (
-            <Link to={`/judge/${slug}/results`} className="judge-back-btn">See Results</Link>
+            <Link to={`/jam/${slug}/results`} className="judge-back-btn">See Results</Link>
           ) : (
-            <Link to="/judge" className="judge-back-btn">Back to Jams</Link>
+            <Link to="/jam" className="judge-back-btn">Back to Jams</Link>
           )}
         </div>
       </div>

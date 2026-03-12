@@ -197,11 +197,14 @@ export default function JamHub() {
                   <span className="hub-featured-pending">Judging opens after the jam ends</span>
                 ) : (
                   <>
-                    <Link to={`/judge/${featured.slug}`} className="hub-featured-cta">
-                      Begin Judging
+                    <Link to={`/jam/${featured.slug}`} className="hub-featured-cta">
+                      View Entries
+                    </Link>
+                    <Link to={`/jam/${featured.slug}/judge`} className="hub-featured-cta">
+                      Start Judging
                     </Link>
                     {getConfidence(featured) >= 1 ? (
-                      <Link to={`/judge/${featured.slug}/results`} className="hub-featured-cta hub-featured-cta--secondary">
+                      <Link to={`/jam/${featured.slug}/results`} className="hub-featured-cta hub-featured-cta--secondary">
                         See Results
                       </Link>
                     ) : (
@@ -247,9 +250,10 @@ export default function JamHub() {
                       </div>
                     </div>
                     <div className="hub-card-actions">
-                      <Link to={`/judge/${jam.slug}`} className="hub-card-cta">Judge →</Link>
+                      <Link to={`/jam/${jam.slug}`} className="hub-card-cta">Entries →</Link>
+                      <Link to={`/jam/${jam.slug}/judge`} className="hub-card-cta">Judge →</Link>
                       {getConfidence(jam) >= 1 ? (
-                        <Link to={`/judge/${jam.slug}/results`} className="hub-card-cta hub-card-cta--secondary">Results →</Link>
+                        <Link to={`/jam/${jam.slug}/results`} className="hub-card-cta hub-card-cta--secondary">Results →</Link>
                       ) : (
                         <span className="hub-card-cta hub-card-cta--locked">Locked</span>
                       )}
