@@ -36,7 +36,7 @@ export interface SelectOptions {
   impact?: ImpactTransform[];
 }
 
-export type ActiveImpactTerm = 'coverage' | 'proximity' | 'topBias';
+export type ActiveImpactTerm = 'coverage' | 'proximity' | 'position';
 
 export interface ActiveSelectOptions {
   num?: number;
@@ -220,7 +220,7 @@ export class PowerRanker {
   activeSelect({
     num,
     exclude,
-    terms = ['coverage', 'proximity', 'topBias'],
+    terms = ['coverage', 'proximity', 'position'],
   }: ActiveSelectOptions = {}): PairWeight[] {
     // Get ordinal positions from current rankings (1-indexed)
     const weights = this.run();
@@ -251,7 +251,7 @@ export class PowerRanker {
           weight *= 1 / (1 + Math.abs(position[alpha] - position[beta]));
         }
 
-        if (terms.includes('topBias')) {
+        if (terms.includes('position')) {
           weight *= 1 / Math.sqrt(position[alpha] * position[beta]);
         }
 
