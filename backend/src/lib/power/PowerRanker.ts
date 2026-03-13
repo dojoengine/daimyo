@@ -42,6 +42,8 @@ export interface ActiveSelectOptions {
   num?: number;
   exclude?: Set<string>;
   terms?: ActiveImpactTerm[];
+  /** Regularization strength: 0 = uniform, 1 = full weighting. Default 1. */
+  r?: number;
 }
 
 /**
@@ -216,11 +218,13 @@ export class PowerRanker {
    * increasingly drive selection toward close, high-ranked pairs.
    *
    * terms defaults to all three; pass a subset to disable specific signals.
+   * r (0–1) regularizes toward uniform: final = r*w + (1-r). Default 1 (no regularization).
    */
   activeSelect({
     num,
     exclude,
     terms = ['coverage', 'proximity', 'position'],
+    r = 1,
   }: ActiveSelectOptions = {}): PairWeight[] {
     // Get ordinal positions from current rankings (1-indexed)
     const weights = this.run();
@@ -254,6 +258,9 @@ export class PowerRanker {
         if (terms.includes('position')) {
           weight *= 1 / Math.sqrt(position[alpha] * position[beta]);
         }
+
+        // Regularize: blend toward uniform (weight=1) as r→0
+        weight = r * weight + (1 - r);
 
         candidates.push({ alpha, beta, weight });
       }

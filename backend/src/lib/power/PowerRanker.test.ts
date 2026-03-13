@@ -522,6 +522,46 @@ describe('activeSelect', () => {
     const ae = pairs.find((p) => p.alpha === 'a' && p.beta === 'e')!;
     expect(ab.weight).toBeGreaterThan(ae.weight);
   });
+
+  test('r=0 produces uniform weights regardless of terms', () => {
+    const ranker = new PowerRanker({
+      items: new Set(['a', 'b', 'c', 'd']),
+      options: { k: K },
+    });
+
+    // Create uneven observations and clear hierarchy
+    for (let i = 0; i < 10; i++) {
+      ranker.addPreferences([{ target: 'a', source: 'b', value: 1 }]);
+    }
+
+    const pairs = ranker.activeSelect({ r: 0 });
+    const weights = pairs.map((p) => p.weight);
+    for (const w of weights) {
+      expect(w).toBeCloseTo(1);
+    }
+  });
+
+  test('r<1 compresses weight spread toward uniform', () => {
+    const ranker = new PowerRanker({
+      items: new Set(['a', 'b', 'c', 'd']),
+      options: { k: K },
+    });
+
+    for (let i = 0; i < 10; i++) {
+      ranker.addPreferences([{ target: 'a', source: 'b', value: 1 }]);
+    }
+
+    const fullPairs = ranker.activeSelect({ r: 1 });
+    const halfPairs = ranker.activeSelect({ r: 0.5 });
+
+    // With r=0.5, the spread between max and min weight should be smaller
+    const spread = (pairs: typeof fullPairs) => {
+      const ws = pairs.map((p) => p.weight);
+      return Math.max(...ws) - Math.min(...ws);
+    };
+    expect(spread(halfPairs)).toBeLessThan(spread(fullPairs));
+    expect(spread(halfPairs)).toBeGreaterThan(0);
+  });
 });
 
 describe('pairKey', () => {
