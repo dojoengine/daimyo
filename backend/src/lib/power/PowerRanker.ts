@@ -42,7 +42,7 @@ export interface ActiveSelectOptions {
   num?: number;
   exclude?: Set<string>;
   terms?: ActiveImpactTerm[];
-  /** Regularization strength: 0 = uniform, 1 = full weighting. Default 1. */
+  /** Regularization strength (power transform): 0 = uniform, 1 = full weighting. Default 1. */
   r?: number;
 }
 
@@ -213,12 +213,12 @@ export class PowerRanker {
   /**
    * Select pairs using coverage × proximity × top-bias.
    *
-   * Coverage (1/(1+n_i) × 1/(1+n_j)) dominates early when observations are sparse.
+   * Coverage (1/√(1+n_i) × 1/√(1+n_j)) dominates early when observations are sparse.
    * As coverage fills in, proximity (1/(1+|pos_i-pos_j|)) and top-bias (1/√(pos_i×pos_j))
    * increasingly drive selection toward close, high-ranked pairs.
    *
    * terms defaults to all three; pass a subset to disable specific signals.
-   * r (0–1) regularizes toward uniform: final = r*w + (1-r). Default 1 (no regularization).
+   * r (0–1) regularizes via power transform: final = w^r. Default 1 (no regularization).
    */
   activeSelect({
     num,
@@ -248,7 +248,7 @@ export class PowerRanker {
         if (terms.includes('coverage')) {
           const nAlpha = this.itemObservations[alpha] ?? 0;
           const nBeta = this.itemObservations[beta] ?? 0;
-          weight *= (1 / (1 + nAlpha)) * (1 / (1 + nBeta));
+          weight *= (1 / Math.sqrt(1 + nAlpha)) * (1 / Math.sqrt(1 + nBeta));
         }
 
         if (terms.includes('proximity')) {
@@ -259,8 +259,8 @@ export class PowerRanker {
           weight *= 1 / Math.sqrt(position[alpha] * position[beta]);
         }
 
-        // Regularize: blend toward uniform (weight=1) as r→0
-        weight = r * weight + (1 - r);
+        // Regularize: power transform toward uniform (weight=1) as r→0
+        weight = Math.pow(weight, r);
 
         candidates.push({ alpha, beta, weight });
       }
