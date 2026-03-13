@@ -541,7 +541,7 @@ describe('activeSelect', () => {
     }
   });
 
-  test('r<1 compresses weight spread toward uniform', () => {
+  test('r<1 compresses weights toward uniform via power transform', () => {
     const ranker = new PowerRanker({
       items: new Set(['a', 'b', 'c', 'd']),
       options: { k: K },
@@ -554,13 +554,14 @@ describe('activeSelect', () => {
     const fullPairs = ranker.activeSelect({ r: 1 });
     const halfPairs = ranker.activeSelect({ r: 0.5 });
 
-    // With r=0.5, the spread between max and min weight should be smaller
-    const spread = (pairs: typeof fullPairs) => {
+    // With power transform, r=0.5 brings all weights closer to 1 (uniform).
+    // The max/min ratio should be smaller.
+    const ratio = (pairs: typeof fullPairs) => {
       const ws = pairs.map((p) => p.weight);
-      return Math.max(...ws) - Math.min(...ws);
+      return Math.max(...ws) / Math.min(...ws);
     };
-    expect(spread(halfPairs)).toBeLessThan(spread(fullPairs));
-    expect(spread(halfPairs)).toBeGreaterThan(0);
+    expect(ratio(halfPairs)).toBeLessThan(ratio(fullPairs));
+    expect(ratio(halfPairs)).toBeGreaterThan(1);
   });
 });
 
