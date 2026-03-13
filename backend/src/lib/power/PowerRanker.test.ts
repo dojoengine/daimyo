@@ -477,7 +477,7 @@ describe('activeSelect', () => {
     expect(adjacent.weight).toBeGreaterThan(distant.weight);
   });
 
-  test('topBias prioritizes high-ranked pairs', () => {
+  test('position prioritizes high-ranked pairs', () => {
     const ranker = new PowerRanker({
       items: new Set(['a', 'b', 'c', 'd']),
       options: { k: K },
@@ -490,7 +490,7 @@ describe('activeSelect', () => {
       { target: 'c', source: 'd', value: 1 },
     ]);
 
-    const pairs = ranker.activeSelect({ terms: ['topBias'] });
+    const pairs = ranker.activeSelect({ terms: ['position'] });
     const top = pairs.find((p) => p.alpha === 'a' && p.beta === 'b')!;
     const bottom = pairs.find((p) => p.alpha === 'c' && p.beta === 'd')!;
 
