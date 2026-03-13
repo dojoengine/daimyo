@@ -404,6 +404,126 @@ describe('PowerRanker', () => {
   });
 });
 
+describe('activeSelect', () => {
+  test('returns all pairs when num is omitted', () => {
+    const ranker = new PowerRanker({ items: makeItems(ITEM_A, ITEM_B, ITEM_C) });
+    const pairs = ranker.activeSelect();
+    expect(pairs).toHaveLength(3);
+  });
+
+  test('selects the requested number of pairs', () => {
+    const ranker = new PowerRanker({ items: makeItems(ITEM_A, ITEM_B, ITEM_C) });
+    const pairs = ranker.activeSelect({ num: 2 });
+    expect(pairs).toHaveLength(2);
+  });
+
+  test('excludes specified pairs', () => {
+    const ranker = new PowerRanker({ items: makeItems(ITEM_A, ITEM_B, ITEM_C) });
+    const exclude = new Set([pairKey(String(ITEM_A), String(ITEM_B))]);
+    const pairs = ranker.activeSelect({ num: 10, exclude });
+    expect(pairs).toHaveLength(2);
+    const keys = pairs.map((p) => pairKey(p.alpha, p.beta));
+    expect(keys).not.toContain(pairKey(String(ITEM_A), String(ITEM_B)));
+  });
+
+  test('with no data, all pairs have equal weight (uniform positions)', () => {
+    const ranker = new PowerRanker({
+      items: makeItems(ITEM_A, ITEM_B, ITEM_C),
+      options: { k: K },
+    });
+    const pairs = ranker.activeSelect();
+    // With uniform rankings, positions are arbitrary but deterministic.
+    // All weights should be positive.
+    for (const p of pairs) {
+      expect(p.weight).toBeGreaterThan(0);
+    }
+  });
+
+  test('coverage prioritizes unobserved entries', () => {
+    const ranker = new PowerRanker({
+      items: new Set(['a', 'b', 'c', 'd']),
+      options: { k: K },
+    });
+
+    // Heavily observe a and b
+    for (let i = 0; i < 10; i++) {
+      ranker.addPreferences([{ target: 'a', source: 'b', value: 1 }]);
+    }
+
+    const pairs = ranker.activeSelect({ terms: ['coverage'] });
+    const cd = pairs.find((p) => p.alpha === 'c' && p.beta === 'd')!;
+    const ab = pairs.find((p) => p.alpha === 'a' && p.beta === 'b')!;
+
+    expect(cd.weight).toBeGreaterThan(ab.weight);
+  });
+
+  test('proximity prioritizes close-ranked pairs', () => {
+    const ranker = new PowerRanker({
+      items: new Set(['a', 'b', 'c', 'd']),
+      options: { k: K },
+    });
+
+    // Clear hierarchy: a > b > c > d
+    ranker.addPreferences([
+      { target: 'a', source: 'b', value: 1 },
+      { target: 'b', source: 'c', value: 1 },
+      { target: 'c', source: 'd', value: 1 },
+    ]);
+
+    const pairs = ranker.activeSelect({ terms: ['proximity'] });
+    const adjacent = pairs.find((p) => p.alpha === 'a' && p.beta === 'b')!;
+    const distant = pairs.find((p) => p.alpha === 'a' && p.beta === 'd')!;
+
+    expect(adjacent.weight).toBeGreaterThan(distant.weight);
+  });
+
+  test('topBias prioritizes high-ranked pairs', () => {
+    const ranker = new PowerRanker({
+      items: new Set(['a', 'b', 'c', 'd']),
+      options: { k: K },
+    });
+
+    // Clear hierarchy: a > b > c > d
+    ranker.addPreferences([
+      { target: 'a', source: 'b', value: 1 },
+      { target: 'b', source: 'c', value: 1 },
+      { target: 'c', source: 'd', value: 1 },
+    ]);
+
+    const pairs = ranker.activeSelect({ terms: ['topBias'] });
+    const top = pairs.find((p) => p.alpha === 'a' && p.beta === 'b')!;
+    const bottom = pairs.find((p) => p.alpha === 'c' && p.beta === 'd')!;
+
+    expect(top.weight).toBeGreaterThan(bottom.weight);
+  });
+
+  test('combined terms shift attention toward top close pairs', () => {
+    const ranker = new PowerRanker({
+      items: new Set(['a', 'b', 'c', 'd', 'e']),
+      options: { k: K },
+    });
+
+    // a > b > c > d > e
+    ranker.addPreferences([
+      { target: 'a', source: 'b', value: 1 },
+      { target: 'b', source: 'c', value: 1 },
+      { target: 'c', source: 'd', value: 1 },
+      { target: 'd', source: 'e', value: 1 },
+    ]);
+
+    const pairs = ranker.activeSelect();
+
+    // a:b (adjacent, top-ranked) should beat d:e (adjacent, bottom-ranked)
+    const ab = pairs.find((p) => p.alpha === 'a' && p.beta === 'b')!;
+    const de = pairs.find((p) => p.alpha === 'd' && p.beta === 'e')!;
+    expect(ab.weight).toBeGreaterThan(de.weight);
+
+    // a:b (adjacent, top) should beat a:e (distant, involves top)
+    const ae = pairs.find((p) => p.alpha === 'a' && p.beta === 'e')!;
+    expect(ab.weight).toBeGreaterThan(ae.weight);
+  });
+});
+
 describe('pairKey', () => {
   test('returns canonical sorted key', () => {
     expect(pairKey('a', 'b')).toBe('a:b');

@@ -7,4 +7,6 @@ export type {
   PairWeight,
   SelectOptions,
   ImpactTransform,
+  ActiveSelectOptions,
+  ActiveImpactTerm,
 } from './PowerRanker.js';

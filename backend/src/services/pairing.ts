@@ -48,8 +48,8 @@ export async function selectSessionPairs(
     }
   }
 
-  // Select pairs via active ranking with coverage-based impact
-  const selected = ranker.select({ num: count, exclude, impact: ['weight', 'coverage'] });
+  // Select pairs via coverage × proximity × top-bias
+  const selected = ranker.activeSelect({ num: count, exclude });
 
   // Map back to entries with randomized presentation order
   const entryMap = new Map(entries.map((e) => [e.id, e]));

@@ -36,6 +36,14 @@ export interface SelectOptions {
   impact?: ImpactTransform[];
 }
 
+export type ActiveImpactTerm = 'coverage' | 'proximity' | 'topBias';
+
+export interface ActiveSelectOptions {
+  num?: number;
+  exclude?: Set<string>;
+  terms?: ActiveImpactTerm[];
+}
+
 /**
  * Canonical pair key for a sorted (alpha, beta) pair.
  */
@@ -198,6 +206,63 @@ export class PowerRanker {
     } else {
       return this.selectWithoutReplacement(candidates, num);
     }
+  }
+
+  /**
+   * Select pairs using coverage × proximity × top-bias.
+   *
+   * Coverage (1/(1+n_i) × 1/(1+n_j)) dominates early when observations are sparse.
+   * As coverage fills in, proximity (1/(1+|pos_i-pos_j|)) and top-bias (1/√(pos_i×pos_j))
+   * increasingly drive selection toward close, high-ranked pairs.
+   *
+   * terms defaults to all three; pass a subset to disable specific signals.
+   */
+  activeSelect({
+    num,
+    exclude,
+    terms = ['coverage', 'proximity', 'topBias'],
+  }: ActiveSelectOptions = {}): PairWeight[] {
+    // Get ordinal positions from current rankings (1-indexed)
+    const weights = this.run();
+    const sorted = Array.from(weights.entries()).sort((a, b) => b[1] - a[1]);
+    const position: Record<string, number> = {};
+    sorted.forEach(([name], i) => {
+      position[name] = i + 1;
+    });
+
+    const candidates: PairWeight[] = [];
+
+    for (let i = 0; i < this.items.length; i++) {
+      for (let j = i + 1; j < this.items.length; j++) {
+        const alpha = this.items[i];
+        const beta = this.items[j];
+
+        if (exclude && exclude.has(pairKey(alpha, beta))) continue;
+
+        let weight = 1;
+
+        if (terms.includes('coverage')) {
+          const nAlpha = this.itemObservations[alpha] ?? 0;
+          const nBeta = this.itemObservations[beta] ?? 0;
+          weight *= (1 / (1 + nAlpha)) * (1 / (1 + nBeta));
+        }
+
+        if (terms.includes('proximity')) {
+          weight *= 1 / (1 + Math.abs(position[alpha] - position[beta]));
+        }
+
+        if (terms.includes('topBias')) {
+          weight *= 1 / Math.sqrt(position[alpha] * position[beta]);
+        }
+
+        candidates.push({ alpha, beta, weight });
+      }
+    }
+
+    if (num === undefined) {
+      return candidates;
+    }
+    return this.selectWithoutReplacement(candidates, num);
   }
 
   // Internal
