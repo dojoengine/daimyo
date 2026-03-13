@@ -29,6 +29,7 @@
   gap: 6px;
   position: relative;
   overflow: hidden;
+  padding: 2px 0;
 }
 
 /* Shimmer sweep across entire button row */
