@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import { getJamSlugs, getEntries, getJamFrontmatter } from '../../services/entries.js';
 import type { JamFrontmatter } from '../../services/entries.js';
 import { getAllJamStats } from '../../services/database.js';
+import { CONFIDENCE_N } from '../../constants/judging.js';
 
 interface JamSummary {
   slug: string;
@@ -53,7 +54,7 @@ router.get('/', async (_req: Request, res: Response): Promise<void> => {
       results[0].registrationUrl = fm.registrationUrl;
     }
 
-    res.json(results);
+    res.json({ jams: results, confidenceN: CONFIDENCE_N });
   } catch (err) {
     console.error('Error listing jams:', err);
     res.status(500).json({ error: 'Failed to list jams' });

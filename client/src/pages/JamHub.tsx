@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { formatJamTitle, CONFIDENCE_N } from '../utils/jam';
+import { formatJamTitle } from '../utils/jam';
 import './JamHub.css';
 
 interface JamSummary {
@@ -27,9 +27,9 @@ function getJamRoman(slug: string): string {
   return result;
 }
 
-function getConfidence(jam: JamSummary): number {
-  if (jam.entryCount === 0) return 0;
-  return Math.min(jam.voteCount / (jam.entryCount * CONFIDENCE_N), 1);
+function getConfidence(jam: JamSummary, confidenceN: number): number {
+  if (jam.entryCount === 0 || confidenceN === 0) return 0;
+  return Math.min(jam.voteCount / (jam.entryCount * confidenceN), 1);
 }
 
 function ConfidenceRing({ confidence }: { confidence: number }) {
@@ -117,6 +117,7 @@ function AnimatedCounter({ value, delay = 0 }: { value: number; delay?: number }
 
 export default function JamHub() {
   const [jams, setJams] = useState<JamSummary[]>([]);
+  const [confidenceN, setConfidenceN] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -126,7 +127,10 @@ export default function JamHub() {
         if (!r.ok) throw new Error('Failed to load jams');
         return r.json();
       })
-      .then((data) => setJams(data))
+      .then((data) => {
+        setJams(data.jams);
+        setConfidenceN(data.confidenceN);
+      })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
@@ -188,7 +192,7 @@ export default function JamHub() {
                   <span className="hub-featured-stat-label">{featured.voteCount === 1 ? 'vote' : 'votes'}</span>
                 </div>
                 <div className="hub-featured-stat hub-featured-stat--confidence">
-                  <ConfidenceRing confidence={getConfidence(featured)} />
+                  <ConfidenceRing confidence={getConfidence(featured, confidenceN)} />
                   <span className="hub-featured-stat-label">confidence</span>
                 </div>
               </div>
@@ -203,7 +207,7 @@ export default function JamHub() {
                     <Link to={`/jam/${featured.slug}`} className="hub-featured-cta hub-featured-cta--muted">
                       View Entries
                     </Link>
-                    {getConfidence(featured) >= 1 ? (
+                    {getConfidence(featured, confidenceN) >= 1 ? (
                       <Link to={`/jam/${featured.slug}/results`} className="hub-featured-cta hub-featured-cta--gold">
                         See Results
                       </Link>
@@ -246,13 +250,13 @@ export default function JamHub() {
                         <span className="hub-card-stat-label">{jam.voteCount === 1 ? 'vote' : 'votes'}</span>
                       </div>
                       <div className="hub-card-stat hub-card-stat--confidence">
-                        <ConfidenceRingSmall confidence={getConfidence(jam)} />
+                        <ConfidenceRingSmall confidence={getConfidence(jam, confidenceN)} />
                       </div>
                     </div>
                     <div className="hub-card-actions">
                       <Link to={`/jam/${jam.slug}/judge`} className="hub-card-cta">Judge →</Link>
                       <Link to={`/jam/${jam.slug}`} className="hub-card-cta hub-card-cta--muted">Entries →</Link>
-                      {getConfidence(jam) >= 1 ? (
+                      {getConfidence(jam, confidenceN) >= 1 ? (
                         <Link to={`/jam/${jam.slug}/results`} className="hub-card-cta hub-card-cta--gold">Results →</Link>
                       ) : (
                         <span className="hub-card-cta hub-card-cta--locked">Locked</span>
