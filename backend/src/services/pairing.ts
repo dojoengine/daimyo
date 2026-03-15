@@ -48,8 +48,13 @@ export async function selectSessionPairs(
     }
   }
 
-  // Select pairs via coverage × proximity × top-bias
-  const selected = ranker.activeSelect({ num: count, exclude, r: 0.5 });
+  // Select pairs via coverage × proximity (position term disabled for mid-jam re-votes)
+  const selected = ranker.activeSelect({
+    num: count,
+    exclude,
+    r: 0.9,
+    terms: ['coverage', 'proximity'],
+  });
 
   // Map back to entries with randomized presentation order
   const entryMap = new Map(entries.map((e) => [e.id, e]));
