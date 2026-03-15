@@ -208,17 +208,29 @@
   transform: translateY(-2px);
 }
 
-.hub-featured-cta--secondary {
-  background: transparent;
-  color: var(--neon-red);
-  border: 1px solid var(--neon-red);
+.hub-featured-cta--muted {
+  background: var(--ash);
+  color: var(--mist);
+  border: 1px solid var(--ash);
   box-shadow: none;
 }
 
-.hub-featured-cta--secondary:hover {
-  background: var(--neon-red);
-  color: #fff;
-  box-shadow: 0 0 24px var(--neon-glow);
+.hub-featured-cta--muted:hover {
+  background: var(--stone);
+  color: var(--parchment);
+  box-shadow: none;
+}
+
+.hub-featured-cta--gold {
+  background: var(--gold);
+  color: var(--void);
+  border: 1px solid var(--gold);
+  box-shadow: 0 0 12px var(--gold-dim);
+}
+
+.hub-featured-cta--gold:hover {
+  box-shadow: 0 0 24px var(--gold-dim);
+  transform: translateY(-2px);
 }
 
 .hub-featured-actions {
@@ -339,12 +351,20 @@
   transform: translateX(4px);
 }
 
-.hub-card-cta--secondary {
+.hub-card-cta--muted {
   color: var(--stone);
 }
 
-.hub-card-cta--secondary:hover {
-  color: var(--neon-red);
+.hub-card-cta--muted:hover {
+  color: var(--parchment);
+}
+
+.hub-card-cta--gold {
+  color: var(--gold);
+}
+
+.hub-card-cta--gold:hover {
+  color: var(--gold);
 }
 
 .hub-card-actions {
@@ -393,12 +413,12 @@
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--stone);
+  color: var(--gold);
   background: transparent;
-  border: 1px solid var(--ash);
+  border: 1px solid var(--gold);
   border-radius: 4px;
   cursor: default;
-  opacity: 0.5;
+  opacity: 0.4;
 }
 
 .hub-card-cta--locked {
