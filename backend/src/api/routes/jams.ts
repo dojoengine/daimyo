@@ -40,6 +40,7 @@ router.get(
       const response: Record<string, unknown> = {
         pairs,
         sessionSize: JUDGING_SESSION_SIZE,
+        confidenceN: CONFIDENCE_N,
       };
 
       // Include session count for authenticated judges
@@ -109,6 +110,7 @@ router.post(
         sessions,
         entryCount: entries.length,
         voteCount: totalVotes,
+        confidenceN: CONFIDENCE_N,
       });
     } catch (err) {
       console.error('Error recording session:', err);
