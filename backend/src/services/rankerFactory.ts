@@ -5,7 +5,7 @@ import { PowerRanker } from '../lib/power/index.js';
  *  Gives exactly C pseudocounts of prior per item, independent of vote count.
  *  More data naturally overwhelms the fixed prior; larger matrices get weaker per-cell prior
  *  but constant per-item regularization. */
-const PRIOR_STRENGTH = 5;
+const PRIOR_STRENGTH = 1;
 
 /**
  * Build a PowerRanker from entry IDs and comparisons.

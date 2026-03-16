@@ -16,10 +16,14 @@
  *   --sessions <s>    Sessions per judge (default: 3)
  *   --ssize <sz>      Votes per session (default: 10)
  *   --trials <t>      Number of simulation trials (default: 50)
- *   --prior <c>       Prior strength constant (default: 3)
+ *   --prior <c>       Prior strength constant (default: 1)
  *   --r <r>           Active select power transform (0–1, default: 0.9)
  *   --select <t1,t2>  Active select terms (default: coverage,proximity,position)
  *   --noise <n>       Vote noise amplitude (default: 0.3)
+ *   --continuous      Use continuous BT scores instead of Likert binning
+ *
+ * Example:
+ *   npx tsx backend/src/scripts/simulate-ranker.ts --items 30 --judges 10 --sessions 4 --alpha 1.5
  */
 
 import { PowerRanker, pairKey } from '../lib/power/index.js';
@@ -45,7 +49,7 @@ function parseArgs() {
     nSessions: parseInt(opts['sessions'] ?? '3'),
     sessionSize: parseInt(opts['ssize'] ?? '10'),
     nTrials: parseInt(opts['trials'] ?? '50'),
-    priorC: parseFloat(opts['prior'] ?? '3'),
+    priorC: parseFloat(opts['prior'] ?? '1'),
     r: parseFloat(opts['r'] ?? '0.9'),
     terms: (opts['select'] ?? 'coverage,proximity,position').split(',') as (
       | 'coverage'
@@ -53,6 +57,7 @@ function parseArgs() {
       | 'position'
     )[],
     noise: parseFloat(opts['noise'] ?? '0.3'),
+    continuous: 'continuous' in opts,
   };
 }
 
@@ -72,12 +77,14 @@ function generateTrueWeights(n: number, alpha: number): number[] {
 // Vote simulation (Bradley-Terry → Likert)
 // ---------------------------------------------------------------------------
 
-/** Draw a Likert score for A vs B given their true weights.
- *  Bradley-Terry probability with uniform noise, binned to {0, 0.25, 0.5, 0.75, 1.0}. */
-function drawLikert(wA: number, wB: number, noise: number): number {
+/** Draw a score for A vs B given their true weights.
+ *  continuous=false: Bradley-Terry + noise, binned to {0, 0.25, 0.5, 0.75, 1.0}.
+ *  continuous=true: raw Bradley-Terry probability with noise, clamped to [0, 1]. */
+function drawScore(wA: number, wB: number, noise: number, continuous: boolean): number {
   const pA = wA / (wA + wB);
   const noisy = pA + (Math.random() - 0.5) * noise;
-  return Math.round(Math.max(0, Math.min(1, noisy)) * 4) / 4;
+  const clamped = Math.max(0, Math.min(1, noisy));
+  return continuous ? clamped : Math.round(clamped * 4) / 4;
 }
 
 // ---------------------------------------------------------------------------
@@ -152,6 +159,8 @@ interface SimResult {
   kendall: number;
   l2Error: number;
   spreadRatio: number; // recovered spread / true spread
+  uniquePairs: number;
+  totalPairs: number;
 }
 
 function runTrial(
@@ -163,7 +172,8 @@ function runTrial(
   priorC: number,
   r: number,
   terms: ('coverage' | 'proximity' | 'position')[],
-  noise: number
+  noise: number,
+  continuous: boolean
 ): SimResult {
   const trueWeights = generateTrueWeights(nItems, alpha);
   const itemIds = Array.from({ length: nItems }, (_, i) => `item-${i}`);
@@ -202,13 +212,17 @@ function runTrial(
       for (const pair of pairs) {
         const iA = parseInt(pair.alpha.split('-')[1]);
         const iB = parseInt(pair.beta.split('-')[1]);
-        const score = drawLikert(trueWeights[iA], trueWeights[iB], noise);
+        const score = drawScore(trueWeights[iA], trueWeights[iB], noise, continuous);
 
         allPrefs.push({ target: pair.alpha, source: pair.beta, value: score });
         exclude.add(pairKey(pair.alpha, pair.beta));
       }
     }
   }
+
+  // Count unique pairs observed
+  const pairSet = new Set(allPrefs.map((p) => pairKey(p.target, p.source)));
+  const totalPossiblePairs = (nItems * (nItems - 1)) / 2;
 
   // Final ranking
   const k = priorC / nItems;
@@ -227,6 +241,8 @@ function runTrial(
     kendall: kendallTau(trueWeights, recovered),
     l2Error: weightError(trueWeights, recovered),
     spreadRatio: recSpread / trueSpread,
+    uniquePairs: pairSet.size,
+    totalPairs: totalPossiblePairs,
   };
 }
 
@@ -251,6 +267,10 @@ function reportResults(label: string, results: SimResult[]) {
   const e = results.map((r) => r.l2Error);
   const sr = results.map((r) => r.spreadRatio);
 
+  const up = results.map((r) => r.uniquePairs);
+  const tp = results[0].totalPairs;
+  const pairCoverage = avg(up) / tp;
+
   console.log(
     `  ${label.padEnd(12)} ` +
       `pearson=${avg(p).toFixed(3)}  ` +
@@ -259,6 +279,10 @@ function reportResults(label: string, results: SimResult[]) {
       `L2err=${avg(e).toFixed(4)}  ` +
       `spread=${avg(sr).toFixed(2)}x  ` +
       `(med spread=${median(sr).toFixed(2)}x)`
+  );
+  console.log(
+    `               ` +
+      `pairs=${avg(up).toFixed(0)}/${tp} (${(pairCoverage * 100).toFixed(0)}% coverage)`
   );
 }
 
@@ -286,7 +310,7 @@ console.log(
 console.log(`  Votes per item (avg): ${votesPerItem.toFixed(1)}`);
 console.log(`  Prior: C=${opts.priorC}  k=${k.toFixed(4)}`);
 console.log(`  Active select: ${opts.terms.join(', ')}  r=${opts.r}`);
-console.log(`  Noise: ${opts.noise}`);
+console.log(`  Noise: ${opts.noise}  Scoring: ${opts.continuous ? 'continuous' : 'likert'}`);
 console.log(`  Trials: ${opts.nTrials}\n`);
 
 const results: SimResult[] = [];
@@ -301,7 +325,8 @@ for (let t = 0; t < opts.nTrials; t++) {
       opts.priorC,
       opts.r,
       opts.terms,
-      opts.noise
+      opts.noise,
+      opts.continuous
     )
   );
 }
