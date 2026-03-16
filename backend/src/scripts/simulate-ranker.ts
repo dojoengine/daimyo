@@ -293,7 +293,7 @@ function reportResults(label: string, results: SimResult[]) {
 const opts = parseArgs();
 
 const totalVotes = opts.nJudges * opts.nSessions * opts.sessionSize;
-const votesPerItem = (totalVotes * 2) / opts.nItems;
+const votesPerItem = totalVotes / opts.nItems;
 const trueWeights = generateTrueWeights(opts.nItems, opts.alpha);
 const trueSpread = Math.max(...trueWeights) / Math.min(...trueWeights);
 
