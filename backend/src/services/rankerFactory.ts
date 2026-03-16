@@ -1,20 +1,21 @@
 import { Comparison } from './database.js';
 import { PowerRanker } from '../lib/power/index.js';
 
-/** Per-judge pseudocount for matrix regularization */
-const PRIOR_PER_JUDGE = 0.05;
+/** Prior pseudocount per cell: k = C / n.
+ *  Gives exactly C pseudocounts of prior per item, independent of vote count.
+ *  More data naturally overwhelms the fixed prior; larger matrices get weaker per-cell prior
+ *  but constant per-item regularization. */
+const PRIOR_STRENGTH = 5;
 
 /**
  * Build a PowerRanker from entry IDs and comparisons.
- * Uses fixed pseudocount k per judge for regularization.
  * Returns null if fewer than 2 entries.
  */
 export function buildRanker(entryIds: string[], comparisons: Comparison[]): PowerRanker | null {
   const n = entryIds.length;
   if (n < 2) return null;
 
-  const nJudges = new Set(comparisons.map((c) => c.judge_id)).size;
-  const k = PRIOR_PER_JUDGE * nJudges;
+  const k = PRIOR_STRENGTH / n;
 
   const items = new Set(entryIds);
   const ranker = new PowerRanker({ items, options: { k } });
