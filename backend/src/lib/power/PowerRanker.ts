@@ -102,21 +102,10 @@ export class PowerRanker {
       this.itemObservations[p.target]++;
       this.itemObservations[p.source]++;
 
-      // Scale so 0.5 -> 0, 0.7 -> 0.4, etc.
-      const scaled = (p.value - 0.5) * 2;
-
-      // Rows: source, cols: target
-      if (scaled > 0) {
-        d[sourceIx][targetIx] += scaled;
-      } else {
-        d[targetIx][sourceIx] -= scaled;
-      }
-    }
-
-    // Set diagonals to column sums (excluding diagonal), representing total preference received
-    const colSums = this.matrix.sum('column');
-    for (let i = 0; i < this.items.length; i++) {
-      d[i][i] = colSums[i] - d[i][i];
+      // Bidirectional flow: score s adds s toward target and (1-s) toward source.
+      // Encodes the quality ratio between both items in every observation.
+      d[sourceIx][targetIx] += p.value;
+      d[targetIx][sourceIx] += 1 - p.value;
     }
   }
 
@@ -300,6 +289,12 @@ export class PowerRanker {
   private powerMethod(epsilon: number, nIter: number): number[] {
     const n = this.items.length;
     const mat = this.matrix.clone();
+
+    // Set diagonals to column sums, representing preference received
+    const colSums = mat.sum('column');
+    for (let i = 0; i < n; i++) {
+      mat.set(i, i, colSums[i] - mat.get(i, i));
+    }
 
     // Row-normalize
     const rowSums = mat.sum('row');
