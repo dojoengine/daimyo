@@ -19,6 +19,7 @@
  *   --prior <c>       Prior strength constant (default: 3)
  *   --r <r>           Active select power transform (0–1, default: 0.9)
  *   --select <t1,t2>  Active select terms (default: coverage,proximity,position)
+ *   --noise <n>       Vote noise amplitude (default: 0.3)
  */
 
 import { PowerRanker, pairKey } from '../lib/power/index.js';
@@ -51,6 +52,7 @@ function parseArgs() {
       | 'proximity'
       | 'position'
     )[],
+    noise: parseFloat(opts['noise'] ?? '0.3'),
   };
 }
 
@@ -71,18 +73,11 @@ function generateTrueWeights(n: number, alpha: number): number[] {
 // ---------------------------------------------------------------------------
 
 /** Draw a Likert score for A vs B given their true weights.
- *  Bradley-Terry probability mapped to discrete {0, 0.25, 0.5, 0.75, 1.0}. */
-function drawLikert(wA: number, wB: number): number {
+ *  Bradley-Terry probability with uniform noise, binned to {0, 0.25, 0.5, 0.75, 1.0}. */
+function drawLikert(wA: number, wB: number, noise: number): number {
   const pA = wA / (wA + wB);
-  const roll = Math.random();
-
-  // Distribute probability mass across Likert bins
-  // Strong A | Mild A | Even | Mild B | Strong B
-  if (roll < pA * 0.6) return 1.0;
-  if (roll < pA * 0.85) return 0.75;
-  if (roll < pA * 0.85 + (1 - pA) * 0.15) return 0.5;
-  if (roll < pA * 0.85 + (1 - pA) * 0.6) return 0.25;
-  return 0.0;
+  const noisy = pA + (Math.random() - 0.5) * noise;
+  return Math.round(Math.max(0, Math.min(1, noisy)) * 4) / 4;
 }
 
 // ---------------------------------------------------------------------------
@@ -167,7 +162,8 @@ function runTrial(
   sessionSize: number,
   priorC: number,
   r: number,
-  terms: ('coverage' | 'proximity' | 'position')[]
+  terms: ('coverage' | 'proximity' | 'position')[],
+  noise: number
 ): SimResult {
   const trueWeights = generateTrueWeights(nItems, alpha);
   const itemIds = Array.from({ length: nItems }, (_, i) => `item-${i}`);
@@ -206,7 +202,7 @@ function runTrial(
       for (const pair of pairs) {
         const iA = parseInt(pair.alpha.split('-')[1]);
         const iB = parseInt(pair.beta.split('-')[1]);
-        const score = drawLikert(trueWeights[iA], trueWeights[iB]);
+        const score = drawLikert(trueWeights[iA], trueWeights[iB], noise);
 
         allPrefs.push({ target: pair.alpha, source: pair.beta, value: score });
         exclude.add(pairKey(pair.alpha, pair.beta));
@@ -290,6 +286,7 @@ console.log(
 console.log(`  Votes per item (avg): ${votesPerItem.toFixed(1)}`);
 console.log(`  Prior: C=${opts.priorC}  k=${k.toFixed(4)}`);
 console.log(`  Active select: ${opts.terms.join(', ')}  r=${opts.r}`);
+console.log(`  Noise: ${opts.noise}`);
 console.log(`  Trials: ${opts.nTrials}\n`);
 
 const results: SimResult[] = [];
@@ -303,7 +300,8 @@ for (let t = 0; t < opts.nTrials; t++) {
       opts.sessionSize,
       opts.priorC,
       opts.r,
-      opts.terms
+      opts.terms,
+      opts.noise
     )
   );
 }
