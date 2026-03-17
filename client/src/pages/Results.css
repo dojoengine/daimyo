@@ -227,18 +227,6 @@
   white-space: nowrap;
 }
 
-.results-score {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--mist);
-  font-variant-numeric: tabular-nums;
-  flex-shrink: 0;
-}
-
-.results-entry--top1 .results-score {
-  color: var(--gold);
-}
-
 .results-entry-team {
   font-size: 13px;
   color: var(--stone);
@@ -276,29 +264,6 @@
   border-color: #4ade8060;
   box-shadow: 0 0 12px #4ade8025;
   transform: translateY(-1px);
-}
-
-/* ─── Score Bar ─── */
-
-.results-bar {
-  height: 3px;
-  background: var(--ash);
-  border-radius: 2px;
-  overflow: hidden;
-  margin-top: 4px;
-}
-
-.results-bar-fill {
-  height: 100%;
-  background: var(--neon-red);
-  border-radius: 2px;
-  box-shadow: 0 0 6px var(--neon-glow);
-  transition: width 1.2s ease-out;
-}
-
-.results-entry--top1 .results-bar-fill {
-  background: var(--gold);
-  box-shadow: 0 0 6px var(--gold-dim);
 }
 
 /* ─── Nav ─── */

@@ -7,7 +7,7 @@ export const JUDGING_SESSION_SIZE = 10;
  * Minimum comparisons per entry before results are public.
  * Results are locked until totalComparisons >= entryCount * CONFIDENCE_N.
  */
-export const CONFIDENCE_N = 12;
+export const CONFIDENCE_N = 10;
 
 export function getTotalPairCount(entryCount: number): number {
   if (entryCount < 2) {
