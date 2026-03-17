@@ -109,7 +109,6 @@ export default function Results() {
                   <div className="results-entry-header">
                     <span className="results-entry-emoji">{r.entry.emoji}</span>
                     <h2 className="results-entry-title">{r.entry.title}</h2>
-                    <span className="results-score">{r.weight.toFixed(1)}%</span>
                   </div>
                   <div className="results-entry-team">{r.entry.team.join(', ')}</div>
                   <div className="results-entry-chips">
@@ -120,9 +119,6 @@ export default function Results() {
                         <span>Play Now</span>
                       </a>
                     )}
-                  </div>
-                  <div className="results-bar">
-                    <div className="results-bar-fill" style={{ width: `${r.weight}%` }} />
                   </div>
                 </div>
               </div>
@@ -136,7 +132,7 @@ export default function Results() {
             <button
               className="results-export-btn"
               onClick={() => {
-                const csv = ['project,weight', ...rankings.map((r) => `"${r.entry.title.replace(/"/g, '""')}",${r.weight.toFixed(1)}`)].join('\n');
+                const csv = ['rank,project', ...rankings.map((r, i) => `${i + 1},"${r.entry.title.replace(/"/g, '""')}"`)].join('\n');
                 const blob = new Blob([csv], { type: 'text/csv' });
                 const a = document.createElement('a');
                 a.href = URL.createObjectURL(blob);
