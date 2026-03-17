@@ -284,7 +284,7 @@ export default function Graph() {
                       {n.emoji}
                     </text>
                     <text className="graph-node-title" textAnchor="middle" dy={r + 14}>
-                      {n.title}
+                      {n.title} <tspan className="graph-node-weight">({n.weight.toFixed(2)})</tspan>
                     </text>
                     {(inW > 0 || outW > 0) && (
                       <text className="graph-node-stats" textAnchor="middle" dy={r + 28}>
