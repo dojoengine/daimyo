@@ -95,6 +95,13 @@
   pointer-events: none;
 }
 
+.graph-node-weight {
+  fill: var(--gold);
+  font-size: 10px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
 /* ─── Legend ─── */
 
 .graph-legend {

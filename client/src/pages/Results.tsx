@@ -106,11 +106,13 @@ export default function Results() {
               >
                 <div className="results-rank">#{i + 1}</div>
                 <div className="results-entry-main">
-                  <div className="results-entry-header">
-                    <span className="results-entry-emoji">{r.entry.emoji}</span>
-                    <h2 className="results-entry-title">{r.entry.title}</h2>
+                  <div className="results-entry-info">
+                    <div className="results-entry-header">
+                      <span className="results-entry-emoji">{r.entry.emoji}</span>
+                      <h2 className="results-entry-title">{r.entry.title}</h2>
+                    </div>
+                    <div className="results-entry-team">{r.entry.team.join(', ')}</div>
                   </div>
-                  <div className="results-entry-team">{r.entry.team.join(', ')}</div>
                   <div className="results-entry-chips">
                     <MetricChip label="Type" value={r.entry.metrics.classification} />
                     {r.entry.demo_url && (
