@@ -119,6 +119,8 @@ export default function JamHub() {
   const [jams, setJams] = useState<JamSummary[]>([]);
   const [confidenceN, setConfidenceN] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [loadingArchive, setLoadingArchive] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -130,10 +132,26 @@ export default function JamHub() {
       .then((data) => {
         setJams(data.jams);
         setConfidenceN(data.confidenceN);
+        setHasMore(data.hasMore ?? false);
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
+
+  const loadPastJams = () => {
+    setLoadingArchive(true);
+    fetch('/api/jams?all=true')
+      .then((r) => {
+        if (!r.ok) throw new Error('Failed to load past jams');
+        return r.json();
+      })
+      .then((data) => {
+        setJams(data.jams);
+        setHasMore(false);
+      })
+      .catch((err) => setError(err.message))
+      .finally(() => setLoadingArchive(false));
+  };
 
   const featured = jams[0] ?? null;
   const featuredIsActive = featured?.endDate
@@ -224,47 +242,54 @@ export default function JamHub() {
         )}
 
         {/* Archive */}
-        {!loading && archive.length > 0 && (
+        {!loading && (archive.length > 0 || hasMore) && (
           <div className="hub-archive">
-            <h3 className="hub-archive-title">Past Jams</h3>
-            <div className="hub-grid">
-              {archive.map((jam, i) => (
-                  <div
-                    key={jam.slug}
-                    className="hub-card"
-                    style={{ animationDelay: `${0.4 + i * 0.1}s` }}
-                  >
-                    <span className="kanji-watermark kanji-watermark-card-sm">{getJamRoman(jam.slug)}</span>
-                    <h2 className="hub-card-title">{formatJamTitle(jam.slug)}</h2>
-                    <div className="hub-card-stats">
-                      <div className="hub-card-stat">
-                        <span className="hub-card-stat-value">{jam.entryCount}</span>
-                        <span className="hub-card-stat-label">{jam.entryCount === 1 ? 'entry' : 'entries'}</span>
+            {archive.length > 0 && <h3 className="hub-archive-title">Past Jams</h3>}
+            {archive.length > 0 && (
+              <div className="hub-grid">
+                {archive.map((jam, i) => (
+                    <div
+                      key={jam.slug}
+                      className="hub-card"
+                      style={{ animationDelay: `${0.4 + i * 0.1}s` }}
+                    >
+                      <span className="kanji-watermark kanji-watermark-card-sm">{getJamRoman(jam.slug)}</span>
+                      <h2 className="hub-card-title">{formatJamTitle(jam.slug)}</h2>
+                      <div className="hub-card-stats">
+                        <div className="hub-card-stat">
+                          <span className="hub-card-stat-value">{jam.entryCount}</span>
+                          <span className="hub-card-stat-label">{jam.entryCount === 1 ? 'entry' : 'entries'}</span>
+                        </div>
+                        <div className="hub-card-stat">
+                          <span className="hub-card-stat-value">{jam.judgeCount}</span>
+                          <span className="hub-card-stat-label">{jam.judgeCount === 1 ? 'judge' : 'judges'}</span>
+                        </div>
+                        <div className="hub-card-stat">
+                          <span className="hub-card-stat-value">{jam.voteCount}</span>
+                          <span className="hub-card-stat-label">{jam.voteCount === 1 ? 'vote' : 'votes'}</span>
+                        </div>
+                        <div className="hub-card-stat hub-card-stat--confidence">
+                          <ConfidenceRingSmall confidence={getConfidence(jam, confidenceN)} />
+                        </div>
                       </div>
-                      <div className="hub-card-stat">
-                        <span className="hub-card-stat-value">{jam.judgeCount}</span>
-                        <span className="hub-card-stat-label">{jam.judgeCount === 1 ? 'judge' : 'judges'}</span>
-                      </div>
-                      <div className="hub-card-stat">
-                        <span className="hub-card-stat-value">{jam.voteCount}</span>
-                        <span className="hub-card-stat-label">{jam.voteCount === 1 ? 'vote' : 'votes'}</span>
-                      </div>
-                      <div className="hub-card-stat hub-card-stat--confidence">
-                        <ConfidenceRingSmall confidence={getConfidence(jam, confidenceN)} />
+                      <div className="hub-card-actions">
+                        <Link to={`/jam/${jam.slug}/judge`} className="hub-card-cta">Judge →</Link>
+                        <Link to={`/jam/${jam.slug}`} className="hub-card-cta hub-card-cta--muted">Entries →</Link>
+                        {getConfidence(jam, confidenceN) >= 1 ? (
+                          <Link to={`/jam/${jam.slug}/results`} className="hub-card-cta hub-card-cta--gold">Results →</Link>
+                        ) : (
+                          <span className="hub-card-cta hub-card-cta--locked">Locked</span>
+                        )}
                       </div>
                     </div>
-                    <div className="hub-card-actions">
-                      <Link to={`/jam/${jam.slug}/judge`} className="hub-card-cta">Judge →</Link>
-                      <Link to={`/jam/${jam.slug}`} className="hub-card-cta hub-card-cta--muted">Entries →</Link>
-                      {getConfidence(jam, confidenceN) >= 1 ? (
-                        <Link to={`/jam/${jam.slug}/results`} className="hub-card-cta hub-card-cta--gold">Results →</Link>
-                      ) : (
-                        <span className="hub-card-cta hub-card-cta--locked">Locked</span>
-                      )}
-                    </div>
-                  </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
+            {hasMore && (
+              <button className="hub-load-more" onClick={loadPastJams} disabled={loadingArchive}>
+                {loadingArchive ? 'Loading...' : 'Load Past Jams'}
+              </button>
+            )}
           </div>
         )}
 

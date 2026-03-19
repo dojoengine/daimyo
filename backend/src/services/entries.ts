@@ -120,12 +120,21 @@ async function fetchEntriesFromGitHub(jamSlug: string): Promise<Entry[]> {
 
 // In-memory cache for GitHub-fetched entries
 const entriesCache: Map<string, { entries: Entry[]; fetchedAt: number }> = new Map();
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes (slugs, frontmatter)
+const CACHE_TTL_ACTIVE = 5 * 60 * 1000; // 5 minutes for latest jam entries
+const CACHE_TTL_ARCHIVE = 7 * 24 * 60 * 60 * 1000; // 7 days for older jam entries
+
+/** Latest jam slug, updated by getJamSlugs(). */
+let latestJamSlug: string | null = null;
+
+function getCacheTTL(jamSlug: string): number {
+  return jamSlug === latestJamSlug ? CACHE_TTL_ACTIVE : CACHE_TTL_ARCHIVE;
+}
 
 export async function getEntries(jamSlug: string): Promise<Entry[]> {
   // Check cache first
   const cached = entriesCache.get(jamSlug);
-  if (cached && Date.now() - cached.fetchedAt < CACHE_TTL) {
+  if (cached && Date.now() - cached.fetchedAt < getCacheTTL(jamSlug)) {
     return cached.entries;
   }
 
@@ -169,6 +178,13 @@ export async function getJamSlugs(): Promise<string[]> {
 
   const items = (await res.json()) as Array<{ name: string; type: string }>;
   const slugs = items.filter((i) => i.type === 'dir' && /^gj\d+$/.test(i.name)).map((i) => i.name);
+
+  // Track the latest jam slug for cache TTL decisions
+  const sorted = [...slugs].sort((a, b) => {
+    const n = (s: string) => parseInt(s.replace('gj', ''), 10);
+    return n(b) - n(a);
+  });
+  if (sorted.length > 0) latestJamSlug = sorted[0];
 
   jamSlugsCache = { slugs, fetchedAt: Date.now() };
   return slugs;
