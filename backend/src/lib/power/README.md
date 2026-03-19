@@ -7,8 +7,8 @@ Ported from [zaratanDotWorld/choreWheel](https://github.com/zaratanDotWorld/chor
 
 ### Ranking
 
-Pairwise preferences are accumulated into an N×N matrix where `matrix[i][j]` represents the strength of preference for item j over item i.
-Preferences are scaled from the input range [0, 1] to [-1, 1] centered at 0.5 (no preference).
+Pairwise preferences are accumulated into an N×N matrix using bidirectional encoding: a score `s` adds `s` to `matrix[source][target]` and `1-s` to `matrix[target][source]`.
+This means every observation informs both items — a strong preference (s=1) flows entirely toward the winner, while an even vote (s=0.5) splits equally.
 
 The diagonal holds each item's total received preference (column sum), making it a self-reinforcing signal.
 The matrix is row-normalized into a stochastic matrix, then power iteration finds the dominant eigenvector — the stationary distribution that becomes the ranking.
@@ -17,11 +17,14 @@ Optional Bayesian pseudocounts (`k`) initialize off-diagonal cells, regularizing
 
 ### Active pair selection
 
-`select()` chooses which pairs to present next using variance-weighted sampling without replacement.
-Each pair's uncertainty is modeled as a Beta distribution: `Beta(matrix[i][j] + 1, matrix[j][i] + 1)`.
-Higher variance means less certainty about the relative ranking — so those pairs are sampled more often.
+`activeSelect()` chooses which pairs to present next using three composable signals:
 
-With `impact: true`, the variance is multiplied by `weight_a * weight_b` (the eigenvector scores), prioritizing uncertain pairs between high-ranked items.
+- **coverage** (`1/√(1+n_i) × 1/√(1+n_j)`) — dominates early when observations are sparse.
+- **proximity** (`1/(1+|pos_i-pos_j|)`) — favors pairs that are close in rank.
+- **position** (`1/√(pos_i×pos_j)`) — favors pairs near the top of the ranking.
+
+A regularization parameter `r` (0–1) controls how strongly these signals influence selection via a power transform.
+At `r=0`, selection is uniform; at `r=1` (default), the full weighting applies.
 
 ## API
 
@@ -40,19 +43,20 @@ ranker.addPreferences([
 // Get rankings (Map<string, number>, values sum to 1)
 const rankings = ranker.run();
 
-// Get all pairs with their variance weights
-const allPairs = ranker.select();
+// Get all pairs with their selection weights
+const allPairs = ranker.activeSelect();
 
 // Select pairs for a judging session (weighted sampling without replacement)
-const pairs = ranker.select({
+const pairs = ranker.activeSelect({
   num: 5,
   exclude: new Set(['a:b']), // pairs already judged
-  impact: true, // weight by item importance
+  terms: ['coverage', 'proximity', 'position'], // default: all three
+  r: 0.9, // regularization strength
 });
 ```
 
 ## Files
 
 - `PowerRanker.ts` — Implementation
-- `PowerRanker.test.ts` — Tests (20 cases)
+- `PowerRanker.test.ts` — Tests
 - `index.ts` — Re-exports

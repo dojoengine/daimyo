@@ -28,14 +28,6 @@ export interface PairWeight {
   weight: number;
 }
 
-export type ImpactTransform = 'weight' | 'coverage';
-
-export interface SelectOptions {
-  num?: number;
-  exclude?: Set<string>;
-  impact?: ImpactTransform[];
-}
-
 export type ActiveImpactTerm = 'coverage' | 'proximity' | 'position';
 
 export interface ActiveSelectOptions {
@@ -137,66 +129,6 @@ export class PowerRanker {
     }
 
     return edges;
-  }
-
-  private getVariances(): PairWeight[] {
-    const variances: PairWeight[] = [];
-
-    for (let i = 0; i < this.items.length; i++) {
-      for (let j = i + 1; j < this.items.length; j++) {
-        const weight = this.getVariance(i, j);
-        variances.push({ alpha: this.items[i], beta: this.items[j], weight });
-      }
-    }
-
-    return variances;
-  }
-
-  /**
-   * Select pairs via variance-weighted sampling.
-   *
-   * With num specified, samples without replacement weighted by variance.
-   * Without num, returns all pairs with their weights (useful for diagnostics).
-   * impact is an optional array of transforms applied multiplicatively:
-   *   - 'weight': multiply by geometric mean of posterior rank weights (upsamples high-ranked pairs)
-   *   - 'coverage': multiply by 1/(1+n/N) per item (upsamples under-observed items)
-   * Optionally excludes pairs (e.g. already judged).
-   */
-  select({ num, exclude, impact }: SelectOptions = {}): PairWeight[] {
-    const variances = this.getVariances();
-    const transforms = impact ?? [];
-
-    const weights = transforms.includes('weight') ? this.run() : new Map<string, number>();
-
-    // Build candidate pool with sampling weights
-    const candidates: PairWeight[] = [];
-
-    for (const v of variances) {
-      if (exclude && exclude.has(pairKey(v.alpha, v.beta))) {
-        continue;
-      }
-
-      let weight = v.weight;
-
-      if (transforms.includes('weight')) {
-        weight *= Math.sqrt(weights.get(v.alpha)! * weights.get(v.beta)!);
-      }
-
-      if (transforms.includes('coverage')) {
-        const nAlpha = this.itemObservations[v.alpha] ?? 0;
-        const nBeta = this.itemObservations[v.beta] ?? 0;
-        weight *= (1 / (1 + nAlpha)) * (1 / (1 + nBeta));
-      }
-
-      candidates.push({ alpha: v.alpha, beta: v.beta, weight });
-    }
-
-    // Without num, return all candidates
-    if (num === undefined) {
-      return candidates;
-    } else {
-      return this.selectWithoutReplacement(candidates, num);
-    }
   }
 
   /**
@@ -323,14 +255,6 @@ export class PowerRanker {
     }
 
     return vec.getRow(0);
-  }
-
-  private getVariance(i: number, j: number): number {
-    // Model as a Beta distribution with a (1, 1) prior
-    const a = this.matrix.get(i, j) + 1;
-    const b = this.matrix.get(j, i) + 1;
-
-    return (a * b) / ((a + b + 1) * (a + b) ** 2);
   }
 
   private selectWithoutReplacement(candidates: PairWeight[], num: number): PairWeight[] {
