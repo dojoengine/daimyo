@@ -180,6 +180,17 @@ export default function Graph() {
                 <path d="M0,-5L10,0L0,5" fill="#ff1a3d" />
               </marker>
               <marker
+                id="arrowhead-green"
+                viewBox="0 -5 10 10"
+                refX={10}
+                refY={0}
+                markerWidth={6}
+                markerHeight={6}
+                orient="auto"
+              >
+                <path d="M0,-5L10,0L0,5" fill="#4ade80" />
+              </marker>
+              <marker
                 id="arrowhead-dim"
                 viewBox="0 -5 10 10"
                 refX={10}
@@ -208,9 +219,16 @@ export default function Graph() {
                   : selectedNodes.size > 0
                     ? selectedNodes.has(s.id) && selectedNodes.has(t.id)
                     : true;
+                const isInEdge = hoveredNode != null && t.id === hoveredNode;
                 const opacity = connected
                   ? edgeOpacity(e.weight, maxEdgeWeight)
                   : 0.03;
+                const strokeColor = isInEdge ? '#4ade80' : '#ff1a3d';
+                const marker = !connected
+                  ? 'url(#arrowhead-dim)'
+                  : isInEdge
+                    ? 'url(#arrowhead-green)'
+                    : 'url(#arrowhead)';
                 return (
                   <line
                     key={i}
@@ -218,10 +236,10 @@ export default function Graph() {
                     y1={s.y! + (dy / dist) * sr}
                     x2={t.x! - (dx / dist) * tr}
                     y2={t.y! - (dy / dist) * tr}
-                    stroke="#ff1a3d"
+                    stroke={strokeColor}
                     strokeWidth={edgeWidth(e.weight, maxEdgeWeight)}
                     strokeOpacity={opacity}
-                    markerEnd={connected ? 'url(#arrowhead)' : 'url(#arrowhead-dim)'}
+                    markerEnd={marker}
                     style={{ transition: 'stroke-opacity 0.2s ease' }}
                   />
                 );
