@@ -120,8 +120,8 @@ async function fetchEntriesFromGitHub(jamSlug: string): Promise<Entry[]> {
 
 // In-memory cache for GitHub-fetched entries
 const entriesCache: Map<string, { entries: Entry[]; fetchedAt: number }> = new Map();
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes (slugs, frontmatter)
-const CACHE_TTL_ACTIVE = 5 * 60 * 1000; // 5 minutes for latest jam entries
+const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours (slugs, frontmatter)
+const CACHE_TTL_ACTIVE = 60 * 60 * 1000; // 1 hour for latest jam entries
 const CACHE_TTL_ARCHIVE = 7 * 24 * 60 * 60 * 1000; // 7 days for older jam entries
 
 /** Latest jam slug, updated by getJamSlugs(). */
