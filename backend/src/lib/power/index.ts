@@ -5,8 +5,6 @@ export type {
   DirectedEdge,
   RunOptions,
   PairWeight,
-  SelectOptions,
-  ImpactTransform,
   ActiveSelectOptions,
   ActiveImpactTerm,
 } from './PowerRanker.js';
