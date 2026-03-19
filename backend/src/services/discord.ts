@@ -14,7 +14,7 @@ interface CacheEntry {
   expiresAt: number;
 }
 
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 const cache = new Map<string, CacheEntry>();
 
 function getBotToken(): string | undefined {

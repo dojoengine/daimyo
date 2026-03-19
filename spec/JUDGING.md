@@ -126,7 +126,7 @@ Backend fetches entries from GitHub:
 https://raw.githubusercontent.com/dojoengine/game-jams/main/{slug}/entries.yaml
 ```
 
-Caching: 5-minute TTL in memory. This balances freshness with minimal GitHub API calls.
+Caching: 1-hour TTL in memory. This balances freshness with minimal GitHub API calls.
 
 ## Pairwise Judging
 
