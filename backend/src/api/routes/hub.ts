@@ -17,15 +17,24 @@ interface JamSummary {
 
 const router: express.Router = express.Router();
 
-// GET /api/jams - Public: list all jams with stats
-router.get('/', async (_req: Request, res: Response): Promise<void> => {
+// GET /api/jams - Public: list jams with stats
+// By default returns only the latest jam. Pass ?all=true to include past jams.
+router.get('/', async (req: Request, res: Response): Promise<void> => {
   try {
+    const all = req.query.all === 'true';
     const [slugs, stats] = await Promise.all([getJamSlugs(), getAllJamStats()]);
 
     const statsMap = new Map(stats.map((s) => [s.jam_slug, s]));
+    const sortedSlugs = [...slugs].sort((a, b) => {
+      const n = (s: string) => parseInt(s.replace('gj', ''), 10);
+      return n(b) - n(a);
+    });
+
+    // Only fetch entries for the slugs we need
+    const targetSlugs = all ? sortedSlugs : sortedSlugs.slice(0, 1);
 
     const jams = await Promise.allSettled(
-      slugs.map(async (slug) => {
+      targetSlugs.map(async (slug) => {
         const entries = await getEntries(slug);
         const s = statsMap.get(slug);
         return {
@@ -39,11 +48,7 @@ router.get('/', async (_req: Request, res: Response): Promise<void> => {
 
     const results = jams
       .filter((r): r is PromiseFulfilledResult<JamSummary> => r.status === 'fulfilled')
-      .map((r) => r.value)
-      .sort((a, b) => {
-        const n = (s: string) => parseInt(s.replace('gj', ''), 10);
-        return n(b.slug) - n(a.slug);
-      });
+      .map((r) => r.value);
 
     // Include frontmatter for the latest jam so the homepage can render it
     if (results.length > 0) {
@@ -54,7 +59,7 @@ router.get('/', async (_req: Request, res: Response): Promise<void> => {
       results[0].registrationUrl = fm.registrationUrl;
     }
 
-    res.json({ jams: results, confidenceN: CONFIDENCE_N });
+    res.json({ jams: results, confidenceN: CONFIDENCE_N, hasMore: !all && sortedSlugs.length > 1 });
   } catch (err) {
     console.error('Error listing jams:', err);
     res.status(500).json({ error: 'Failed to list jams' });

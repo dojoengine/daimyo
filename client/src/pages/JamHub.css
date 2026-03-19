@@ -258,6 +258,32 @@
   margin: 0 0 20px;
 }
 
+.hub-load-more {
+  display: block;
+  margin: 20px auto 0;
+  padding: 10px 28px;
+  font-family: 'Noto Serif', 'Noto Serif JP', serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--stone);
+  background: transparent;
+  border: 1px solid var(--ash);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.hub-load-more:hover:not(:disabled) {
+  color: var(--parchment);
+  border-color: var(--stone);
+}
+
+.hub-load-more:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 /* ─── Jam Grid ─── */
 
 .hub-grid {
